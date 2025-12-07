@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Rex Game Clone</title>
+    <style>
+        /* RESET E SFONDO */
+        body { 
+            margin: 0; padding: 0; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; background-color: #f7f7f7; font-family: 'Segoe UI', sans-serif;
+            overflow: hidden; /* Blocca lo scroll della pagina */
+        }
+        
+        /* IL CONTENITORE DEL GIOCO */
+        .game-container {
+            width: 800px;
+            height: 250px;
+            border-bottom: 2px solid #555;
+            position: relative;
+            background-color: white;
+            overflow: hidden; /* Nasconde il cactus quando esce dai bordi */
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        /* IL DINOSAURO */
+        #dino {
+            width: 50px; height: 50px;
+            background-color: #333; 
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            border-radius: 5px;
+        }
+
+        /* IL CACTUS (Ostacolo) */
+        #cactus {
+            width: 30px; height: 50px;
+            background-color: #00979D; /* Colore Ottanio del tuo portfolio */
+            position: absolute;
+            bottom: 0;
+            left: 800px; /* Parte fuori dallo schermo a destra */
+            border-radius: 5px;
+        }
+
+        /* ANIMAZIONE SALTO DINOSAURO */
+        .animate-jump {
+            animation: jump 0.5s linear;
+        }
+
+        @keyframes jump {
+            0% { bottom: 0; }
+            30% { bottom: 120px; } /* Altezza del salto */
+            70% { bottom: 120px; }
+            100% { bottom: 0; }
+        }
+
+        /* ANIMAZIONE MOVIMENTO CACTUS */
+        .animate-cactus {
+            animation: moveCactus 1.8s infinite linear; /* Velocità del gioco */
+        }
+
+        @keyframes moveCactus {
+            0% { left: 800px; }
+            100% { left: -40px; }
+        }
+
+        /* PUNTEGGIO E MESSAGGI */
+        .score-board { 
+            position: absolute; top: 10px; right: 20px; 
+            font-size: 24px; color: #333; font-weight: bold;
+        }
+        
+        /* SCHERMATA GAME OVER */
+        .game-over-msg { 
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            text-align: center; 
+            display: none; /* Nascosto all'inizio */
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        /* BOTTONI */
+        .btn {
+            padding: 10px 20px; margin: 5px; cursor: pointer;
+            border: none; border-radius: 5px; font-size: 16px; color: white;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-retry { background-color: #333; }
+        .btn-home { background-color: #00979D; }
+        .btn:hover { opacity: 0.8; }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="score-board">Punti: <span id="scoreSpan">0</span></div>
+        
+        <div id="dino"></div>
+        <div id="cactus" class="animate-cactus"></div>
+        
+        <div class="game-over-msg" id="gameOverMsg">
+            <h1 style="margin-top:0;">💥 GAME OVER 💥</h1>
+            <p>Hai totalizzato: <span id="finalScore">0</span> punti</p>
+            
+            <button onclick="location.reload()" class="btn btn-retry">🔄 Riprova</button>
+            <br><br>
+            <a href="index.html" class="btn btn-home">🏠 Torna al Portfolio</a>
+        </div>
+    </div>
+
+    <script>
+        const dino = document.getElementById("dino");
+        const cactus = document.getElementById("cactus");
+        const scoreSpan = document.getElementById("scoreSpan");
+        const finalScoreSpan = document.getElementById("finalScore");
+        const gameOverMsg = document.getElementById("gameOverMsg");
+        let score = 0;
+        let isDead = false;
+
+        // Funzione per far saltare il dinosauro
+        function jump() {
+            if (isDead) return; // Se sei morto non puoi saltare
+            if (dino.classList != "animate-jump") {
+                dino.classList.add("animate-jump");
+                setTimeout(function() {
+                    dino.classList.remove("animate-jump");
+                }, 500); // Durata del salto uguale all'animazione CSS
+            }
+        }
+
+        // Ascolta il tasto SPAZIO o il CLICK del mouse
+        document.body.onkeyup = function(e){
+            if(e.keyCode == 32 || e.code == "Space"){
+                jump();
+            }
+        }
+        document.body.onclick = jump; // Funziona anche su cellulare col tocco
+
+        // Loop principale del gioco (controlla collisioni ogni 10 millisecondi)
+        let checkDead = setInterval(function() {
+            if (isDead) return;
+
+            // Prende la posizione attuale del Dino e del Cactus
+            let dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom")); // quanto è alto da terra
+            let cactusLeft = parseInt(window.getComputedStyle(cactus).getPropertyValue("left")); // dov'è il cactus
+
+            // LOGICA DI COLLISIONE
+            // Se il cactus è vicino a sinistra (tra 0 e 50px) E il dino non è saltato abbastanza (meno di 50px da terra)
+            if (cactusLeft < 50 && cactusLeft > 0 && dinoTop < 50) {
+                // Hai perso
+                isDead = true;
+                cactus.style.animation = "none";
+                cactus.style.display = "none";
+                
+                finalScoreSpan.innerText = Math.floor(score / 100);
+                gameOverMsg.style.display = "block"; // Mostra il menu Game Over
+                
+                clearInterval(scoreInterval); // Ferma il punteggio
+            }
+        }, 10);
+
+        // Aumenta il punteggio
+        let scoreInterval = setInterval(() => {
+            if (!isDead) {
+                score++;
+                scoreSpan.innerText = Math.floor(score / 100);
+            }
+        }, 10);
+
+    </script>
+</body>
+</html>
