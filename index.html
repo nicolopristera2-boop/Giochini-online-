@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Sviluppatore C</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
+        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        h2 { border-bottom: 2px solid #00979D; padding-bottom: 5px; margin-top: 30px;}
+        
+        /* Stile per le schede dei progetti */
+        .project-card {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            transition: 0.3s;
+        }
+        .project-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .btn-github {
+            display: inline-block;
+            background-color: #24292e; /* Colore GitHub */
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .btn-github:hover { background-color: #444; }
+        
+        .tag { background: #e1ecf4; color: #00979D; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Mario Rossi (Cambia col tuo nome)</h1>
+    <p>Sviluppatore Firmware | C & Arduino Specialist</p>
+</header>
+
+<div class="container">
+    
+    <section>
+        <h2>I Miei Progetti</h2>
+        <p>Qui puoi trovare il codice sorgente dei miei lavori, caricato su GitHub.</p>
+
+        <div class="project-card">
+            <h3>🚦 Semaforo Intelligente</h3>
+            <div>
+                <span class="tag">C Language</span>
+                <span class="tag">Arduino</span>
+                <span class="tag">Automazione</span>
+            </div>
+            <p>Un sistema di gestione del traffico simulato. Utilizza una logica a stati finiti per gestire le transizioni Verde-Giallo-Rosso. Il codice è ottimizzato con direttive #define per risparmiare memoria RAM.</p>
+            
+            <a href="INCOLLA_QUI_IL_LINK_DEL_TUO_SEMAFORO_GITHUB" class="btn-github" target="_blank">
+                Vedi Codice su GitHub
+            </a>
+        </div>
+
+        <div class="project-card">
+            <h3>🌡️ Stazione Meteo (In arrivo)</h3>
+            <p>Prossimamente: Un sistema di lettura temperatura e umidità con log dei dati.</p>
+        </div>
+
+    </section>
+
+    <section>
+        <h2>Contattami</h2>
+        <p>Disponibile per progetti freelance.</p>
+        <a href="mailto:tuaemail@gmail.com">Scrivimi una mail</a>
+    </section>
+</div>
+
+</body>
+</html>
