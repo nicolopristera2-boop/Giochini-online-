@@ -3,68 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giochi</title>
+    <title>Giochi Arcade</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
-        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
-        .container { max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #333; }
-        h2 { border-bottom: 2px solid #00979D; padding-bottom: 5px; margin-top: 30px;}
+        /* --- Reset e Base --- */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* Stile per le schede dei progetti */
+        /* --- Header --- */
+        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* --- Layout Principale --- */
+        .container { 
+            max-width: 1000px; /* Allargato leggermente per ospitare la griglia */
+            margin: 40px auto; 
+            padding: 20px; 
+            flex: 1; /* Spinge il footer in basso */
+        }
+
+        h1 { margin: 0; font-size: 2.5rem; }
+        h2 { border-bottom: 2px solid #00979D; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; color: #00979D; }
+        
+        /* --- Griglia dei Giochi --- */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive automatico */
+            gap: 25px;
+        }
+
+        /* --- Schede (Card) --- */
         .project-card {
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
             background-color: #fff;
-            transition: 0.3s;
+            border-radius: 12px;
+            overflow: hidden; /* Per arrotondare anche l'immagine */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
-        .project-card:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .project-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); 
+        }
+
+        /* Placeholder per immagine gioco */
+        .card-image {
+            height: 150px;
+            background-color: #e1ecf4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00979D;
+            font-size: 3rem;
+        }
         
-        .btn-github {
-            display: inline-block;
-            background-color: #24292e; /* Colore GitHub */
+        .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-content h3 { margin-top: 0; color: #222; }
+        .card-content p { color: #666; line-height: 1.5; flex-grow: 1; }
+
+        /* --- Bottoni --- */
+        .btn-play {
+            display: block;
+            background-color: #00979D;
             color: white;
-            padding: 10px 15px;
+            padding: 12px;
+            text-align: center;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 6px;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
+            transition: background-color 0.2s;
         }
-        .btn-github:hover { background-color: #444; }
-        
-        .tag { background: #e1ecf4; color: #00979D; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-right: 5px; }
+        .btn-play:hover { background-color: #007a80; }
+        .btn-play.disabled { background-color: #ccc; pointer-events: none; }
+
+        /* --- Footer --- */
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Giochi Online</h1>
+    <h1>🕹️ Sala Giochi Online</h1>
+    <p>La tua collezione di giochi browser-based</p>
 </header>
+
 <div class="container">
     
     <section>
-        <h2>Giochi single player</h2>
+        <h2>Giochi Single Player</h2>
+        
+        <div class="games-grid">
+            
             <div class="project-card">
-            <h3>Gioco 1</h3>
-             <p>Descrizione del gioco</p>
-                <a href="trex.html" class="btn-github">
-    🎮 Gioca Ora
-</a>
-        </div>
+                <div class="card-image">🦖</div> <div class="card-content">
+                    <h3>T-Rex Run</h3>
+                    <p>Il classico gioco del dinosauro. Salta gli ostacoli e raggiungi il punteggio più alto!</p>
+                    <a href="trex.html" class="btn-play">🎮 Gioca Ora</a>
+                </div>
+            </div>
 
-        <div class="project-card">
-            <h3>Secondo gioco (In arrivo)</h3>
-            <p>Prossimamente...</p>
-        </div>
+            <div class="project-card">
+                <div class="card-image">🚀</div>
+                <div class="card-content">
+                    <h3>Space Shooter</h3>
+                    <p>Difendi la galassia dall'invasione aliena in questo sparatutto retro.</p>
+                    <a href="#" class="btn-play disabled">🚧 In Arrivo</a>
+                </div>
+            </div>
 
+            <div class="project-card">
+                <div class="card-image">🧠</div>
+                <div class="card-content">
+                    <h3>Memory</h3>
+                    <p>Metti alla prova la tua memoria trovando tutte le coppie.</p>
+                    <a href="#" class="btn-play disabled">🚧 In Arrivo</a>
+                </div>
+            </div>
+
+        </div>
     </section>
 </div>
 
+<footer>
+    <p>&copy; 2025 Sala Giochi Online. Buon divertimento!</p>
+</footer>
+
 </body>
-
 </html>
-
-
-
