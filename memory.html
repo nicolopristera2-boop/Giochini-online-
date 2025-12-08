@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/808/808439.png">
+
+    <title>Memory - Gioca</title>
+    <style>
+        /* --- Stile Base (uguale agli altri file) --- */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
+        .container { max-width: 640px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; flex: 1; }
+
+        /* --- Griglia del Memory --- */
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 colonne */
+            gap: 10px;
+            margin-top: 20px;
+            perspective: 1000px; /* Per effetto 3D (opzionale) */
+        }
+
+        /* --- La Carta --- */
+        .memory-card {
+            height: 100px;
+            position: relative;
+            background-color: #00979D; /* Colore del "retro" della carta */
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            user-select: none;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .memory-card:active { transform: scale(0.95); }
+
+        /* Quando la carta è girata o indovinata */
+        .memory-card.flip, .memory-card.matched {
+            background-color: #fff;
+            border: 2px solid #00979D;
+            cursor: default;
+        }
+
+        /* Nascondi l'emoji se la carta non è girata */
+        .memory-card .front-face { display: none; }
+        .memory-card.flip .front-face, .memory-card.matched .front-face { display: block; }
+        
+        /* Icona del punto interrogativo sul retro */
+        .back-face { color: rgba(255,255,255,0.5); font-size: 2rem; }
+        .memory-card.flip .back-face, .memory-card.matched .back-face { display: none; }
+
+        /* --- Info Panel (Mosse e Tempo) --- */
+        .info-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .btn-back {
+            display: inline-block;
+            background-color: #666;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        .btn-back:hover { background-color: #444; }
+
+        #winMessage { display: none; color: #00979D; margin-top: 20px; }
+        
+        button.restart-btn {
+            background-color: #00979D; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; margin-top: 10px;
+        }
+        button.restart-btn:hover { background-color: #007a80; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🧠 Memory Game</h1>
+</header>
+
+<div class="container">
+    
+    <div class="info-panel">
+        <span id="moves">Mosse: 0</span>
+        <span id="timer">Tempo: 0s</span>
+    </div>
+
+    <div class="memory-game" id="gameBoard">
+        </div>
+
+    <div id="winMessage">
+        <h2>🎉 Hai Vinto! 🎉</h2>
+        <p>Ottimo lavoro!</p>
+        <button class="restart-btn" onclick="startGame()">Gioca Ancora</button>
+    </div>
+
+    <a href="index.html" class="btn-back">⬅ Torna alla Home</a>
+</div>
+
+<script>
+    const gameBoard = document.getElementById('gameBoard');
+    const movesElement = document.getElementById('moves');
+    const timerElement = document.getElementById('timer');
+    const winMessage = document.getElementById('winMessage');
+
+    // Lista delle icone (8 coppie = 16 carte)
+    const emojis = ['🍕', '🍕', '🚀', '🚀', '🐱', '🐱', '🌵', '🌵', '🎸', '🎸', '🍦', '🍦', '💎', '💎', '🎈', '🎈'];
+    
+    let cards = []; // Conterrà gli elementi HTML
+    let hasFlippedCard = false;
+    let lockBoard = false; // Blocca il click se stiamo aspettando che le carte si girino
+    let firstCard, secondCard;
+    let moves = 0;
+    let matchedPairs = 0;
+    let time = 0;
+    let timerInterval;
+
+    function shuffle(array) {
+        // Algoritmo di mescolamento (Fisher-Yates)
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function createBoard() {
+        gameBoard.innerHTML = ''; // Pulisci la tavola
+        const shuffledEmojis = shuffle([...emojis]); // Crea una copia e mescola
+
+        shuffledEmojis.forEach(emoji => {
+            // Crea l'elemento carta
+            const card = document.createElement('div');
+            card.classList.add('memory-card');
+            card.dataset.framework = emoji; // Salviamo il valore per il confronto
+
+            // Contenuto HTML della carta (Fronte e Retro)
+            card.innerHTML = `
+                <span class="front-face">${emoji}</span>
+                <span class="back-face">❓</span>
+            `;
+
+            // Aggiungi evento click
+            card.addEventListener('click', flipCard);
+            
+            gameBoard.appendChild(card);
+            cards.push(card);
+        });
+    }
+
+    function flipCard() {
+        if (lockBoard) return; // Se bloccato, esci
+        if (this === firstCard) return; // Se clicchi due volte la stessa carta, esci
+
+        this.classList.add('flip');
+
+        if (!hasFlippedCard) {
+            // Primo click
+            hasFlippedCard = true;
+            firstCard = this;
+            return;
+        }
+
+        // Secondo click
+        secondCard = this;
+        incrementMoves();
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        // Controlla se il data-framework (l'emoji) è uguale
+        let isMatch = firstCard.dataset.framework === secondCard.dataset.framework;
+
+        isMatch ? disableCards() : unflipCards();
+    }
+
+    function disableCards() {
+        // È una coppia!
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+
+        matchedPairs++;
+        if (matchedPairs === emojis.length / 2) {
+            endGame();
+        }
+
+        resetBoard();
+    }
+
+    function unflipCards() {
+        lockBoard = true; // Blocca tutto
+        // Aspetta 1 secondo e poi gira le carte
+        setTimeout(() => {
+            firstCard.classList.remove('flip');
+            secondCard.classList.remove('flip');
+            resetBoard();
+        }, 1000);
+    }
+
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+
+    function incrementMoves() {
+        moves++;
+        movesElement.innerText = `Mosse: ${moves}`;
+        // Avvia il timer al primo movimento se non è partito
+        if (moves === 1) startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        time = 0;
+        timerInterval = setInterval(() => {
+            time++;
+            timerElement.innerText = `Tempo: ${time}s`;
+        }, 1000);
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        setTimeout(() => {
+            winMessage.style.display = 'block';
+            gameBoard.style.display = 'none'; // Nasconde le carte per mostrare il messaggio
+        }, 500);
+    }
+
+    function startGame() {
+        moves = 0;
+        matchedPairs = 0;
+        time = 0;
+        movesElement.innerText = 'Mosse: 0';
+        timerElement.innerText = 'Tempo: 0s';
+        winMessage.style.display = 'none';
+        gameBoard.style.display = 'grid';
+        clearInterval(timerInterval);
+        createBoard();
+    }
+
+    // Avvia il gioco appena carica la pagina
+    startGame();
+
+</script>
+
+</body>
+</html>
