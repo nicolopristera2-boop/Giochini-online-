@@ -3,78 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter 2.0</title>
+    <title>Space Shooter 3.0 - Retro Shapes</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     
     <style>
         body { 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            background-color: #f4f4f4; 
-            color: #333; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh; 
-            user-select: none;
+            font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; 
+            display: flex; flex-direction: column; min-height: 100vh; user-select: none;
         }
         header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
         .container { max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; flex: 1;}
         
         #gameCanvas {
-            background-color: #0d0d1a; /* Blu scurissimo quasi nero */
+            background-color: #0d0d1a;
             border: 4px solid #00979D;
             display: block;
             margin: 20px auto;
             max-width: 100%;
-            cursor: none; /* Nasconde il mouse sul gioco per immersione */
-            box-shadow: 0 0 20px rgba(0, 151, 157, 0.5); /* Effetto neon */
+            cursor: none;
+            box-shadow: 0 0 20px rgba(0, 151, 157, 0.5);
         }
 
         .btn-back {
-            display: inline-block;
-            background-color: #666;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            transition: 0.3s;
+            display: inline-block; background-color: #666; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px; transition: 0.3s;
         }
         .btn-back:hover { background-color: #444; }
 
         .controls-info { background: #e1ecf4; padding: 10px; border-radius: 5px; display: inline-block; margin-bottom: 15px; }
         #scoreBoard { font-size: 1.8rem; font-weight: bold; color: #00979D; margin: 10px 0; }
         
-        /* Stile messaggio Game Over */
         #gameOverOverlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
-            display: none;
-            z-index: 10;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85); color: white; padding: 40px; border-radius: 10px;
+            text-align: center; display: none; z-index: 10;
         }
-        .container { position: relative; } /* Serve per posizionare l'overlay */
+        .container { position: relative; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🚀 Space Shooter 2.0</h1>
+    <h1>🚀 Space Shooter 3.0</h1>
 </header>
 
 <div class="container">
     <div class="controls-info">
-        <p>🕹️ <strong>Frecce Direzionali</strong> per muoverti ovunque.</p>
+        <p>🕹️ <strong>Frecce Direzionali</strong> per muoverti.</p>
         <p>🔥 <strong>SPAZIO</strong> per sparare.</p>
     </div>
     
     <div id="scoreBoard">Punti: 0</div>
-    
     <canvas id="gameCanvas" width="600" height="500"></canvas>
 
     <div id="gameOverOverlay">
@@ -94,82 +72,118 @@
     const gameOverOverlay = document.getElementById('gameOverOverlay');
     const finalScoreText = document.getElementById('finalScore');
 
-    // Variabili di gioco
     let score = 0;
     let gameOver = false;
     let frameCount = 0;
     
-    // Tasti premuti (per movimento fluido)
-    const keys = {
-        ArrowUp: false,
-        ArrowDown: false,
-        ArrowLeft: false,
-        ArrowRight: false,
-        Space: false
-    };
+    const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, Space: false };
 
     // --- OGGETTI ---
-
     const player = {
-        x: canvas.width / 2 - 20,
-        y: canvas.height - 60,
-        width: 40,
-        height: 40,
-        speed: 5,
-        emoji: '🚀'
+        x: canvas.width / 2 - 20, y: canvas.height - 60, width: 40, height: 40, speed: 5
     };
 
     let bullets = [];
     let enemies = [];
-    let stars = []; // Per lo sfondo
+    let stars = [];
 
-    // Lista di possibili nemici
-    const alienTypes = ['👾', '🛸', '🐙', '🤖', '🦟'];
+    // Tipi di nemici disponibili
+    const enemyTypes = ['invader', 'hunter', 'saucer', 'crystal'];
 
-    // --- FUNZIONI UTILI ---
+    // --- FUNZIONI DI DISEGNO (NUOVE!) ---
 
-    // Crea stelle per lo sfondo
+    // Disegna il giocatore (un semplice razzo vettoriale)
+    function drawPlayer(x, y, w, h) {
+        ctx.fillStyle = '#00979D';
+        ctx.beginPath();
+        ctx.moveTo(x + w / 2, y); // Punta
+        ctx.lineTo(x, y + h); // Base sx
+        ctx.lineTo(x + w / 2, y + h - 10); // Incavo centrale
+        ctx.lineTo(x + w, y + h); // Base dx
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Funzione principale che decide quale nemico disegnare
+    function drawEnemy(enemy) {
+        const { x, y, width: w, height: h, color, type } = enemy;
+        ctx.fillStyle = color;
+        
+        switch(type) {
+            case 'invader': // Classico alieno "pixelloso"
+                ctx.fillRect(x + w*0.25, y, w*0.5, h*0.3); // Testa
+                ctx.fillRect(x, y + h*0.3, w, h*0.4); // Corpo
+                ctx.fillRect(x + w*0.1, y + h*0.7, w*0.2, h*0.3); // Zampa sx
+                ctx.fillRect(x + w*0.7, y + h*0.7, w*0.2, h*0.3); // Zampa dx
+                break;
+            case 'hunter': // Triangolo aggressivo
+                ctx.beginPath();
+                ctx.moveTo(x + w / 2, y + h); // Punta in basso
+                ctx.lineTo(x, y); // Alto sx
+                ctx.lineTo(x + w, y); // Alto dx
+                ctx.closePath();
+                ctx.fill();
+                break;
+            case 'saucer': // Disco volante
+                ctx.beginPath();
+                ctx.ellipse(x + w/2, y + h/2, w/2, h/4, 0, 0, Math.PI * 2); // Disco
+                ctx.fill();
+                ctx.fillStyle = '#add8e6'; // Cupola azzurra
+                ctx.beginPath();
+                ctx.arc(x + w/2, y + h/2 - 5, w/4, 0, Math.PI, true); // Semicerchio sopra
+                ctx.fill();
+                break;
+            case 'crystal': // Rombo/Diamante
+                ctx.beginPath();
+                ctx.moveTo(x + w/2, y); // Alto
+                ctx.lineTo(x + w, y + h/2); // Destra
+                ctx.lineTo(x + w/2, y + h); // Basso
+                ctx.lineTo(x, y + h/2); // Sinistra
+                ctx.closePath();
+                ctx.fill();
+                break;
+        }
+    }
+
+
+    // --- LOGICA DI GIOCO ---
+
     function createStars() {
-        for(let i=0; i<50; i++) {
+        for(let i=0; i<60; i++) {
             stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: Math.random() * 2,
-                speed: Math.random() * 3 + 0.5
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                size: Math.random() * 1.5, speed: Math.random() * 2 + 0.5
             });
         }
     }
 
     function drawStars() {
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
         stars.forEach(star => {
             ctx.fillRect(star.x, star.y, star.size, star.size);
             star.y += star.speed;
-            // Se la stella esce sotto, torna sopra
-            if (star.y > canvas.height) {
-                star.y = 0;
-                star.x = Math.random() * canvas.width;
-            }
+            if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
         });
     }
 
     function spawnEnemy() {
-        // Spawna più velocemente man mano che il gioco avanza
-        let spawnRate = 60; 
-        if (score > 500) spawnRate = 45;
-        if (score > 1000) spawnRate = 30;
+        let spawnRate = 60; if (score > 500) spawnRate = 45; if (score > 1000) spawnRate = 30;
 
         if (frameCount % spawnRate === 0) {
-            // Scegli un'emoji a caso
-            const randomEmoji = alienTypes[Math.floor(Math.random() * alienTypes.length)];
-            
+            const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+            let color;
+            // Assegna un colore in base al tipo
+            if (type === 'invader') color = '#32CD32'; // Lime Green
+            else if (type === 'hunter') color = '#FF4500'; // Orange Red
+            else if (type === 'saucer') color = '#9370DB'; // Medium Purple
+            else if (type === 'crystal') color = '#00BFFF'; // Deep Sky Blue
+
             enemies.push({
                 x: Math.random() * (canvas.width - 40),
-                y: -40,
-                width: 40,
-                height: 40,
-                emoji: randomEmoji,
-                speed: 2 + Math.random() * 2 // Velocità variabile
+                y: -40, width: 40, height: 40,
+                type: type,
+                color: color,
+                speed: 2 + Math.random() * 2
             });
         }
     }
@@ -182,23 +196,16 @@
     }
 
     function shoot() {
-        // Limita la frequenza di fuoco (1 colpo ogni 10 frame circa se tieni premuto)
         if (frameCount % 10 === 0) {
             bullets.push({
-                x: player.x + 12, // Centrato rispetto all'emoji
-                y: player.y,
-                width: 4,
-                height: 10,
-                color: '#ffeb3b',
-                speed: 8
+                x: player.x + player.width / 2 - 2, 
+                y: player.y, width: 4, height: 12, color: '#FFD700', speed: 8
             });
         }
     }
 
-    // Collisione semplice (rettangolare)
     function checkCollision(rect1, rect2) {
-        // Margine di tolleranza (hitbox leggermente più piccola dell'emoji)
-        let padding = 5; 
+        let padding = 8; // Hitbox leggermente più piccola per essere onesti
         return (
             rect1.x + padding < rect2.x + rect2.width - padding &&
             rect1.x + rect1.width - padding > rect2.x + padding &&
@@ -214,13 +221,9 @@
     }
 
     window.resetGame = function() {
-        gameOver = false;
-        score = 0;
-        scoreElement.innerText = "Punti: 0";
-        enemies = [];
-        bullets = [];
-        player.x = canvas.width / 2 - 20;
-        player.y = canvas.height - 60;
+        gameOver = false; score = 0; scoreElement.innerText = "Punti: 0";
+        enemies = []; bullets = [];
+        player.x = canvas.width / 2 - 20; player.y = canvas.height - 60;
         gameOverOverlay.style.display = 'none';
         update();
     }
@@ -228,18 +231,16 @@
     // --- LOOP PRINCIPALE ---
     function update() {
         if (gameOver) return;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        drawStars(); // Sfondo animato
+        drawStars();
         movePlayer();
         if (keys.Space) shoot();
 
-        // Disegna Giocatore
-        ctx.font = "40px Arial";
-        ctx.fillText(player.emoji, player.x, player.y + 35);
+        // Disegna Giocatore (Nuova funzione)
+        drawPlayer(player.x, player.y, player.width, player.height);
 
-        // Gestione Proiettili
+        // Proiettili
         bullets.forEach((bullet, i) => {
             bullet.y -= bullet.speed;
             ctx.fillStyle = bullet.color;
@@ -247,54 +248,39 @@
             if (bullet.y < 0) bullets.splice(i, 1);
         });
 
-        // Gestione Nemici
+        // Nemici
         spawnEnemy();
         enemies.forEach((enemy, i) => {
             enemy.y += enemy.speed;
             
-            ctx.font = "40px Arial";
-            ctx.fillText(enemy.emoji, enemy.x, enemy.y + 35);
+            // CHIAMA LA NUOVA FUNZIONE DI DISEGNO
+            drawEnemy(enemy);
 
-            // Game Over se toccano il giocatore
-            if (checkCollision(player, enemy)) {
-                endGame();
-            }
-            
-            // Rimuovi se escono dallo schermo
-            if (enemy.y > canvas.height) {
-                 enemies.splice(i, 1);
-                 // Opzionale: perdi punti se scappano?
-            }
+            if (checkCollision(player, enemy)) endGame();
+            if (enemy.y > canvas.height) enemies.splice(i, 1);
 
-            // Collisione Proiettile - Nemico
             bullets.forEach((bullet, bIndex) => {
                 if (checkCollision(bullet, enemy)) {
-                    score += 10;
+                    score += 20; // Più punti per questi nemici!
                     scoreElement.innerText = "Punti: " + score;
                     enemies.splice(i, 1);
                     bullets.splice(bIndex, 1);
                 }
             });
         });
-
         frameCount++;
         requestAnimationFrame(update);
     }
 
-    // --- GESTIONE INPUT ---
+    // --- INPUT ---
     window.addEventListener('keydown', e => {
         if (e.code === 'Space') keys.Space = true;
         if (e.key === 'ArrowUp') keys.ArrowUp = true;
         if (e.key === 'ArrowDown') keys.ArrowDown = true;
         if (e.key === 'ArrowLeft') keys.ArrowLeft = true;
         if (e.key === 'ArrowRight') keys.ArrowRight = true;
-        
-        // Evita che la pagina scorra se premi le frecce
-        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
-            e.preventDefault();
-        }
+        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) e.preventDefault();
     });
-
     window.addEventListener('keyup', e => {
         if (e.code === 'Space') keys.Space = false;
         if (e.key === 'ArrowUp') keys.ArrowUp = false;
@@ -303,7 +289,6 @@
         if (e.key === 'ArrowRight') keys.ArrowRight = false;
     });
 
-    // Inizializza
     createStars();
     update();
 
