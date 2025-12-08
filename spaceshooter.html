@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Shooter - Gioca</title>
+    <style>
+        /* --- Stile Coerente con il sito principale --- */
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; flex: 1;}
+        
+        /* --- Stile specifico per il gioco --- */
+        #gameCanvas {
+            background-color: #222; /* Sfondo scuro per lo spazio */
+            border: 3px solid #00979D;
+            display: block;
+            margin: 20px auto;
+            /* Rendiamo il canvas responsivo */
+            max-width: 100%; 
+            height: auto;
+        }
+
+        .btn-back {
+            display: inline-block;
+            background-color: #666;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .btn-back:hover { background-color: #444; }
+
+        .controls-info { color: #666; font-size: 0.9em; margin-bottom: 15px; background: #e1ecf4; display: inline-block; padding: 10px; border-radius: 5px;}
+        #scoreBoard { font-size: 1.5rem; font-weight: bold; color: #00979D; margin: 10px 0; }
+        #gameOverText { color: red; font-size: 2rem; display: none; margin-bottom: 20px;}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🚀 Space Shooter</h1>
+</header>
+
+<div class="container">
+    <div class="controls-info">
+        <p>⬅️➡️ Usa le <strong>Frecce Destra/Sinistra</strong> per muoverti.</p>
+        <p>⬜ Premi <strong>SPAZIO</strong> per sparare.</p>
+    </div>
+    
+    <div id="scoreBoard">Punti: 0</div>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <h2 id="gameOverText">GAME OVER!</h2>
+
+    <button id="retryBtn" class="btn-play" style="display: none; margin: 0 auto 20px auto; background-color: #00979D; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">🔄 Riprova</button>
+
+    <br>
+    <a href="index.html" class="btn-back">⬅ Torna alla Home</a>
+</div>
+
+<script>
+    // --- CONFIGURAZIONE INIZIALE ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('scoreBoard');
+    const gameOverText = document.getElementById('gameOverText');
+    const retryBtn = document.getElementById('retryBtn');
+
+    let score = 0;
+    let gameOver = false;
+    let frameCount = 0; // Per gestire il tempo di spawn dei nemici
+
+    // Il Giocatore (Astronave)
+    const player = {
+        x: canvas.width / 2 - 20,
+        y: canvas.height - 30,
+        width: 40,
+        height: 20,
+        color: '#00979D',
+        speed: 5,
+        dx: 0 // Direzione orizzontale
+    };
+
+    // Liste per gestire proiettili e nemici multipli
+    let bullets = [];
+    let enemies = [];
+
+    // --- GESTIONE INPUT (Tastiera) ---
+    function keyDown(e) {
+        if (e.key === 'ArrowRight' || e.key === 'd') {
+            player.dx = player.speed;
+        } else if (e.key === 'ArrowLeft' || e.key === 'a') {
+            player.dx = -player.speed;
+        } else if (e.key === ' ' || e.code === 'Space') {
+            shoot();
+        }
+    }
+
+    function keyUp(e) {
+        if (
+            e.key === 'ArrowRight' || e.key === 'd' ||
+            e.key === 'ArrowLeft' || e.key === 'a'
+        ) {
+            player.dx = 0;
+        }
+    }
+
+    document.addEventListener('keydown', keyDown);
+    document.addEventListener('keyup', keyUp);
+    retryBtn.addEventListener('click', resetGame);
+
+
+    // --- LOGICA DI GIOCO ---
+
+    function shoot() {
+        if (gameOver) return;
+        bullets.push({
+            x: player.x + player.width / 2 - 2.5, // Parte dal centro della nave
+            y: player.y,
+            width: 5,
+            height: 10,
+            color: '#ffeb3b', // Giallo
+            speed: 7
+        });
+    }
+
+    function spawnEnemy() {
+        // Crea un nemico ogni 60 frame (circa 1 secondo)
+        if (frameCount % 60 === 0) {
+            enemies.push({
+                x: Math.random() * (canvas.width - 30), // Posizione casuale orizzontale
+                y: -30, // Parte appena fuori dallo schermo in alto
+                width: 30,
+                height: 30,
+                color: '#ff5722', // Arancione/Rosso
+                speed: 2 + Math.random() * 2 // Velocità variabile
+            });
+        }
+    }
+
+    // Funzione base per rilevare la collisione tra due rettangoli
+    function checkCollision(rect1, rect2) {
+        return (
+            rect1.x < rect2.x + rect2.width &&
+            rect1.x + rect1.width > rect2.x &&
+            rect1.y < rect2.y + rect2.height &&
+            rect1.y + rect1.height > rect2.y
+        );
+    }
+
+    function endGame() {
+        gameOver = true;
+        gameOverText.style.display = 'block';
+        retryBtn.style.display = 'block';
+    }
+
+    function resetGame() {
+        gameOver = false;
+        score = 0;
+        frameCount = 0;
+        bullets = [];
+        enemies = [];
+        player.x = canvas.width / 2 - 20;
+        scoreElement.innerText = 'Punti: 0';
+        gameOverText.style.display = 'none';
+        retryBtn.style.display = 'none';
+        update(); // Riavvia il loop
+    }
+
+    // --- LOOP PRINCIPALE (Disegno e Aggiornamento) ---
+    function update() {
+        if (gameOver) return;
+
+        // 1. Pulisci il canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        frameCount++;
+
+        // 2. Gestione Giocatore
+        player.x += player.dx;
+        // Impedisci di uscire dai bordi laterali
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+        // Disegna il giocatore (una semplice forma "astronave")
+        ctx.fillStyle = player.color;
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.width/2, player.y); // Punta in alto
+        ctx.lineTo(player.x, player.y + player.height); // Angolo in basso a sx
+        ctx.lineTo(player.x + player.width, player.y + player.height); // Angolo in basso a dx
+        ctx.fill();
+
+
+        // 3. Gestione Proiettili
+        bullets.forEach((bullet, index) => {
+            bullet.y -= bullet.speed; // Muovi verso l'alto
+            ctx.fillStyle = bullet.color;
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+
+            // Rimuovi proiettili fuori schermo per risparmiare memoria
+            if (bullet.y + bullet.height < 0) {
+                bullets.splice(index, 1);
+            }
+        });
+
+        // 4. Gestione Nemici
+        spawnEnemy();
+        enemies.forEach((enemy, eIndex) => {
+            enemy.y += enemy.speed; // Muovi verso il basso
+            ctx.fillStyle = enemy.color;
+            // Disegniamo i nemici come quadrati per ora
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+            // Game Over se il nemico tocca il fondo
+            if (enemy.y > canvas.height) {
+                endGame();
+            }
+
+            // Game Over se il nemico tocca il giocatore
+            if (checkCollision(enemy, player)) {
+                endGame();
+            }
+
+            // Controlla collisione Proiettile vs Nemico
+            bullets.forEach((bullet, bIndex) => {
+                if (checkCollision(bullet, enemy)) {
+                    // Collisione avvenuta!
+                    score += 10;
+                    scoreElement.innerText = 'Punti: ' + score;
+                    // Rimuovi entrambi
+                    enemies.splice(eIndex, 1);
+                    bullets.splice(bIndex, 1);
+                }
+            });
+        });
+
+        // Richiedi il prossimo frame
+        requestAnimationFrame(update);
+    }
+
+    // Avvia il gioco
+    update();
+
+</script>
+
+</body>
+</html>
