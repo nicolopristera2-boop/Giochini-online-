@@ -3,178 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T-Rex Game Clone</title>
+    <title>T-Rex Run 2.0</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦖</text></svg>">
+    
     <style>
-        /* RESET E SFONDO */
         body { 
-            margin: 0; padding: 0; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; background-color: #f7f7f7; font-family: 'Segoe UI', sans-serif;
-            overflow: hidden; /* Blocca lo scroll della pagina */
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            background-color: #f4f4f4; 
+            color: #333; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh;
+            user-select: none; /* Impedisce di selezionare il testo cliccando veloce */
         }
         
-        /* IL CONTENITORE DEL GIOCO */
-        .game-container {
-            width: 800px;
-            height: 250px;
-            border-bottom: 2px solid #555;
-            position: relative;
-            background-color: white;
-            overflow: hidden; /* Nasconde il cactus quando esce dai bordi */
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            border-radius: 10px;
-        }
-
-        /* IL DINOSAURO */
-        #dino {
-            width: 50px; height: 50px;
-            background-color: #333; 
-            position: absolute;
-            bottom: 0;
-            left: 50px;
-            border-radius: 5px;
-        }
-
-        /* IL CACTUS (Ostacolo) */
-        #cactus {
-            width: 30px; height: 50px;
-            background-color: #00979D; /* Colore Ottanio del tuo portfolio */
-            position: absolute;
-            bottom: 0;
-            left: 800px; /* Parte fuori dallo schermo a destra */
-            border-radius: 5px;
-        }
-
-        /* ANIMAZIONE SALTO DINOSAURO */
-        .animate-jump {
-            animation: jump 0.5s linear;
-        }
-
-        @keyframes jump {
-            0% { bottom: 0; }
-            30% { bottom: 120px; } /* Altezza del salto */
-            70% { bottom: 120px; }
-            100% { bottom: 0; }
-        }
-
-        /* ANIMAZIONE MOVIMENTO CACTUS */
-        .animate-cactus {
-            animation: moveCactus 1.8s infinite linear; /* Velocità del gioco */
-        }
-
-        @keyframes moveCactus {
-            0% { left: 800px; }
-            100% { left: -40px; }
-        }
-
-        /* PUNTEGGIO E MESSAGGI */
-        .score-board { 
-            position: absolute; top: 10px; right: 20px; 
-            font-size: 24px; color: #333; font-weight: bold;
+        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
+        
+        .container { 
+            max-width: 800px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            text-align: center;
+            flex: 1;
         }
         
-        /* SCHERMATA GAME OVER */
-        .game-over-msg { 
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            text-align: center; 
-            display: none; /* Nascosto all'inizio */
-            background: rgba(255,255,255,0.9);
-            padding: 20px;
-            border: 2px solid #333;
-            border-radius: 10px;
-            z-index: 10;
+        #gameCanvas {
+            background-color: #fff;
+            border-bottom: 2px solid #535353; /* La linea del terreno */
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            cursor: pointer;
         }
 
-        /* BOTTONI */
-        .btn {
-            padding: 10px 20px; margin: 5px; cursor: pointer;
-            border: none; border-radius: 5px; font-size: 16px; color: white;
-            text-decoration: none; display: inline-block;
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 600px;
+            margin: 0 auto;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #535353;
         }
-        .btn-retry { background-color: #333; }
-        .btn-home { background-color: #00979D; }
-        .btn:hover { opacity: 0.8; }
 
+        .btn-back {
+            display: inline-block;
+            background-color: #666;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .btn-back:hover { background-color: #444; }
+
+        .instructions { color: #888; font-size: 0.9rem; margin-top: 10px;}
+        
+        /* Messaggio lampeggiante per Game Over */
+        @keyframes blink { 50% { opacity: 0; } }
+        .blink { animation: blink 1s linear infinite; }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <div class="score-board">Punti: <span id="scoreSpan">0</span></div>
-        
-        <div id="dino"></div>
-        <div id="cactus" class="animate-cactus"></div>
-        
-        <div class="game-over-msg" id="gameOverMsg">
-            <h1 style="margin-top:0;">💥 GAME OVER 💥</h1>
-            <p>Hai totalizzato: <span id="finalScore">0</span> punti</p>
-            
-            <button onclick="location.reload()" class="btn btn-retry">🔄 Riprova</button>
-            <br><br>
-            <a href="index.html" class="btn btn-home">🏠 Torna al Portfolio</a>
-        </div>
+<header>
+    <h1>🦖 T-Rex Run 2.0</h1>
+</header>
+
+<div class="container">
+    <div class="stats">
+        <span id="scoreText">Punti: 0</span>
+        <span id="highScoreText">Record: 0</span>
     </div>
 
-    <script>
-        const dino = document.getElementById("dino");
-        const cactus = document.getElementById("cactus");
-        const scoreSpan = document.getElementById("scoreSpan");
-        const finalScoreSpan = document.getElementById("finalScore");
-        const gameOverMsg = document.getElementById("gameOverMsg");
-        let score = 0;
-        let isDead = false;
+    <canvas id="gameCanvas" width="600" height="200"></canvas>
+    
+    <p class="instructions">Premi <strong>SPAZIO</strong>, <strong>FRECCIA SU</strong> o <strong>CLICCA</strong> per saltare.</p>
+    
+    <a href="index.html" class="btn-back">⬅ Torna alla lista giochi</a>
+</div>
 
-        // Funzione per far saltare il dinosauro
-        function jump() {
-            if (isDead) return; // Se sei morto non puoi saltare
-            if (dino.classList != "animate-jump") {
-                dino.classList.add("animate-jump");
-                setTimeout(function() {
-                    dino.classList.remove("animate-jump");
-                }, 500); // Durata del salto uguale all'animazione CSS
+<script>
+    // --- SETUP ---
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreText = document.getElementById("scoreText");
+    const highScoreText = document.getElementById("highScoreText");
+
+    // Variabili di gioco
+    let score = 0;
+    let highScore = localStorage.getItem('trexHighScore') || 0; // Carica il record salvato
+    let gameSpeed = 5;
+    let isGameOver = false;
+    let animationId;
+    let frames = 0;
+
+    highScoreText.innerText = "Record: " + highScore;
+
+    // --- OGGETTI DEL GIOCO ---
+
+    // 1. Il Dinosauro
+    const dino = {
+        x: 50,
+        y: 150,
+        width: 40, // Larghezza hitbox
+        height: 40, // Altezza hitbox
+        dy: 0,
+        jumpPower: -11,
+        gravity: 0.6,
+        grounded: true,
+        emoji: "🦖",
+        draw: function() {
+            ctx.font = "40px Arial"; 
+            // Disegniamo l'emoji leggermente spostata per centrarla nella hitbox
+            ctx.fillText(this.emoji, this.x - 5, this.y + 35);
+            
+            // Debug: decommenta la riga sotto per vedere il quadrato della collisione
+            // ctx.strokeRect(this.x, this.y, this.width, this.height);
+        },
+        jump: function() {
+            if (this.grounded) {
+                this.dy = this.jumpPower;
+                this.grounded = false;
+            }
+        },
+        update: function() {
+            // Fisica salto
+            if (!this.grounded) {
+                this.dy += this.gravity;
+                this.y += this.dy;
+            }
+            // Atterraggio
+            if (this.y > 150) {
+                this.y = 150;
+                this.dy = 0;
+                this.grounded = true;
+            }
+            this.draw();
+        }
+    };
+
+    // 2. Ostacoli (Cactus)
+    const obstacles = {
+        list: [],
+        spawnTimer: 0,
+        draw: function() {
+            this.list.forEach(obs => {
+                ctx.font = "40px Arial";
+                ctx.fillText("🌵", obs.x, obs.y + 35);
+                // ctx.strokeRect(obs.x + 10, obs.y + 5, obs.width - 20, obs.height - 10); // Hitbox precisa
+            });
+        },
+        update: function() {
+            // Spawna un cactus ogni tot frame (casuale)
+            this.spawnTimer--;
+            if (this.spawnTimer <= 0) {
+                this.list.push({
+                    x: canvas.width,
+                    y: 150,
+                    width: 40,
+                    height: 40
+                });
+                // Il prossimo cactus arriverà tra 60 e 100 frame
+                this.spawnTimer = 60 + Math.random() * 60;
+            }
+
+            // Muovi e rimuovi cactus
+            for (let i = 0; i < this.list.length; i++) {
+                let obs = this.list[i];
+                obs.x -= gameSpeed;
+
+                // Se esce dallo schermo, rimuovilo
+                if (obs.x + obs.width < 0) {
+                    this.list.splice(i, 1);
+                    i--;
+                }
+
+                // CONTROLLO COLLISIONE
+                // Riduciamo leggermente la hitbox per essere "gentili" col giocatore
+                if (
+                    dino.x < obs.x + obs.width - 15 &&
+                    dino.x + dino.width - 10 > obs.x + 10 &&
+                    dino.y < obs.y + obs.height &&
+                    dino.y + dino.height > obs.y + 10
+                ) {
+                    gameOver();
+                }
+            }
+            this.draw();
+        }
+    };
+
+    // 3. Sfondo (Nuvole)
+    const clouds = {
+        list: [],
+        spawnTimer: 0,
+        update: function() {
+            this.spawnTimer--;
+            if (this.spawnTimer <= 0) {
+                this.list.push({
+                    x: canvas.width,
+                    y: Math.random() * 80 + 20, // Altezza casuale cielo
+                    speed: gameSpeed * 0.3 // Si muovono più lente (effetto profondità)
+                });
+                this.spawnTimer = 100 + Math.random() * 100;
+            }
+
+            this.list.forEach((cloud, index) => {
+                cloud.x -= cloud.speed;
+                ctx.font = "30px Arial";
+                ctx.fillText("☁️", cloud.x, cloud.y);
+                if (cloud.x < -50) this.list.splice(index, 1);
+            });
+        }
+    };
+
+    // --- LOGICA PRINCIPALE ---
+
+    function start() {
+        if (isGameOver) reset();
+        requestAnimationFrame(update);
+    }
+
+    function reset() {
+        isGameOver = false;
+        score = 0;
+        gameSpeed = 5;
+        obstacles.list = [];
+        clouds.list = [];
+        dino.y = 150;
+        dino.dy = 0;
+        scoreText.innerText = "Punti: 0";
+    }
+
+    function gameOver() {
+        isGameOver = true;
+        // Disegna scritta Game Over
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.font = "bold 40px Segoe UI";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+        ctx.font = "20px Segoe UI";
+        ctx.fillText("Premi Spazio per riprovare", canvas.width / 2, canvas.height / 2 + 40);
+        ctx.textAlign = "left"; // Ripristina allineamento
+
+        // Aggiorna Record
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('trexHighScore', highScore);
+            highScoreText.innerText = "Record: " + highScore + " (Nuovo!)";
+        }
+    }
+
+    function update() {
+        if (isGameOver) return;
+
+        requestAnimationFrame(update);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        frames++;
+
+        // Aumenta punteggio e velocità
+        if (frames % 10 === 0) {
+            score++;
+            scoreText.innerText = "Punti: " + score;
+            
+            // Ogni 500 punti aumenta la velocità
+            if (score % 500 === 0) {
+                gameSpeed += 0.5;
             }
         }
 
-        // Ascolta il tasto SPAZIO o il CLICK del mouse
-        document.body.onkeyup = function(e){
-            if(e.keyCode == 32 || e.code == "Space"){
-                jump();
-            }
+        // Aggiorna oggetti
+        clouds.update();
+        dino.update();
+        obstacles.update();
+    }
+
+    // --- CONTROLLI ---
+    function handleInput(e) {
+        if ((e.code === "Space" || e.code === "ArrowUp") && !isGameOver) {
+            dino.jump();
+        } else if ((e.code === "Space" || e.code === "ArrowUp") && isGameOver) {
+            start(); // Riavvia se game over
         }
-        document.body.onclick = jump; // Funziona anche su cellulare col tocco
+    }
 
-        // Loop principale del gioco (controlla collisioni ogni 10 millisecondi)
-        let checkDead = setInterval(function() {
-            if (isDead) return;
+    window.addEventListener("keydown", handleInput);
+    canvas.addEventListener("touchstart", function(e) {
+        e.preventDefault(); // Evita scroll su mobile
+        if (!isGameOver) dino.jump();
+        else start();
+    });
+    canvas.addEventListener("mousedown", function() {
+        if (!isGameOver) dino.jump();
+        else start();
+    });
 
-            // Prende la posizione attuale del Dino e del Cactus
-            let dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom")); // quanto è alto da terra
-            let cactusLeft = parseInt(window.getComputedStyle(cactus).getPropertyValue("left")); // dov'è il cactus
+    // Avvia il loop
+    start();
 
-            // LOGICA DI COLLISIONE
-            // Se il cactus è vicino a sinistra (tra 0 e 50px) E il dino non è saltato abbastanza (meno di 50px da terra)
-            if (cactusLeft < 50 && cactusLeft > 0 && dinoTop < 50) {
-                // Hai perso
-                isDead = true;
-                cactus.style.animation = "none";
-                cactus.style.display = "none";
-                
-                finalScoreSpan.innerText = Math.floor(score / 100);
-                gameOverMsg.style.display = "block"; // Mostra il menu Game Over
-                
-                clearInterval(scoreInterval); // Ferma il punteggio
-            }
-        }, 10);
+</script>
 
-        // Aumenta il punteggio
-        let scoreInterval = setInterval(() => {
-            if (!isDead) {
-                score++;
-                scoreSpan.innerText = Math.floor(score / 100);
-            }
-        }, 10);
-
-    </script>
 </body>
 </html>
