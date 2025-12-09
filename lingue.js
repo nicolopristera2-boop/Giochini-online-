@@ -40,6 +40,18 @@ const texts = {
         startMsg: "Premi SPAZIO o Clicca per Iniziare",
         restartMsg: "Clicca per Rigiocare",
         level: "Livello: "
+        // --- INTERAZIONI AVVENTURA ---
+        roomName: "Salotto",
+        roomKitchen: "Cucina",
+        lockedDoor: "È chiusa a chiave. Serve un meccanismo.",
+        openDoor: "La porta è aperta!",
+        bookshelfHint: "Mmh, questo libro sembra fuori posto... Click!",
+        foundSwitch: "Hai sbloccato la porta!",
+        sofaDesc: "Un divano molto comodo. Niente qui.",
+        tableDesc: "Solo briciole sul tavolo.",
+        interactParams: "Premi SPAZIO per interagire",
+        chestLocked: "Un forziere chiuso da un lucchetto digitale.",
+        chestOpen: "Il forziere è aperto! (Fine Demo)"
     },
     en: {
         // --- MAIN SITE ---
@@ -81,6 +93,17 @@ const texts = {
         startMsg: "Press SPACE or Click to Start",
         restartMsg: "Click to Play Again",
         level: "Level: "
+        roomName: "Living Room",
+        roomKitchen: "Kitchen",
+        lockedDoor: "It's locked. Needs a mechanism.",
+        openDoor: "The door is open!",
+        bookshelfHint: "Hmm, this book looks odd... Click!",
+        foundSwitch: "You unlocked the door!",
+        sofaDesc: "A very comfy sofa. Nothing here.",
+        tableDesc: "Just crumbs on the table.",
+        interactParams: "Press SPACE to interact",
+        chestLocked: "A chest locked by a digital pad.",
+        chestOpen: "The chest is open! (End of Demo)"
     },
     sk: {
         // --- HLAVNÁ STRÁNKA ---
@@ -122,6 +145,17 @@ const texts = {
         startMsg: "Stlač MEDZERNÍK alebo Klikni pre Štart",
         restartMsg: "Klikni pre novú hru",
         level: "Úroveň: "
+        roomName: "Obývačka",
+        roomKitchen: "Kuchyňa",
+        lockedDoor: "Je zamknuté. Potrebuješ mechanizmus.",
+        openDoor: "Dvere sú otvorené!",
+        bookshelfHint: "Hmm, táto kniha vyzerá zvláštne... Klik!",
+        foundSwitch: "Odomkol si dvere!",
+        sofaDesc: "Veľmi pohodlná pohovka. Nič tu nie je.",
+        tableDesc: "Iba omrvinky na stole.",
+        interactParams: "Stlač MEDZERNÍK pre interakciu",
+        chestLocked: "Truhlica zamknutá digitálnym zámkom.",
+        chestOpen: "Truhlica je otvorená! (Koniec Demo)"
     }
 };
 
