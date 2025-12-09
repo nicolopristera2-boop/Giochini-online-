@@ -1,6 +1,32 @@
-// --- CONFIGURAZIONE LINGUE ---
 const texts = {
     it: {
+        // --- NUOVI TESTI AVVENTURA ---
+        chooseChar: "Scegli il tuo Personaggio",
+        enterName: "Inserisci il tuo Nome",
+        startAdv: "Inizia l'Avventura",
+        roomName: "Salotto",
+        placeholderName: "Il tuo nome...",
+        welcome: "Benvenuto,"
+    },
+    en: {
+        // --- NEW ADVENTURE TEXTS ---
+        chooseChar: "Choose your Character",
+        enterName: "Enter your Name",
+        startAdv: "Start Adventure",
+        roomName: "Living Room",
+        placeholderName: "Your name...",
+        welcome: "Welcome,"
+    },
+    sk: {
+        // --- NOVÉ TEXTY ADVENTÚRY ---
+        chooseChar: "Vyber si postavu",
+        enterName: "Zadaj svoje meno",
+        startAdv: "Začať dobrodružstvo",
+        roomName: "Obývačka",
+        placeholderName: "Tvoje meno...",
+        welcome: "Vitaj,"
+    },
+        it: {
         // Sito Principale
         mainTitle: "🕹️ Sala Giochi Online",
         subTitle: "La tua collezione di giochi browser-based",
