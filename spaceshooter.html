@@ -205,7 +205,7 @@
     }
 
     function checkCollision(rect1, rect2) {
-        let padding = 8; // Hitbox leggermente più piccola per essere onesti
+        let padding = 2; // Hitbox leggermente più piccola per essere onesti
         return (
             rect1.x + padding < rect2.x + rect2.width - padding &&
             rect1.x + rect1.width - padding > rect2.x + padding &&
