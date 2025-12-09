@@ -1,141 +1,171 @@
+// --- CONFIGURAZIONE LINGUE E TESTI ---
 const texts = {
     it: {
-        // --- NUOVI TESTI AVVENTURA ---
+        // --- SITO PRINCIPALE ---
+        mainTitle: "🕹️ Sala Giochi Online",
+        subTitle: "La tua collezione di giochi browser-based",
+        sectionSingle: "Giochi Single Player",
+        
+        // Card Testi (Devono corrispondere ai data-i18n nell'index.html)
+        game1Title: "T-Rex Run",
+        game1Desc: "Il classico gioco del dinosauro. Salta gli ostacoli!",
+        game2Title: "Space Shooter",
+        game2Desc: "Difendi la galassia dall'invasione aliena.",
+        game3Title: "Memory",
+        game3Desc: "Metti alla prova la tua memoria trovando le coppie.",
+        game4Title: "Avventura Grafica",
+        game4Desc: "Un mistero da risolvere.",
+        
+        // Bottoni Sito
+        playBtn: "🎮 Gioca Ora",
+        comingSoon: "🚧 In Arrivo",
+        backHome: "🏠 Torna alla Home",
+        footerText: "&copy; 2025 Sala Giochi Online. Buon divertimento!",
+
+        // --- AVVENTURA GRAFICA (Nuovi) ---
         chooseChar: "Scegli il tuo Personaggio",
         enterName: "Inserisci il tuo Nome",
         startAdv: "Inizia l'Avventura",
         roomName: "Salotto",
         placeholderName: "Il tuo nome...",
-        welcome: "Benvenuto,"
+        welcome: "Benvenuto,",
+
+        // --- TESTI DEI GIOCHI (In-Game) ---
+        score: "Punti: ",
+        lives: "Vite: ",
+        moves: "Mosse: ",
+        time: "Tempo: ",
+        gameOver: "GAME OVER",
+        youWin: "HAI VINTO!",
+        startMsg: "Premi SPAZIO o Clicca per Iniziare",
+        restartMsg: "Clicca per Rigiocare",
+        level: "Livello: "
     },
     en: {
-        // --- NEW ADVENTURE TEXTS ---
+        // --- MAIN SITE ---
+        mainTitle: "🕹️ Online Arcade",
+        subTitle: "Your collection of browser-based games",
+        sectionSingle: "Single Player Games",
+        
+        // Card Texts
+        game1Title: "T-Rex Run",
+        game1Desc: "The classic dinosaur game. Jump obstacles!",
+        game2Title: "Space Shooter",
+        game2Desc: "Defend the galaxy from alien invasion.",
+        game3Title: "Memory",
+        game3Desc: "Test your memory by finding matching pairs.",
+        game4Title: "Graphic Adventure",
+        game4Desc: "A mystery to solve.",
+        
+        // Buttons
+        playBtn: "🎮 Play Now",
+        comingSoon: "🚧 Coming Soon",
+        backHome: "🏠 Back to Home",
+        footerText: "&copy; 2025 Online Arcade. Have fun!",
+
+        // --- GRAPHIC ADVENTURE ---
         chooseChar: "Choose your Character",
         enterName: "Enter your Name",
         startAdv: "Start Adventure",
         roomName: "Living Room",
         placeholderName: "Your name...",
-        welcome: "Welcome,"
+        welcome: "Welcome,",
+
+        // --- IN-GAME TEXTS ---
+        score: "Score: ",
+        lives: "Lives: ",
+        moves: "Moves: ",
+        time: "Time: ",
+        gameOver: "GAME OVER",
+        youWin: "YOU WIN!",
+        startMsg: "Press SPACE or Click to Start",
+        restartMsg: "Click to Play Again",
+        level: "Level: "
     },
     sk: {
-        // --- NOVÉ TEXTY ADVENTÚRY ---
+        // --- HLAVNÁ STRÁNKA ---
+        mainTitle: "🕹️ Online Arkáda",
+        subTitle: "Tvoja zbierka prehliadačových hier",
+        sectionSingle: "Hry pre jedného hráča",
+        
+        // Texty Kariet
+        game1Title: "T-Rex Run",
+        game1Desc: "Klasická hra s dinosaurom. Preskakuj prekážky!",
+        game2Title: "Space Shooter",
+        game2Desc: "Obráň galaxiu pred mimozemskou inváziou.",
+        game3Title: "Pexeso",
+        game3Desc: "Otestuj svoju pamäť nájdením všetkých párov.",
+        game4Title: "Grafická Adventúra",
+        game4Desc: "Záhada na vyriešenie.",
+        
+        // Tlačidlá
+        playBtn: "🎮 Hrať teraz",
+        comingSoon: "🚧 Čoskoro",
+        backHome: "🏠 Späť domov",
+        footerText: "&copy; 2025 Online Arkáda. Príjemnú zábavu!",
+
+        // --- GRAFICKÁ ADVENTÚRA ---
         chooseChar: "Vyber si postavu",
         enterName: "Zadaj svoje meno",
         startAdv: "Začať dobrodružstvo",
         roomName: "Obývačka",
         placeholderName: "Tvoje meno...",
-        welcome: "Vitaj,"
-    },
-        it: {
-        // Sito Principale
-        mainTitle: "🕹️ Sala Giochi Online",
-        subTitle: "La tua collezione di giochi browser-based",
-        sectionSingle: "Giochi Single Player",
-        playBtn: "🎮 Gioca Ora",
-        comingSoon: "🚧 In Arrivo",
-        footerText: "&copy; 2025 Sala Giochi Online. Buon divertimento!",
-        
-        // Descrizioni Card
-        trexTitle: "T-Rex Run",
-        trexDesc: "Il classico gioco del dinosauro. Salta gli ostacoli!",
-        spaceTitle: "Space Shooter",
-        spaceDesc: "Difendi la galassia dall'invasione aliena.",
-        memoryTitle: "Memory",
-        memoryDesc: "Trova tutte le coppie.",
-        advTitle: "Avventura Grafica",
-        advDesc: "Un mistero da risolvere (Work in Progress).",
+        welcome: "Vitaj,",
 
-        // --- TESTI INTERNI AI GIOCHI (USATI NEL CODICE JS DEI GIOCHI) ---
-        score: "Punteggio: ",
-        gameOver: "GAME OVER",
-        restart: "Premi per ricominciare",
-        level: "Livello: ",
-        start: "Clicca per Iniziare"
-    },
-    en: {
-        // Main Site
-        mainTitle: "🕹️ Online Arcade",
-        subTitle: "Your collection of browser-based games",
-        sectionSingle: "Single Player Games",
-        playBtn: "🎮 Play Now",
-        comingSoon: "🚧 Coming Soon",
-        footerText: "&copy; 2025 Online Arcade. Have fun!",
-        
-        // Cards
-        trexTitle: "T-Rex Run",
-        trexDesc: "The classic dinosaur game. Jump obstacles!",
-        spaceTitle: "Space Shooter",
-        spaceDesc: "Defend the galaxy from aliens.",
-        memoryTitle: "Memory",
-        memoryDesc: "Find all matching pairs.",
-        advTitle: "Graphic Adventure",
-        advDesc: "A mystery to solve (Work in Progress).",
-
-        // --- IN-GAME TEXTS ---
-        score: "Score: ",
-        gameOver: "GAME OVER",
-        restart: "Press to restart",
-        level: "Level: ",
-        start: "Click to Start"
-    },
-    sk: {
-        // Main Site
-        mainTitle: "🕹️ Online Arkáda",
-        subTitle: "Tvoja zbierka prehliadačových hier",
-        sectionSingle: "Hry pre jedného hráča",
-        playBtn: "🎮 Hrať teraz",
-        comingSoon: "🚧 Čoskoro",
-        footerText: "&copy; 2025 Online Arkáda. Príjemnú zábavu!",
-        
-        // Cards
-        trexTitle: "T-Rex Run",
-        trexDesc: "Klasická hra s dinosaurom. Preskakuj prekážky!",
-        spaceTitle: "Space Shooter",
-        spaceDesc: "Obráň galaxiu pred votrelcami.",
-        memoryTitle: "Pexeso",
-        memoryDesc: "Nájdi všetky páry.",
-        advTitle: "Grafická Adventúra",
-        advDesc: "Záhada na vyriešenie (Work in Progress).",
-
-        // --- IN-GAME TEXTS ---
+        // --- TEXTY V HRE ---
         score: "Skóre: ",
+        lives: "Životy: ",
+        moves: "Ťahy: ",
+        time: "Čas: ",
         gameOver: "KONIEC HRY",
-        restart: "Stlač pre reštart",
-        level: "Úroveň: ",
-        start: "Klikni pre štart"
+        youWin: "VYHRAL SI!",
+        startMsg: "Stlač MEDZERNÍK alebo Klikni pre Štart",
+        restartMsg: "Klikni pre novú hru",
+        level: "Úroveň: "
     }
 };
 
 // --- LOGICA DI GESTIONE ---
-// 1. Controlla se c'è una lingua salvata, altrimenti usa Italiano
 let currentLang = localStorage.getItem('selectedLang') || 'it';
 
-// Funzione per aggiornare la pagina HTML
+// Funzione helper per ottenere il testo (usata nei canvas)
+function t(key) {
+    return texts[currentLang][key] || key;
+}
+
+// Funzione per aggiornare l'HTML (usata nel DOM)
 function updatePageLanguage() {
-    const elements = document.querySelectorAll('[data-i18n]');
-    elements.forEach(element => {
+    // Aggiorna testi HTML
+    document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
         if (texts[currentLang][key]) {
             element.innerHTML = texts[currentLang][key];
         }
     });
+    
+    // Aggiorna i placeholder degli input (caso speciale per l'avventura)
+    const inputs = document.querySelectorAll('input[placeholder]');
+    inputs.forEach(input => {
+        // Se siamo nella pagina avventura e c'è l'input nome
+        if (input.id === 'playerNameInput') {
+             input.placeholder = t('placeholderName');
+        }
+    });
+
+    // Aggiorna attributo lang
+    document.documentElement.lang = currentLang;
 }
 
-// Funzione per cambiare lingua (chiamata dai bottoni)
+// Funzione cambio lingua (bottone)
 function setLanguage(lang) {
     currentLang = lang;
-    localStorage.setItem('selectedLang', lang); // Salva la scelta nella memoria del browser
+    localStorage.setItem('selectedLang', lang);
     updatePageLanguage();
-    // Se siamo in un gioco, potrebbe servire ricaricare per aggiornare il canvas
-    if(window.isGamePage) {
+    // Se siamo in un gioco Canvas, ricarichiamo la pagina per ridisegnare i testi
+    if (window.isGamePage) {
         location.reload(); 
     }
 }
 
-// Funzione helper per ottenere testo dentro il codice JS dei giochi
-function t(key) {
-    return texts[currentLang][key] || key;
-}
-
-// Avvia la traduzione al caricamento
+// Avvio automatico al caricamento
 document.addEventListener('DOMContentLoaded', updatePageLanguage);
