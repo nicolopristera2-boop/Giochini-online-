@@ -2,15 +2,17 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Avventura Grafica</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
     
     <style>
+        /* --- STILE GENERALE DESKTOP --- */
         body { 
             font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #222; color: #fff; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; overflow: hidden; user-select: none;
+            touch-action: none; /* Previene lo zoom su mobile */
         }
 
         .game-container {
@@ -19,6 +21,7 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.8); overflow: hidden;
         }
 
+        /* Schermate UI (Menu, Nome, ecc) */
         .ui-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #f4f4f4; color: #333;
@@ -41,40 +44,159 @@
             font-size: 1.2rem; text-align: center; display: none; z-index: 15;
         }
 
-        canvas { display: block; }
+        canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
         .back-btn { position: absolute; top: 15px; left: 15px; text-decoration: none; color: #333; background: white; padding: 8px 15px; border-radius: 20px; z-index: 30; font-weight: bold; }
         .hint { position: absolute; bottom: 5px; right: 10px; color: rgba(255,255,255,0.5); font-size: 0.8rem; z-index: 5; }
+
+        /* --- CONTROLLI MOBILE (Nascosti su Desktop) --- */
+        #mobileControls { display: none; }
+
+        /* --- MEDIA QUERY: TRANSFORMAZIONE GAME BOY (Solo Mobile) --- */
+        @media (max-width: 850px) {
+            body {
+                background-color: #c0c0c0; /* Grigio Gameboy */
+                justify-content: flex-start;
+            }
+
+            .game-container {
+                width: 100%;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+                display: flex;
+                flex-direction: column;
+                background-color: #c0c0c0; /* Corpo Gameboy */
+                box-shadow: none;
+            }
+
+            /* Schermo di gioco stile Gameboy */
+            .screen-wrapper {
+                background-color: #777; /* Bordo grigio scuro attorno allo schermo */
+                padding: 20px 20px 5px 20px;
+                border-radius: 10px 10px 40px 10px;
+                margin: 20px;
+                box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+                flex: 1; /* Occupa lo spazio superiore */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: relative;
+            }
+
+            canvas {
+                background-color: #9bbc0f; /* Verde tipico retro */
+                border: 2px solid #555;
+                box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+                max-height: 100%;
+                width: auto;
+                aspect-ratio: 4/3;
+            }
+
+            /* Nascondi hint tastiera su mobile */
+            .hint { display: none; }
+            #dialogBox { font-size: 1rem; width: 90%; bottom: 50%; transform: translate(-50%, 50%); }
+
+            /* --- AREA CONTROLLI --- */
+            #mobileControls {
+                display: flex;
+                height: 250px; /* Area inferiore per i tasti */
+                position: relative;
+                justify-content: space-between;
+                padding: 0 40px;
+                align-items: center;
+            }
+
+            /* D-PAD (Croce direzionale) */
+            .d-pad {
+                position: relative;
+                width: 120px; height: 120px;
+            }
+            .d-btn {
+                position: absolute; background: #333; border: none; 
+                width: 40px; height: 40px; cursor: pointer;
+                box-shadow: 0 3px 0 #111;
+            }
+            .d-btn:active { transform: translate(0, 3px); box-shadow: none; }
+            
+            #btnUp { top: 0; left: 40px; border-radius: 5px 5px 0 0; }
+            #btnDown { bottom: 0; left: 40px; border-radius: 0 0 5px 5px; }
+            #btnLeft { top: 40px; left: 0; border-radius: 5px 0 0 5px; }
+            #btnRight { top: 40px; right: 0; border-radius: 0 5px 5px 0; }
+            .d-center { position: absolute; top: 40px; left: 40px; width: 40px; height: 40px; background: #333; }
+
+            /* Tasti Azione */
+            .action-btns {
+                display: flex; gap: 20px; transform: rotate(-15deg) translateY(20px);
+            }
+            .a-btn {
+                width: 50px; height: 50px; border-radius: 50%;
+                background: #8b1d46; /* Rosso scuro Gameboy */
+                border: none; color: rgba(255,255,255,0.2);
+                font-weight: bold; font-size: 1.2rem;
+                box-shadow: 2px 3px 0 #4a0f25;
+            }
+            .a-btn:active { transform: translate(2px, 3px); box-shadow: none; }
+
+            /* Decorazione scritta */
+            .brand {
+                position: absolute; bottom: 10px; right: 20px;
+                color: #555; font-style: italic; font-weight: bold;
+                font-size: 1.2rem; letter-spacing: 2px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <a href="index.html" class="back-btn" data-i18n="backHome">🏠 Home</a>
+    
+    <div class="screen-wrapper">
+        <a href="index.html" class="back-btn" data-i18n="backHome">🏠 Home</a>
 
-    <div id="screenSelection" class="ui-screen">
-        <h2 data-i18n="chooseChar">Scegli Personaggio</h2>
-        <div class="char-grid">
-            <div class="char-option" onclick="selectChar('👦')">👦</div>
-            <div class="char-option" onclick="selectChar('👧')">👧</div>
-            <div class="char-option" onclick="selectChar('🕵️')">🕵️</div>
-            <div class="char-option" onclick="selectChar('🤖')">🤖</div>
+        <div id="screenSelection" class="ui-screen">
+            <h2 data-i18n="chooseChar">Scegli Personaggio</h2>
+            <div class="char-grid">
+                <div class="char-option" onclick="selectChar('👦')">👦</div>
+                <div class="char-option" onclick="selectChar('👧')">👧</div>
+                <div class="char-option" onclick="selectChar('🕵️')">🕵️</div>
+                <div class="char-option" onclick="selectChar('🤖')">🤖</div>
+            </div>
+        </div>
+
+        <div id="screenName" class="ui-screen hidden">
+            <h2 data-i18n="enterName">Nome</h2>
+            <input type="text" id="playerNameInput">
+            <button class="btn-start" onclick="startGame()" data-i18n="startAdv">Vai</button>
+        </div>
+
+        <div id="dialogBox"></div>
+        <div class="hint" data-i18n="interactParams">SPACE to interact</div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <div id="mobileControls">
+        <div class="d-pad">
+            <div class="d-center"></div>
+            <button id="btnUp" class="d-btn">▲</button>
+            <button id="btnLeft" class="d-btn">◀</button>
+            <button id="btnRight" class="d-btn">▶</button>
+            <button id="btnDown" class="d-btn">▼</button>
+        </div>
+        
+        <div class="brand">NINTENDO GAME BOY™</div>
+
+        <div class="action-btns">
+            <button class="a-btn" style="background:#8b1d46;">B</button>
+            <button id="btnAction" class="a-btn">A</button>
         </div>
     </div>
-
-    <div id="screenName" class="ui-screen hidden">
-        <h2 data-i18n="enterName">Nome</h2>
-        <input type="text" id="playerNameInput">
-        <button class="btn-start" onclick="startGame()" data-i18n="startAdv">Vai</button>
-    </div>
-
-    <div id="dialogBox"></div>
-    <div class="hint" data-i18n="interactParams">SPACE to interact</div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 
-<script src="lingue.js"></script>
-
+<script src="lingue.js"></script> 
 <script>
+    // Fallback se lingue.js non viene caricato per evitare crash
+    if (typeof t === 'undefined') { window.t = (k) => k; }
+
     window.isGamePage = true;
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -88,19 +210,14 @@
 
     // --- STATO GIOCO & INVENTARIO ---
     let state = {
-        livingDoorOpen: false, // Enigma 1 (Libreria -> Cucina)
-        hasGardenKey: false,   // Enigma 2 (Frigo/Chest -> Giardino)
-        hasShovel: false,      // Enigma 3 (Pala -> Scava)
-        hasLabCard: false,     // Enigma 3 (Terra -> Lab)
-        powerOn: false,        // Enigma 4 (Generatore -> Soffitta)
-        gameWon: false
+        livingDoorOpen: false, hasGardenKey: false, hasShovel: false, 
+        hasLabCard: false, powerOn: false, gameWon: false
     };
 
     // --- MAPPA STANZE ---
     const rooms = {
         living: {
-            name: "roomLiving",
-            bg: "#d7ccc8", // Parquet
+            name: "roomLiving", bg: "#d7ccc8",
             objects: [
                 { id: "shelf", x: 650, y: 50, w: 100, h: 200, type: "shelf" },
                 { id: "doorKit", x: 350, y: 0, w: 100, h: 20, type: "door", target: "kitchen", req: "livingDoorOpen" },
@@ -109,29 +226,26 @@
             ]
         },
         kitchen: {
-            name: "roomKitchen",
-            bg: "#bbdefb", // Piastrelle blu
+            name: "roomKitchen", bg: "#bbdefb",
             objects: [
                 { id: "backLiving", x: 350, y: 580, w: 100, h: 20, type: "door", target: "living" },
-                { id: "fridge", x: 50, y: 50, w: 100, h: 180, type: "fridge" }, // Contiene codice
-                { id: "chest1", x: 600, y: 300, w: 80, h: 50, type: "chest" }, // Contiene chiave giardino
+                { id: "fridge", x: 50, y: 50, w: 100, h: 180, type: "fridge" },
+                { id: "chest1", x: 600, y: 300, w: 80, h: 50, type: "chest" },
                 { id: "doorGard", x: 780, y: 250, w: 20, h: 100, type: "door", target: "garden", req: "hasGardenKey" }
             ]
         },
         garden: {
-            name: "roomGarden",
-            bg: "#a5d6a7", // Erba
+            name: "roomGarden", bg: "#a5d6a7",
             objects: [
                 { id: "backKit", x: 0, y: 250, w: 20, h: 100, type: "door", target: "kitchen" },
                 { id: "fountain", x: 350, y: 250, w: 100, h: 100, type: "fountain" },
                 { id: "shovel", x: 600, y: 100, w: 40, h: 40, type: "shovel", pickup: true },
-                { id: "dirt", x: 100, y: 400, w: 80, h: 80, type: "dirt" }, // Scavare qui
+                { id: "dirt", x: 100, y: 400, w: 80, h: 80, type: "dirt" },
                 { id: "doorLab", x: 350, y: 0, w: 100, h: 20, type: "door", target: "lab", req: "hasLabCard" }
             ]
         },
         lab: {
-            name: "roomLab",
-            bg: "#37474f", // Scuro Tech
+            name: "roomLab", bg: "#37474f",
             objects: [
                 { id: "backGard", x: 350, y: 580, w: 100, h: 20, type: "door", target: "garden" },
                 { id: "generator", x: 50, y: 100, w: 100, h: 120, type: "gen" },
@@ -140,8 +254,7 @@
             ]
         },
         attic: {
-            name: "roomAttic",
-            bg: "#5d4037", // Legno vecchio
+            name: "roomAttic", bg: "#5d4037",
             objects: [
                 { id: "backLab", x: 0, y: 250, w: 20, h: 100, type: "door", target: "lab" },
                 { id: "finalChest", x: 350, y: 200, w: 100, h: 80, type: "goldChest" }
@@ -155,8 +268,7 @@
         let hit = false;
         
         for (let obj of room.objects) {
-            if (obj.pickedUp) continue; // Salta oggetti già presi
-
+            if (obj.pickedUp) continue;
             let dist = Math.hypot((obj.x + obj.w/2) - (player.x + 20), (obj.y + obj.h/2) - (player.y + 20));
             
             if (dist < 80) {
@@ -168,63 +280,33 @@
     }
 
     function handleInteraction(obj) {
-        // --- LOGICA GENERICA PORTE ---
         if (obj.type === "door") {
-            if (!obj.req) {
-                changeRoom(obj.target); // Porta libera
-            } else {
-                // Porta con requisito
-                if (state[obj.req]) {
-                    changeRoom(obj.target);
-                } else {
-                    // Messaggio di errore specifico
-                    if (obj.req === "livingDoorOpen") showDialog("lockedDoor"); // Enigma 1
-                    else if (obj.req === "hasGardenKey") showDialog("lockedDoor"); // Enigma 2
-                    else if (obj.req === "hasLabCard") showDialog("lockedDoor"); // Enigma 3
-                    else if (obj.req === "powerOn") showDialog("lockedElec"); // Enigma 4
+            if (!obj.req) changeRoom(obj.target);
+            else {
+                if (state[obj.req]) changeRoom(obj.target);
+                else {
+                    if (obj.req === "livingDoorOpen") showDialog("lockedDoor");
+                    else if (obj.req === "hasGardenKey") showDialog("lockedDoor");
+                    else if (obj.req === "hasLabCard") showDialog("lockedDoor");
+                    else if (obj.req === "powerOn") showDialog("lockedElec");
                 }
             }
         }
-        
-        // --- LOGICA ENIGMI ---
-        else if (obj.id === "shelf") {
-            state.livingDoorOpen = true;
-            showDialog("bookshelfHint");
-        }
-        else if (obj.id === "fridge") {
-            showDialog("fridgeDesc"); // Trova codice
-        }
+        else if (obj.id === "shelf") { state.livingDoorOpen = true; showDialog("bookshelfHint"); }
+        else if (obj.id === "fridge") showDialog("fridgeDesc");
         else if (obj.id === "chest1") {
             if (state.hasGardenKey) showDialog("nothing");
-            else {
-                state.hasGardenKey = true;
-                showDialog("chestOpen");
-            }
+            else { state.hasGardenKey = true; showDialog("chestOpen"); }
         }
-        else if (obj.id === "shovel") {
-            state.hasShovel = true;
-            obj.pickedUp = true; // Rimuovi pala dalla mappa
-            showDialog("shovelPick");
-        }
+        else if (obj.id === "shovel") { state.hasShovel = true; obj.pickedUp = true; showDialog("shovelPick"); }
         else if (obj.id === "dirt") {
             if (state.hasShovel) {
-                if (!state.hasLabCard) {
-                    state.hasLabCard = true;
-                    showDialog("dirtDig");
-                } else showDialog("nothing");
-            } else {
-                showDialog("dirtDesc"); // Serve pala
-            }
+                if (!state.hasLabCard) { state.hasLabCard = true; showDialog("dirtDig"); }
+                else showDialog("nothing");
+            } else showDialog("dirtDesc");
         }
-        else if (obj.id === "generator") {
-            state.powerOn = true;
-            showDialog("generatorOn");
-        }
-        else if (obj.id === "finalChest") {
-            showDialog("finalChest");
-            state.gameWon = true;
-        }
-        // Flavor Text
+        else if (obj.id === "generator") { state.powerOn = true; showDialog("generatorOn"); }
+        else if (obj.id === "finalChest") { showDialog("finalChest"); state.gameWon = true; }
         else if (obj.type === "fountain") showDialog("fountainDesc");
         else if (obj.type === "pc") showDialog(state.powerOn ? "pcDesc" : "nothing");
         else showDialog("nothing");
@@ -232,7 +314,6 @@
 
     function changeRoom(target) {
         currentRoom = target;
-        // Riposizionamento strategico (evita di spawnare nel muro)
         if (player.x < 50) player.x = 700;
         else if (player.x > 750) player.x = 100;
         else if (player.y < 50) player.y = 500;
@@ -244,43 +325,33 @@
         ctx.clearRect(0,0,800,600);
         const room = rooms[currentRoom];
 
-        // 1. Sfondo
-        ctx.fillStyle = room.bg;
-        ctx.fillRect(0,0,800,600);
+        // Sfondo
+        ctx.fillStyle = room.bg; ctx.fillRect(0,0,800,600);
         
-        // Effetto Parquet/Piastrelle/Erba
+        // Pattern Pavimento
         ctx.strokeStyle = "rgba(0,0,0,0.1)"; ctx.lineWidth = 2; ctx.beginPath();
-        if (room.bg === "#d7ccc8") { // Parquet
-             for(let i=0; i<600; i+=30) { ctx.moveTo(0,i); ctx.lineTo(800,i); }
-        } else if (room.bg === "#bbdefb" || room.bg === "#37474f") { // Griglia
+        if (room.bg === "#d7ccc8") { for(let i=0; i<600; i+=30) { ctx.moveTo(0,i); ctx.lineTo(800,i); } }
+        else if (room.bg === "#bbdefb" || room.bg === "#37474f") {
              for(let x=0; x<800; x+=60) { ctx.moveTo(x,0); ctx.lineTo(x,600); }
              for(let y=0; y<600; y+=60) { ctx.moveTo(0,y); ctx.lineTo(800,y); }
-        } else if (room.bg === "#a5d6a7") { // Erba
-             for(let i=0; i<100; i++) { 
-                 let rx = Math.random()*800; let ry = Math.random()*600; 
-                 ctx.fillStyle="#81c784"; ctx.fillRect(rx,ry,4,4); // Ciuffi d'erba
-             }
+        } else if (room.bg === "#a5d6a7") {
+             for(let i=0; i<100; i++) { ctx.fillStyle="#81c784"; ctx.fillRect(Math.random()*800,Math.random()*600,4,4); }
         }
         ctx.stroke();
 
-        // 2. Oggetti
-        room.objects.forEach(obj => {
-            if (obj.pickedUp) return;
-            drawObject(obj);
-        });
+        // Oggetti
+        room.objects.forEach(obj => { if (!obj.pickedUp) drawObject(obj); });
 
-        // 3. Player
+        // Player
         drawPlayer();
         
-        // UI Stanza
+        // UI
         ctx.fillStyle = "#fff"; ctx.font = "bold 20px Arial"; 
         ctx.fillText(t(room.name), 20, 30);
     }
 
     function drawObject(obj) {
         ctx.save();
-        
-        // Colori e forme in base al tipo
         if (obj.type === "door") {
             let isOpen = !obj.req || state[obj.req];
             ctx.fillStyle = isOpen ? "#66bb6a" : "#ef5350";
@@ -288,21 +359,19 @@
         } 
         else if (obj.type === "shelf") {
             ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#d7ccc8"; ctx.fillRect(obj.x+10, obj.y+20, 80, 5); // Ripiani
-            ctx.fillRect(obj.x+10, obj.y+60, 80, 5);
+            ctx.fillStyle = "#d7ccc8"; ctx.fillRect(obj.x+10, obj.y+20, 80, 5); ctx.fillRect(obj.x+10, obj.y+60, 80, 5);
         }
         else if (obj.type === "fridge") {
-            ctx.fillStyle = "#eceff1"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); // Bianco
-            ctx.fillStyle = "#cfd8dc"; ctx.fillRect(obj.x, obj.y+50, obj.w, 2); // Divisione freezer
-            ctx.fillStyle = "yellow";  ctx.fillRect(obj.x+60, obj.y+80, 15, 15); // Post-it
+            ctx.fillStyle = "#eceff1"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#cfd8dc"; ctx.fillRect(obj.x, obj.y+50, obj.w, 2);
+            ctx.fillStyle = "yellow";  ctx.fillRect(obj.x+60, obj.y+80, 15, 15);
         }
         else if (obj.type === "fountain") {
             ctx.fillStyle = "#90caf9"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+50, 40, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = "#e3f2fd"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+50, 30, 0, Math.PI*2); ctx.fill();
         }
         else if (obj.type === "gen") {
-            ctx.fillStyle = state.powerOn ? "#ffeb3b" : "#455a64"; // Acceso/Spento
-            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = state.powerOn ? "#ffeb3b" : "#455a64"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             ctx.fillStyle = "black"; ctx.fillText("⚡", obj.x+30, obj.y+60);
         }
         else if (obj.type === "goldChest") {
@@ -310,39 +379,51 @@
             ctx.strokeStyle = "#ff6f00"; ctx.lineWidth=3; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
         }
         else if (obj.type === "shovel") {
-            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x+15, obj.y, 10, 30); // Manico
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x+15, obj.y, 10, 30);
             ctx.fillStyle = "#b0bec5"; ctx.beginPath(); ctx.moveTo(obj.x, obj.y+30); ctx.lineTo(obj.x+40, obj.y+30); ctx.lineTo(obj.x+20, obj.y+50); ctx.fill();
         }
         else if (obj.type === "dirt") {
             ctx.fillStyle = "#5d4037"; ctx.beginPath(); ctx.ellipse(obj.x+40, obj.y+40, 30, 15, 0, 0, Math.PI*2); ctx.fill();
-            if (state.hasLabCard) { ctx.fillStyle="#000"; ctx.fillRect(obj.x+30, obj.y+30, 20,10); } // Buco
+            if (state.hasLabCard) { ctx.fillStyle="#000"; ctx.fillRect(obj.x+30, obj.y+30, 20,10); }
         }
-        else {
-            // Default (Tavolo, Divano, Chest)
-            ctx.fillStyle = obj.color || "#888";
-            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-        }
-
+        else { ctx.fillStyle = obj.color || "#888"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); }
         ctx.restore();
     }
 
     function drawPlayer() {
-        ctx.font = "50px Arial"; ctx.textAlign = "center";
-        ctx.save();
+        ctx.font = "50px Arial"; ctx.textAlign = "center"; ctx.save();
         if (player.facing === -1) { ctx.scale(-1, 1); ctx.fillText(player.sprite, -player.x-20, player.y+40); }
         else ctx.fillText(player.sprite, player.x+20, player.y+40);
         ctx.restore();
-        
-        // Nome
-        ctx.fillStyle = "rgba(255,255,255,0.8)";
-        ctx.fillRect(player.x - 20, player.y - 15, 80, 15);
+        ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.fillRect(player.x - 20, player.y - 15, 80, 15);
         ctx.fillStyle = "#333"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
         ctx.fillText(player.name, player.x + 20, player.y - 3);
     }
 
-    // --- ENGINE ---
+    // --- ENGINE & INPUT ---
     window.addEventListener('keydown', e => { keys[e.code] = true; if(e.code==='Space' && isPlaying) interact(); });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+    // --- LOGICA TOUCH (GAME BOY) ---
+    function bindTouch(id, code) {
+        const btn = document.getElementById(id);
+        if(!btn) return;
+        btn.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            keys[code] = true; 
+            if(code === 'Space' && isPlaying) interact(); 
+        });
+        btn.addEventListener('touchend', (e) => { 
+            e.preventDefault(); 
+            keys[code] = false; 
+        });
+    }
+
+    bindTouch('btnUp', 'ArrowUp');
+    bindTouch('btnDown', 'ArrowDown');
+    bindTouch('btnLeft', 'ArrowLeft');
+    bindTouch('btnRight', 'ArrowRight');
+    bindTouch('btnAction', 'Space');
 
     function update() {
         if (!isPlaying) return;
@@ -352,16 +433,11 @@
         if (keys.ArrowLeft) { nx -= player.speed; player.facing = -1; }
         if (keys.ArrowRight) { nx += player.speed; player.facing = 1; }
 
-        // Collisioni Muri Semplici
         if (nx > 0 && nx < 760) player.x = nx;
         if (ny > 0 && ny < 560) player.y = ny;
     }
 
-    function loop() {
-        update();
-        draw();
-        requestAnimationFrame(loop);
-    }
+    function loop() { update(); draw(); requestAnimationFrame(loop); }
 
     function selectChar(s) { player.sprite = s; document.getElementById('screenSelection').classList.add('hidden'); document.getElementById('screenName').classList.remove('hidden'); }
     function startGame() { player.name = document.getElementById('playerNameInput').value || "Eroe"; document.getElementById('screenName').classList.add('hidden'); isPlaying = true; loop(); }
