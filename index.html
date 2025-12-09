@@ -3,174 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/808/808439.png">  
     <title>Giochi Arcade</title>
     <style>
-        /* --- Reset e Base --- */
+        /* STILE BASE UGUALE AL PRECEDENTE */
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        /* --- Header --- */
-        header { 
-            background-color: #00979D; 
-            color: white; 
-            padding: 2rem; 
-            text-align: center; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            position: relative; 
-        }
-
-        /* --- Posizionamento Google Translate --- */
-        #google_translate_element {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-
-        /* Nascondiamo il banner "Offerto da Google" che appare in alto per pulizia */
-        .goog-te-banner-frame.skiptranslate {
-            display: none !important;
-        } 
-        body {
-            top: 0px !important; 
-        }
-        
-        /* Stile personalizzato per il dropdown di Google (opzionale, per renderlo più carino) */
-        .goog-te-gadget-simple {
-            background-color: rgba(255,255,255,0.2) !important;
-            border: 1px solid white !important;
-            padding: 5px !important;
-            border-radius: 4px !important;
-        }
-        .goog-te-gadget-simple span {
-            color: white !important;
-            font-weight: bold;
-        }
-
-        /* --- Layout Principale --- */
-        .container { 
-            max-width: 1000px; 
-            margin: 40px auto; 
-            padding: 20px; 
-            flex: 1; 
-        }
-
+        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; position: relative; }
+        .lang-switch { position: absolute; top: 20px; right: 20px; }
+        .lang-btn { background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; padding: 5px 10px; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .lang-btn:hover { background: white; color: #00979D; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 20px; flex: 1; }
         h1 { margin: 0; font-size: 2.5rem; }
-        h2 { border-bottom: 2px solid #00979D; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; color: #00979D; }
-        
-        /* --- Griglia dei Giochi --- */
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 25px;
-        }
-
-        /* --- Schede (Card) --- */
-        .project-card {
-            background-color: #fff;
-            border-radius: 12px;
-            overflow: hidden; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .project-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15); 
-        }
-
-        .card-image {
-            height: 150px;
-            background-color: #e1ecf4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #00979D;
-            font-size: 3rem;
-        }
-        
+        h2 { border-bottom: 2px solid #00979D; padding-bottom: 10px; color: #00979D; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .project-card { background-color: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.3s ease; display: flex; flex-direction: column; }
+        .project-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .card-image { height: 150px; background-color: #e1ecf4; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
         .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
         .card-content h3 { margin-top: 0; color: #222; }
         .card-content p { color: #666; line-height: 1.5; flex-grow: 1; }
-
-        /* --- Bottoni --- */
-        .btn-play {
-            display: block;
-            background-color: #00979D;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            margin-top: 15px;
-            transition: background-color 0.2s;
-        }
+        .btn-play { display: block; background-color: #00979D; color: white; padding: 12px; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px; transition: background-color 0.2s; }
         .btn-play:hover { background-color: #007a80; }
-        
-        .btn-play.disabled { background-color: #ccc; pointer-events: none; cursor: default; }
-
-        /* --- Footer --- */
-        footer {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 1.5rem;
-            margin-top: auto;
-            font-size: 0.9rem;
-        }
+        .btn-play.disabled { background-color: #ccc; pointer-events: none; }
+        footer { background-color: #333; color: #fff; text-align: center; padding: 1.5rem; margin-top: auto; }
     </style>
 </head>
 <body>
 
 <header>
-    <div id="google_translate_element"></div>
-
-    <h1>🕹️ Sala Giochi Online</h1>
-    <p>La tua collezione di giochi browser-based</p>
+    <div class="lang-switch">
+        <button class="lang-btn" onclick="setLanguage('it')">IT 🇮🇹</button>
+        <button class="lang-btn" onclick="setLanguage('en')">EN 🇬🇧</button>
+        <button class="lang-btn" onclick="setLanguage('sk')">SK sk</button>
+    </div>
+    <h1 data-i18n="mainTitle">🕹️ Sala Giochi Online</h1>
+    <p data-i18n="subTitle">La tua collezione di giochi browser-based</p>
 </header>
 
 <div class="container">
-    
     <section>
-        <h2>Giochi Single Player</h2>
-        
+        <h2 data-i18n="sectionSingle">Giochi Single Player</h2>
         <div class="games-grid">
             
             <div class="project-card">
                 <div class="card-image">🦖</div>
                 <div class="card-content">
-                    <h3>T-Rex Run</h3>
-                    <p>Il classico gioco del dinosauro. Salta gli ostacoli e raggiungi il punteggio più alto!</p>
-                    <a href="trex.html" class="btn-play">🎮 Gioca Ora</a>
+                    <h3 data-i18n="game1Title">T-Rex Run</h3>
+                    <p data-i18n="game1Desc">Il classico gioco del dinosauro.</p>
+                    <a href="trex.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🚀</div>
                 <div class="card-content">
-                    <h3>Space Shooter</h3>
-                    <p>Difendi la galassia dall'invasione aliena in questo sparatutto retro.</p>
-                    <a href="spaceshooter.html" class="btn-play">🎮 Gioca Ora</a>
+                    <h3 data-i18n="game2Title">Space Shooter</h3>
+                    <p data-i18n="game2Desc">Difendi la galassia.</p>
+                    <a href="spaceshooter.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🧠</div>
                 <div class="card-content">
-                    <h3>Memory</h3>
-                    <p>Metti alla prova la tua memoria trovando tutte le coppie.</p>
-                    <a href="memory.html" class="btn-play">🎮 Gioca Ora</a>
+                    <h3 data-i18n="game3Title">Memory</h3>
+                    <p data-i18n="game3Desc">Metti alla prova la tua memoria.</p>
+                    <a href="memory.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🕵️‍♂️</div>
                 <div class="card-content">
-                    <h3>Avventura Grafica</h3>
-                    <p>Un mistero da risolvere in questa avventura punta e clicca.</p>
-                    <a href="#" class="btn-play disabled">🚧 In Arrivo</a>
+                    <h3 data-i18n="game4Title">Avventura Grafica</h3>
+                    <p data-i18n="game4Desc">Un mistero da risolvere.</p>
+                    <a href="#" class="btn-play disabled" data-i18n="comingSoon">🚧 In Arrivo</a>
                 </div>
             </div>
 
@@ -179,20 +85,10 @@
 </div>
 
 <footer>
-    <p>&copy; 2025 Sala Giochi Online. Buon divertimento!</p>
+    <p data-i18n="footerText">&copy; 2025 Sala Giochi Online.</p>
 </footer>
 
-<script type="text/javascript">
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'it', // Lingua originale del sito
-    includedLanguages: 'it,en,sk', // Lingue consentite (Italiano, Inglese, Slovacco)
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE, // Layout semplice (menu a tendina)
-    autoDisplay: false
-  }, 'google_translate_element');
-}
-</script>
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script src="lingue.js"></script>
 
 </body>
 </html>
