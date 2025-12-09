@@ -152,55 +152,130 @@ const texts = {
         startMsg: "Stlač MEDZERNÍK alebo Klikni pre Štart",
         restartMsg: "Klikni pre novú hru",
         level: "Úroveň: "
+    },
+// --- CONFIGURAZIONE LINGUE E TESTI ---
+const texts = {
+    it: {
+        // --- SITO PRINCIPALE ---
+        mainTitle: "🕹️ Sala Giochi Online",
+        subTitle: "La tua collezione di giochi browser-based",
+        sectionSingle: "Giochi Single Player",
+        game1Title: "T-Rex Run", game1Desc: "Salta gli ostacoli!",
+        game2Title: "Space Shooter", game2Desc: "Difendi la galassia.",
+        game3Title: "Memory", game3Desc: "Trova le coppie.",
+        game4Title: "Avventura Grafica", game4Desc: "Risolvi il mistero della casa.",
+        playBtn: "🎮 Gioca Ora", comingSoon: "🚧 In Arrivo", backHome: "🏠 Home",
+        footerText: "&copy; 2025 Sala Giochi Online.",
+
+        // --- AVVENTURA GRAFICA ---
+        chooseChar: "Scegli il tuo Personaggio",
+        enterName: "Inserisci il tuo Nome",
+        startAdv: "Inizia l'Avventura",
+        placeholderName: "Il tuo nome...",
+        
+        // Nomi Stanze
+        roomLiving: "Salotto",
+        roomKitchen: "Cucina",
+        roomGarden: "Giardino",
+        roomLab: "Laboratorio Segreto",
+        roomAttic: "Soffitta",
+
+        // Dialoghi e Oggetti
+        interactParams: "Premi SPAZIO per interagire",
+        lockedDoor: "Chiusa a chiave. Serve una chiave specifica.",
+        lockedElec: "Senza corrente la porta non si apre.",
+        
+        // Enigma 1 (Salotto)
+        bookshelfHint: "Un libro strano... Click! Hai sentito un rumore.",
+        
+        // Enigma 2 (Cucina)
+        fridgeDesc: "Brr! C'è un post-it sul latte: 'Codice: 1234'.",
+        chestLocked: "Serve un codice.",
+        chestOpen: "Codice 1234 accettato! Hai trovato la CHIAVE ARRUGGINITA (Giardino).",
+        
+        // Enigma 3 (Giardino)
+        shovelPick: "Hai preso la PALA.",
+        dirtDesc: "Terra smossa... serve qualcosa per scavare.",
+        dirtDig: "Hai scavato e trovato una TESSERA MAGNETICA (Lab)!",
+        fountainDesc: "Acqua fresca. Rilassante.",
+        
+        // Enigma 4 (Lab)
+        generatorOff: "Il generatore è spento. Premi pulsante...",
+        generatorOn: "VROOOM! Corrente ripristinata!",
+        pcDesc: "Il computer ora è acceso. Dice 'Accesso Soffitta: GARANTITO'.",
+        
+        // Finale
+        finalChest: "COMPLIMENTI! Hai trovato il Tesoro degli Antichi Sviluppatori!",
+        
+        // Generici
+        itemFound: "Oggetto ottenuto!",
+        nothing: "Niente di interessante."
+    },
+    en: {
+        // ... (Traduzioni sintetiche per brevità, il focus è l'IT)
+        mainTitle: "🕹️ Online Arcade", subTitle: "Browser games collection",
+        sectionSingle: "Single Player", game1Title: "T-Rex Run", game1Desc: "Jump!",
+        game2Title: "Space Shooter", game2Desc: "Shoot aliens.",
+        game3Title: "Memory", game3Desc: "Find pairs.",
+        game4Title: "Graphic Adventure", game4Desc: "Solve the mystery.",
+        playBtn: "🎮 Play Now", comingSoon: "🚧 Soon", backHome: "🏠 Home",
+        footerText: "&copy; 2025 Online Arcade.",
+        chooseChar: "Choose Character", enterName: "Enter Name", startAdv: "Start",
+        placeholderName: "Your Name...", roomLiving: "Living Room", roomKitchen: "Kitchen",
+        roomGarden: "Garden", roomLab: "Secret Lab", roomAttic: "Attic",
+        interactParams: "Press SPACE to interact", lockedDoor: "Locked. Need a key.",
+        lockedElec: "No power. Door is stuck.", bookshelfHint: "Odd book... Click!",
+        fridgeDesc: "A note on the milk says: 'Code: 1234'.", chestLocked: "Needs a code.",
+        chestOpen: "Code 1234! Found RUSTY KEY (Garden).", shovelPick: "You got the SHOVEL.",
+        dirtDesc: "Loose dirt... need to dig.", dirtDig: "You dug up a KEYCARD (Lab)!",
+        fountainDesc: "Nice water.", generatorOff: "Generator is off. Pressing button...",
+        generatorOn: "VROOOM! Power ON!", pcDesc: "PC says: 'Attic Access: GRANTED'.",
+        finalChest: "CONGRATS! You found the Treasure!", itemFound: "Item get!", nothing: "Nothing here."
+    },
+    sk: {
+        mainTitle: "🕹️ Online Arkáda", subTitle: "Zbierka hier",
+        sectionSingle: "Hry pre jedného", game1Title: "T-Rex Run", game1Desc: "Skáč!",
+        game2Title: "Space Shooter", game2Desc: "Strieľaj.",
+        game3Title: "Pexeso", game3Desc: "Nájdi páry.",
+        game4Title: "Grafická Adventúra", game4Desc: "Vyrieš záhadu.",
+        playBtn: "🎮 Hrať", comingSoon: "🚧 Čoskoro", backHome: "🏠 Domov",
+        footerText: "&copy; 2025 Online Arkáda.",
+        chooseChar: "Vyber postavu", enterName: "Zadaj meno", startAdv: "Štart",
+        placeholderName: "Tvoje meno...", roomLiving: "Obývačka", roomKitchen: "Kuchyňa",
+        roomGarden: "Záhrada", roomLab: "Laboratórium", roomAttic: "Podkrovie",
+        interactParams: "Stlač MEDZERNÍK", lockedDoor: "Zamknuté.",
+        lockedElec: "Bez elektriny.", bookshelfHint: "Zvláštna kniha... Klik!",
+        fridgeDesc: "Lístok hovorí: 'Kód: 1234'.", chestLocked: "Chce to kód.",
+        chestOpen: "Máš HRDZAVÝ KĽÚČ (Záhrada).", shovelPick: "Máš LOPATU.",
+        dirtDesc: "Hlina... treba kopať.", dirtDig: "Vykopal si KARTU (Lab)!",
+        fountainDesc: "Pekná voda.", generatorOff: "Generátor vypnutý. Zapínam...",
+        generatorOn: "VROOOM! Elektrina ide!", pcDesc: "PC píše: 'Podkrovie: OTVORENÉ'.",
+        finalChest: "GRATULUJEM! Našiel si poklad!", itemFound: "Máš predmet!", nothing: "Nič tu nie je."
     }
 };
 
-// --- LOGICA DI GESTIONE ---
 let currentLang = localStorage.getItem('selectedLang') || 'it';
 
-// Funzione helper sicura per ottenere testo
 function t(key) {
-    if (texts[currentLang] && texts[currentLang][key]) {
-        return texts[currentLang][key];
-    }
-    return key; // Se manca la traduzione, restituisce la chiave stessa per non rompere il gioco
+    if (texts[currentLang] && texts[currentLang][key]) return texts[currentLang][key];
+    return key;
 }
 
-// Funzione principale per aggiornare la pagina
 function updatePageLanguage() {
-    // 1. Aggiorna testi HTML standard (data-i18n)
-    const elements = document.querySelectorAll('[data-i18n]');
-    elements.forEach(element => {
-        const key = element.getAttribute('data-i18n');
-        if (texts[currentLang] && texts[currentLang][key]) {
-            element.innerHTML = texts[currentLang][key];
-        }
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (texts[currentLang][key]) el.innerHTML = texts[currentLang][key];
     });
-    
-    // 2. Aggiorna placeholder (SOLO se l'elemento esiste nella pagina)
-    // Questo era probabilmente l'errore: cercava l'input anche dove non c'era
-    const inputName = document.getElementById('playerNameInput');
-    if (inputName) {
-         inputName.placeholder = t('placeholderName');
-    }
-
-    // 3. Imposta lingua al documento
+    const input = document.getElementById('playerNameInput');
+    if(input) input.placeholder = t('placeholderName');
     document.documentElement.lang = currentLang;
 }
 
-// Funzione chiamata dai bottoni
 function setLanguage(lang) {
-    console.log("Cambio lingua in:", lang); // Debug in console
     currentLang = lang;
     localStorage.setItem('selectedLang', lang);
-    
     updatePageLanguage();
-    
-    // Se siamo in un gioco con Canvas, ricarichiamo per ridisegnare
-    if (window.isGamePage) {
-        location.reload(); 
-    }
+    if (window.isGamePage) location.reload();
 }
 
-// Avvio
 document.addEventListener('DOMContentLoaded', updatePageLanguage);
