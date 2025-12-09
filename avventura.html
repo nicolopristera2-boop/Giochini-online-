@@ -31,7 +31,7 @@
         .char-option { font-size: 4rem; cursor: pointer; padding: 20px; border: 3px solid #ddd; border-radius: 15px; background: white; transition: 0.3s; }
         .char-option:hover { transform: scale(1.1); border-color: #00979D; }
 
-        input { padding: 15px; font-size: 1.2rem; border-radius: 8px; width: 300px; text-align: center; margin-bottom: 20px; }
+        input { padding: 15px; font-size: 1.2rem; border-radius: 8px; width: 300px; text-align: center; margin-bottom: 20px; border: 2px solid #ccc; }
         .btn-start { padding: 15px 40px; background-color: #00979D; color: white; border: none; border-radius: 30px; font-size: 1.2rem; cursor: pointer; }
 
         #dialogBox {
@@ -73,6 +73,7 @@
 </div>
 
 <script src="lingue.js"></script>
+
 <script>
     window.isGamePage = true;
     const canvas = document.getElementById('gameCanvas');
@@ -87,11 +88,11 @@
 
     // --- STATO GIOCO & INVENTARIO ---
     let state = {
-        livingDoorOpen: false, // Enigma 1
-        hasGardenKey: false,   // Enigma 2
-        hasShovel: false,      // Enigma 3 (parte A)
-        hasLabCard: false,     // Enigma 3 (parte B)
-        powerOn: false,        // Enigma 4
+        livingDoorOpen: false, // Enigma 1 (Libreria -> Cucina)
+        hasGardenKey: false,   // Enigma 2 (Frigo/Chest -> Giardino)
+        hasShovel: false,      // Enigma 3 (Pala -> Scava)
+        hasLabCard: false,     // Enigma 3 (Terra -> Lab)
+        powerOn: false,        // Enigma 4 (Generatore -> Soffitta)
         gameWon: false
     };
 
@@ -99,9 +100,9 @@
     const rooms = {
         living: {
             name: "roomLiving",
-            bg: "#d7ccc8",
+            bg: "#d7ccc8", // Parquet
             objects: [
-                { id: "shelf", x: 650, y: 50, w: 100, h: 200, type: "shelf", color: "#5d4037" },
+                { id: "shelf", x: 650, y: 50, w: 100, h: 200, type: "shelf" },
                 { id: "doorKit", x: 350, y: 0, w: 100, h: 20, type: "door", target: "kitchen", req: "livingDoorOpen" },
                 { id: "sofa", x: 500, y: 400, w: 180, h: 80, type: "sofa" },
                 { id: "table", x: 100, y: 150, w: 200, h: 100, type: "table" }
@@ -331,6 +332,12 @@
         if (player.facing === -1) { ctx.scale(-1, 1); ctx.fillText(player.sprite, -player.x-20, player.y+40); }
         else ctx.fillText(player.sprite, player.x+20, player.y+40);
         ctx.restore();
+        
+        // Nome
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.fillRect(player.x - 20, player.y - 15, 80, 15);
+        ctx.fillStyle = "#333"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
+        ctx.fillText(player.name, player.x + 20, player.y - 3);
     }
 
     // --- ENGINE ---
