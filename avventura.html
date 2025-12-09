@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avventura Grafica</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗺️</text></svg>">
+    
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            background-color: #2c3e50; 
+            color: #333; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- CONTENITORE PRINCIPALE --- */
+        .game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* --- SCHERMATE UI (Menu, Selezione) --- */
+        .ui-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .hidden { display: none !important; }
+
+        h2 { margin-bottom: 30px; color: #00979D; font-size: 2rem; }
+
+        /* Griglia Personaggi */
+        .char-grid { display: flex; gap: 20px; }
+        .char-option {
+            font-size: 4rem;
+            cursor: pointer;
+            padding: 20px;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            transition: 0.3s;
+        }
+        .char-option:hover { transform: scale(1.1); border-color: #00979D; background: #e0f7fa; }
+        .char-option.selected { background-color: #00979D; border-color: #00979D; }
+
+        /* Input Nome */
+        input[type="text"] {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-start {
+            padding: 15px 40px;
+            background-color: #00979D;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-start:hover { background-color: #007a80; transform: translateY(-3px); }
+
+        /* --- GIOCO (CANVAS) --- */
+        canvas { display: block; background-color: #f0e68c; /* Pavimento color sabbia/legno */ }
+
+        .back-btn {
+            position: absolute; top: 10px; left: 10px;
+            text-decoration: none; color: #555; background: rgba(255,255,255,0.8);
+            padding: 5px 10px; border-radius: 5px; z-index: 20;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <a href="index.html" class="back-btn" data-i18n="backHome">🏠 Home</a>
+
+    <div id="screenSelection" class="ui-screen">
+        <h2 data-i18n="chooseChar">Scegli il tuo Personaggio</h2>
+        <div class="char-grid">
+            <div class="char-option" onclick="selectChar('👦')">👦</div>
+            <div class="char-option" onclick="selectChar('👧')">👧</div>
+            <div class="char-option" onclick="selectChar('🕵️')">🕵️</div>
+            <div class="char-option" onclick="selectChar('🤖')">🤖</div>
+        </div>
+    </div>
+
+    <div id="screenName" class="ui-screen hidden">
+        <h2 data-i18n="enterName">Inserisci il tuo Nome</h2>
+        <input type="text" id="playerNameInput" placeholder="Il tuo nome...">
+        <button class="btn-start" onclick="startGame()" data-i18n="startAdv">Inizia</button>
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+</div>
+
+<script src="lingue.js"></script>
+
+<script>
+    window.isGamePage = true; // Attiva traduzioni
+
+    // --- VARIABILI DI STATO ---
+    let player = {
+        x: 400,
+        y: 300,
+        speed: 4,
+        sprite: "👦", // Default
+        name: "Player"
+    };
+    
+    // Oggetti nella stanza (per collisioni semplici)
+    // x, y, larghezza, altezza, colore
+    const furniture = [
+        { x: 100, y: 100, w: 200, h: 100, color: "#8d6e63", name: "Tavolo" },
+        { x: 500, y: 400, w: 150, h: 80, color: "#5d4037", name: "Divano" },
+        { x: 650, y: 50, w: 80, h: 150, color: "#4e342e", name: "Libreria" }
+    ];
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const inputField = document.getElementById('playerNameInput');
+    
+    let isPlaying = false;
+    const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+    // --- GESTIONE UI ---
+
+    function selectChar(emoji) {
+        player.sprite = emoji;
+        // Passa alla schermata nome
+        document.getElementById('screenSelection').classList.add('hidden');
+        document.getElementById('screenName').classList.remove('hidden');
+        
+        // Traduci il placeholder dell'input
+        inputField.placeholder = t('placeholderName');
+    }
+
+    function startGame() {
+        const name = inputField.value.trim();
+        if (name) {
+            player.name = name;
+        } else {
+            player.name = "Eroe"; // Nome default
+        }
+
+        // Nascondi UI e avvia loop
+        document.getElementById('screenName').classList.add('hidden');
+        isPlaying = true;
+        gameLoop();
+    }
+
+    // --- GESTIONE INPUT GIOCO ---
+    window.addEventListener('keydown', e => { if(keys.hasOwnProperty(e.key)) keys[e.key] = true; });
+    window.addEventListener('keyup', e => { if(keys.hasOwnProperty(e.key)) keys[e.key] = false; });
+
+    // --- LOGICA DI GIOCO ---
+
+    function checkCollision(newX, newY) {
+        // Hitbox del giocatore (approssimata)
+        const pRect = { x: newX, y: newY, w: 40, h: 40 };
+
+        // 1. Bordi della stanza (Muri)
+        if (newX < 0 || newX + 40 > canvas.width || newY < 0 || newY + 50 > canvas.height) {
+            return true;
+        }
+
+        // 2. Mobili
+        for (let obj of furniture) {
+            if (pRect.x < obj.x + obj.w &&
+                pRect.x + pRect.w > obj.x &&
+                pRect.y < obj.y + obj.h &&
+                pRect.y + pRect.h > obj.y) {
+                return true; // Collisione!
+            }
+        }
+        return false;
+    }
+
+    function update() {
+        if (!isPlaying) return;
+
+        let nextX = player.x;
+        let nextY = player.y;
+
+        if (keys.ArrowUp) nextY -= player.speed;
+        if (keys.ArrowDown) nextY += player.speed;
+        if (keys.ArrowLeft) nextX -= player.speed;
+        if (keys.ArrowRight) nextX += player.speed;
+
+        // Muovi solo se non c'è collisione
+        if (!checkCollision(nextX, player.y)) player.x = nextX;
+        if (!checkCollision(player.x, nextY)) player.y = nextY;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Disegna Pavimento (Semplice)
+        ctx.fillStyle = "#f0e68c"; 
+        ctx.fillRect(0,0, canvas.width, canvas.height);
+
+        // 2. Disegna Nome Stanza (stile HUD)
+        ctx.fillStyle = "rgba(0,0,0,0.1)";
+        ctx.font = "bold 60px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(t('roomName'), canvas.width/2, canvas.height/2 + 20);
+
+        // 3. Disegna Mobili
+        furniture.forEach(obj => {
+            // Ombra
+            ctx.fillStyle = "rgba(0,0,0,0.2)";
+            ctx.fillRect(obj.x + 5, obj.y + 5, obj.w, obj.h);
+            // Oggetto
+            ctx.fillStyle = obj.color;
+            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            // Bordo
+            ctx.strokeStyle = "#3e2723";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+        });
+
+        // 4. Disegna Giocatore
+        ctx.font = "50px Arial";
+        ctx.textAlign = "center";
+        // Emoji
+        ctx.fillText(player.sprite, player.x + 20, player.y + 40);
+        
+        // Nome Giocatore sopra la testa
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 14px Arial";
+        ctx.fillText(player.name, player.x + 20, player.y - 5);
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+</script>
+
+</body>
+</html>
