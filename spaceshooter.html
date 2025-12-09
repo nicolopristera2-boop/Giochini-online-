@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Space Shooter - Mobile Fix</title>
+    <title>Space Shooter - Enemy Update</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     
     <style>
@@ -17,7 +17,6 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            /* Usa dvh per adattarsi alle barre del browser mobile */
             min-height: 100vh;
             height: 100dvh; 
             touch-action: none; 
@@ -78,46 +77,44 @@
             .game-case {
                 background-color: #c0c0c0;
                 width: 100%; 
-                height: 100dvh; /* Altezza dinamica per evitare tagli */
+                height: 100dvh;
                 border-radius: 0; 
-                padding: 10px; /* Padding ridotto */
+                padding: 10px;
                 box-sizing: border-box;
-                justify-content: space-between; /* Spinge i controlli in fondo */
+                justify-content: space-between;
             }
 
             .screen-container {
                 background-color: #777; padding: 10px 10px 0 10px; border-radius: 10px 10px 40px 10px;
-                flex-grow: 1; /* Prende tutto lo spazio disponibile */
+                flex-grow: 1; 
                 margin-bottom: 10px; 
                 box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
-                min-height: 0; /* Importante per flexbox */
+                min-height: 0;
             }
 
             .screen-glass { background: #0d0d1a; border: 2px solid #444; }
 
             .mobile-controls {
                 display: flex; 
-                height: 160px; /* Ridotto altezza area controlli */
+                height: 160px;
                 justify-content: space-between; 
                 align-items: center; 
                 padding: 0 5px; 
                 position: relative;
-                flex-shrink: 0; /* Non si rimpicciolisce mai */
+                flex-shrink: 0;
             }
 
-            /* --- D-PAD RIDIMENSIONATO (90px invece di 120px) --- */
             .d-pad { width: 90px; height: 90px; position: relative; }
             .d-key { background: #333; position: absolute; border-radius: 4px; box-shadow: 2px 2px 0 #000; width: 30px; height: 30px; }
             .d-key:active, .d-key.pressed { background: #555; transform: translate(1px,1px); box-shadow: none;}
             
-            /* Posizioni ricalcolate per 30px */
             .d-up { top: 0; left: 30px; }
             .d-down { bottom: 0; left: 30px; }
             .d-left { top: 30px; left: 0; }
             .d-right { top: 30px; right: 0; }
 
             .btn-action {
-                width: 60px; height: 60px; /* Ridotto leggermente */
+                width: 60px; height: 60px;
                 background: #ff4444; border-radius: 50%;
                 box-shadow: 2px 2px 0 #800000; display: flex; align-items: center; justify-content: center;
                 font-weight: bold; font-size: 1.3rem; color: rgba(0,0,0,0.3);
@@ -155,11 +152,11 @@
         /* Overlay Game Over */
         #gameOverOverlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9); border: 2px solid #00979D; color: white; padding: 30px;
-            text-align: center; display: none; z-index: 10; min-width: 200px;
+            background: rgba(0,0,0,0.95); border: 2px solid #00979D; color: white; padding: 30px;
+            text-align: center; display: none; z-index: 10; min-width: 250px; border-radius: 10px;
         }
         .btn-retry {
-            margin-top: 15px; padding: 10px 20px; background: #00979D; color: white; border: none; font-size: 1rem; cursor: pointer;
+            margin-top: 15px; padding: 10px 20px; background: #00979D; color: white; border: none; font-size: 1rem; cursor: pointer; border-radius: 5px;
         }
         .home-link {
             position: fixed; top: 20px; right: 20px; color: #666; text-decoration: none; font-size: 0.9rem; z-index: 100;
@@ -182,7 +179,7 @@
             <canvas id="gameCanvas"></canvas>
             <div id="gameOverOverlay">
                 <h2 style="color: #ff4444; margin: 0 0 10px 0;">GAME OVER</h2>
-                <p id="finalScore">Punti: 0</p>
+                <p id="finalScore" style="font-size: 1.2rem;">Punti: 0</p>
                 <button class="btn-retry" onclick="resetGame()">RIPROVA</button>
             </div>
         </div>
@@ -241,60 +238,187 @@
     });
 
     const player = { x: 100, y: 300, width: 30, height: 30, speed: 6 };
-    let bullets = []; let enemies = []; let stars = [];
-    const enemyTypes = ['invader', 'hunter', 'saucer', 'crystal'];
+    let bullets = []; 
+    let enemyBullets = []; // Nuovi proiettili nemici
+    let enemies = []; 
+    let stars = [];
+    
+    // Configurazione Nemici
+    const enemyConfig = {
+        'invader': { score: 10, color: '#32CD32', shootChance: 0 },
+        'crystal': { score: 20, color: '#00BFFF', shootChance: 0 },
+        'hunter':  { score: 40, color: '#FF4500', shootChance: 0.015 }, // Spara occasionalmente
+        'saucer':  { score: 80, color: '#9370DB', shootChance: 0.025 }  // Spara spesso
+    };
+    const enemyTypes = Object.keys(enemyConfig);
 
     function drawPlayer(x, y, w, h) {
         ctx.fillStyle = '#00e5ff'; ctx.beginPath(); ctx.moveTo(x+w/2, y); ctx.lineTo(x, y+h); ctx.lineTo(x+w/2, y+h-8); ctx.lineTo(x+w, y+h); ctx.fill();
+        // Dettaglio motore
+        ctx.fillStyle = '#ff9900'; ctx.fillRect(x+w/2-2, y+h-4, 4, 6);
     }
 
+    // NUOVO SISTEMA DI DISEGNO NEMICI
     function drawEnemy(enemy) {
-        const { x, y, width: w, height: h, color, type } = enemy; ctx.fillStyle = color;
-        if(type === 'invader') ctx.fillRect(x, y, w, h);
-        else if(type === 'hunter') { ctx.beginPath(); ctx.moveTo(x+w/2, y+h); ctx.lineTo(x, y); ctx.lineTo(x+w, y); ctx.fill(); }
-        else if(type === 'saucer') { ctx.beginPath(); ctx.ellipse(x+w/2, y+h/2, w/2, h/4, 0,0,Math.PI*2); ctx.fill(); }
-        else { ctx.beginPath(); ctx.moveTo(x+w/2, y); ctx.lineTo(x+w, y+h/2); ctx.lineTo(x+w/2, y+h); ctx.lineTo(x, y+h/2); ctx.fill(); }
+        const { x, y, width: w, height: h, color, type } = enemy;
+        ctx.fillStyle = color;
+        
+        ctx.save();
+        ctx.translate(x, y);
+
+        if(type === 'invader') {
+            // Forma classica granchio
+            ctx.fillRect(w*0.2, h*0.2, w*0.6, h*0.6); // Corpo
+            ctx.fillRect(0, 0, w*0.2, h*0.4); // Antenne
+            ctx.fillRect(w*0.8, 0, w*0.2, h*0.4);
+            ctx.fillRect(0, h*0.6, w*0.2, h*0.4); // Zampe
+            ctx.fillRect(w*0.8, h*0.6, w*0.2, h*0.4);
+        }
+        else if(type === 'hunter') {
+            // Forma a freccia aggressiva
+            ctx.beginPath();
+            ctx.moveTo(w/2, h);      // Punta in basso (muso)
+            ctx.lineTo(w, 0);        // Ala dx
+            ctx.lineTo(w/2, h*0.3);  // Incavo
+            ctx.lineTo(0, 0);        // Ala sx
+            ctx.closePath();
+            ctx.fill();
+        }
+        else if(type === 'saucer') {
+            // Forma disco volante
+            ctx.beginPath();
+            ctx.ellipse(w/2, h/2, w/2, h/4, 0, 0, Math.PI*2); // Disco
+            ctx.fill();
+            ctx.fillStyle = "#fff"; // Cupola
+            ctx.beginPath();
+            ctx.arc(w/2, h/2-5, w/4, Math.PI, 0);
+            ctx.fill();
+            // Luci
+            ctx.fillStyle = "yellow";
+            ctx.fillRect(w*0.2, h*0.6, 4, 4);
+            ctx.fillRect(w*0.5, h*0.7, 4, 4);
+            ctx.fillRect(w*0.8, h*0.6, 4, 4);
+        }
+        else { // Crystal
+            // Rombo
+            ctx.beginPath();
+            ctx.moveTo(w/2, 0);
+            ctx.lineTo(w, h/2);
+            ctx.lineTo(w/2, h);
+            ctx.lineTo(0, h/2);
+            ctx.closePath();
+            ctx.fill();
+            // Core
+            ctx.fillStyle = "white";
+            ctx.fillRect(w/2-3, h/2-3, 6, 6);
+        }
+        ctx.restore();
     }
 
     function spawnEnemy() {
-        let spawnRate = 60; if (score > 500) spawnRate = 45;
+        let spawnRate = 60; if (score > 1000) spawnRate = 40;
         if (frameCount % spawnRate === 0) {
             const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-            let color = type === 'hunter' ? '#FF4500' : (type === 'saucer' ? '#9370DB' : (type === 'crystal' ? '#00BFFF' : '#32CD32'));
-            enemies.push({ x: Math.random()*(canvas.width-30), y: -30, width: 30, height: 30, type, color, speed: 2+Math.random()*3 });
+            const config = enemyConfig[type];
+            enemies.push({ 
+                x: Math.random()*(canvas.width-30), 
+                y: -30, 
+                width: 30, height: 30, 
+                type: type, 
+                color: config.color, 
+                scoreValue: config.score,
+                shootChance: config.shootChance,
+                speed: 2 + Math.random()*2 
+            });
         }
+    }
+
+    function checkCollision(r1, r2) {
+        return (r1.x < r2.x + r2.width &&
+                r1.x + r1.width > r2.x &&
+                r1.y < r2.y + r2.height &&
+                r1.y + r1.height > r2.y);
+    }
+
+    function triggerGameOver() {
+        gameOver = true;
+        gameOverOverlay.style.display = 'block';
+        finalScoreText.innerText = "Punti: " + score;
     }
 
     function update() {
         if (gameOver) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Sfondo stelle
         if(stars.length < 50) stars.push({ x: Math.random()*canvas.width, y: 0, size: Math.random()*2, speed: Math.random()*4+1 });
         stars.forEach((s, i) => { ctx.fillStyle = "white"; ctx.fillRect(s.x, s.y, s.size, s.size); s.y += s.speed; if(s.y > canvas.height) stars.splice(i, 1); });
 
+        // Movimento Player
         if (keys.ArrowUp && player.y > 0) player.y -= player.speed;
         if (keys.ArrowDown && player.y < canvas.height - player.height) player.y += player.speed;
         if (keys.ArrowLeft && player.x > 0) player.x -= player.speed;
         if (keys.ArrowRight && player.x < canvas.width - player.width) player.x += player.speed;
+        
+        // Sparo Player
         if (keys.Space && frameCount % 10 === 0) bullets.push({ x: player.x+13, y: player.y, width: 4, height: 10, color: '#FFD700', speed: 10 });
 
         drawPlayer(player.x, player.y, player.width, player.height);
 
+        // Aggiorna Proiettili Player
         for (let i = bullets.length - 1; i >= 0; i--) {
-            let b = bullets[i]; b.y -= b.speed; ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.width, b.height); if (b.y < 0) bullets.splice(i, 1);
+            let b = bullets[i]; b.y -= b.speed; ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.width, b.height); 
+            if (b.y < 0) bullets.splice(i, 1);
+        }
+
+        // Aggiorna Proiettili Nemici
+        for (let i = enemyBullets.length - 1; i >= 0; i--) {
+            let eb = enemyBullets[i];
+            eb.y += eb.speed;
+            ctx.fillStyle = "#FF0000"; // Rosso pericolo
+            ctx.fillRect(eb.x, eb.y, eb.width, eb.height);
+
+            // Collisione Proiettile Nemico -> Player
+            if (checkCollision(eb, player)) {
+                triggerGameOver();
+            }
+
+            if (eb.y > canvas.height) enemyBullets.splice(i, 1);
         }
 
         spawnEnemy();
+        
+        // Loop Nemici
         for (let i = enemies.length - 1; i >= 0; i--) {
-            let e = enemies[i]; e.y += e.speed; drawEnemy(e);
-            let pad = 4;
-            if (player.x+pad < e.x+e.width-pad && player.x+player.width-pad > e.x+pad && player.y+pad < e.y+e.height-pad && player.y+player.height-pad > e.y+pad) {
-                gameOver = true; gameOverOverlay.style.display = 'block'; finalScoreText.innerText = "Punti: " + score;
+            let e = enemies[i]; e.y += e.speed; 
+            drawEnemy(e);
+
+            // Nemico spara?
+            if (e.shootChance > 0 && Math.random() < e.shootChance) {
+                enemyBullets.push({
+                    x: e.x + e.width/2 - 2,
+                    y: e.y + e.height,
+                    width: 5, height: 10,
+                    speed: 5
+                });
             }
+
+            // Collisione Nemico -> Player
+            let pad = 4;
+            let playerHitbox = {x: player.x+pad, y: player.y+pad, width: player.width-pad*2, height: player.height-pad*2};
+            if (checkCollision(playerHitbox, e)) {
+                triggerGameOver();
+            }
+
             if (e.y > canvas.height) { enemies.splice(i, 1); continue; }
+            
+            // Collisione Proiettile Player -> Nemico
             for (let j = bullets.length - 1; j >= 0; j--) {
                 let b = bullets[j];
-                if (b.x < e.x+e.width && b.x+b.width > e.x && b.y < e.y+e.height && b.y+b.height > e.y) {
-                    score += 20; scoreElement.innerText = "SCORE: " + score.toString().padStart(4, '0');
+                if (checkCollision(b, e)) {
+                    // Punteggio dinamico in base al tipo
+                    score += e.scoreValue; 
+                    scoreElement.innerText = "SCORE: " + score.toString().padStart(4, '0');
                     enemies.splice(i, 1); bullets.splice(j, 1); break;
                 }
             }
@@ -304,7 +428,8 @@
 
     function resetGame() {
         gameOver = false; score = 0; scoreElement.innerText = "SCORE: 0000";
-        enemies = []; bullets = []; player.x = canvas.width/2-15; player.y = canvas.height-50;
+        enemies = []; bullets = []; enemyBullets = []; // Pulisci tutto
+        player.x = canvas.width/2-15; player.y = canvas.height-50;
         gameOverOverlay.style.display = 'none'; update();
     }
 
