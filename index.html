@@ -19,25 +19,32 @@
             position: relative; 
         }
 
-        /* --- Cambio Lingua --- */
-        .lang-switch {
+        /* --- Posizionamento Google Translate --- */
+        #google_translate_element {
             position: absolute;
             top: 20px;
             right: 20px;
         }
 
-        .lang-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid white;
-            color: white;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            transition: 0.3s;
+        /* Nascondiamo il banner "Offerto da Google" che appare in alto per pulizia */
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+        } 
+        body {
+            top: 0px !important; 
         }
-
-        .lang-btn:hover { background: white; color: #00979D; }
+        
+        /* Stile personalizzato per il dropdown di Google (opzionale, per renderlo più carino) */
+        .goog-te-gadget-simple {
+            background-color: rgba(255,255,255,0.2) !important;
+            border: 1px solid white !important;
+            padding: 5px !important;
+            border-radius: 4px !important;
+        }
+        .goog-te-gadget-simple span {
+            color: white !important;
+            font-weight: bold;
+        }
 
         /* --- Layout Principale --- */
         .container { 
@@ -102,7 +109,6 @@
         }
         .btn-play:hover { background-color: #007a80; }
         
-        /* Stile per bottone disabilitato (In Arrivo) */
         .btn-play.disabled { background-color: #ccc; pointer-events: none; cursor: default; }
 
         /* --- Footer --- */
@@ -119,55 +125,52 @@
 <body>
 
 <header>
-    <div class="lang-switch">
-        <button class="lang-btn" onclick="setLanguage('it')">IT 🇮🇹</button>
-        <button class="lang-btn" onclick="setLanguage('en')">EN 🇬🇧</button>
-        <button class="lang-btn" onclick="setLanguage('sk')">SK sk</button>
-    </div>
-    <h1 data-i18n="mainTitle">🕹️ Sala Giochi Online</h1>
-    <p data-i18n="subTitle">La tua collezione di giochi browser-based</p>
+    <div id="google_translate_element"></div>
+
+    <h1>🕹️ Sala Giochi Online</h1>
+    <p>La tua collezione di giochi browser-based</p>
 </header>
 
 <div class="container">
     
     <section>
-        <h2 data-i18n="sectionSingle">Giochi Single Player</h2>
+        <h2>Giochi Single Player</h2>
         
         <div class="games-grid">
             
             <div class="project-card">
                 <div class="card-image">🦖</div>
                 <div class="card-content">
-                    <h3 data-i18n="game1Title">T-Rex Run</h3>
-                    <p data-i18n="game1Desc">Il classico gioco del dinosauro. Salta gli ostacoli e raggiungi il punteggio più alto!</p>
-                    <a href="trex.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <h3>T-Rex Run</h3>
+                    <p>Il classico gioco del dinosauro. Salta gli ostacoli e raggiungi il punteggio più alto!</p>
+                    <a href="trex.html" class="btn-play">🎮 Gioca Ora</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🚀</div>
                 <div class="card-content">
-                    <h3 data-i18n="game2Title">Space Shooter</h3>
-                    <p data-i18n="game2Desc">Difendi la galassia dall'invasione aliena in questo sparatutto retro.</p>
-                    <a href="spaceshooter.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <h3>Space Shooter</h3>
+                    <p>Difendi la galassia dall'invasione aliena in questo sparatutto retro.</p>
+                    <a href="spaceshooter.html" class="btn-play">🎮 Gioca Ora</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🧠</div>
                 <div class="card-content">
-                    <h3 data-i18n="game3Title">Memory</h3>
-                    <p data-i18n="game3Desc">Metti alla prova la tua memoria trovando tutte le coppie.</p>
-                    <a href="memory.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <h3>Memory</h3>
+                    <p>Metti alla prova la tua memoria trovando tutte le coppie.</p>
+                    <a href="memory.html" class="btn-play">🎮 Gioca Ora</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🕵️‍♂️</div>
                 <div class="card-content">
-                    <h3 data-i18n="game4Title">Avventura Grafica</h3>
-                    <p data-i18n="game4Desc">Un mistero da risolvere in questa avventura punta e clicca.</p>
-                    <a href="#" class="btn-play disabled" data-i18n="comingSoon">🚧 In Arrivo</a>
+                    <h3>Avventura Grafica</h3>
+                    <p>Un mistero da risolvere in questa avventura punta e clicca.</p>
+                    <a href="#" class="btn-play disabled">🚧 In Arrivo</a>
                 </div>
             </div>
 
@@ -176,94 +179,20 @@
 </div>
 
 <footer>
-    <p data-i18n="footerText">&copy; 2025 Sala Giochi Online. Buon divertimento!</p>
+    <p>&copy; 2025 Sala Giochi Online. Buon divertimento!</p>
 </footer>
 
-<script>
-    // --- DIZIONARIO TRADUZIONI ---
-    const translations = {
-        it: {
-            mainTitle: "🕹️ Sala Giochi Online",
-            subTitle: "La tua collezione di giochi browser-based",
-            sectionSingle: "Giochi Single Player",
-            
-            game1Title: "T-Rex Run",
-            game1Desc: "Il classico gioco del dinosauro. Salta gli ostacoli e raggiungi il punteggio più alto!",
-            
-            game2Title: "Space Shooter",
-            game2Desc: "Difendi la galassia dall'invasione aliena in questo sparatutto retro.",
-            
-            game3Title: "Memory",
-            game3Desc: "Metti alla prova la tua memoria trovando tutte le coppie.",
-
-            // Nuovo gioco
-            game4Title: "Avventura Grafica",
-            game4Desc: "Un mistero da risolvere in questa avventura punta e clicca.",
-            
-            playBtn: "🎮 Gioca Ora",
-            comingSoon: "🚧 In Arrivo", // Usato per il bottone disabilitato
-            footerText: "&copy; 2025 Sala Giochi Online. Buon divertimento!"
-        },
-        en: {
-            mainTitle: "🕹️ Online Arcade",
-            subTitle: "Your collection of browser-based games",
-            sectionSingle: "Single Player Games",
-            
-            game1Title: "T-Rex Run",
-            game1Desc: "The classic dinosaur game. Jump over obstacles and get the highest score!",
-            
-            game2Title: "Space Shooter",
-            game2Desc: "Defend the galaxy from the alien invasion in this retro shooter.",
-            
-            game3Title: "Memory",
-            game3Desc: "Test your memory by finding all the matching pairs.",
-
-            // New Game
-            game4Title: "Graphic Adventure",
-            game4Desc: "A mystery to solve in this point-and-click adventure.",
-            
-            playBtn: "🎮 Play Now",
-            comingSoon: "🚧 Coming Soon",
-            footerText: "&copy; 2025 Online Arcade. Have fun!"
-        },
-        sk: {
-            mainTitle: "🕹️ Online Arkáda",
-            subTitle: "Tvoja zbierka prehliadačových hier",
-            sectionSingle: "Hry pre jedného hráča",
-            
-            game1Title: "T-Rex Run",
-            game1Desc: "Klasická hra s dinosaurom. Preskakuj prekážky a dosiahni najvyššie skóre!",
-            
-            game2Title: "Space Shooter",
-            game2Desc: "Obráň galaxiu pred mimozemskou inváziou v tejto retro strieľačke.",
-            
-            game3Title: "Pexeso", 
-            game3Desc: "Otestuj svoju pamäť nájdením všetkých párov.",
-
-            // Nova Hra
-            game4Title: "Grafická Adventúra",
-            game4Desc: "Záhada na vyriešenie v tejto point-and-click adventúre.",
-            
-            playBtn: "🎮 Hrať teraz",
-            comingSoon: "🚧 Čoskoro",
-            footerText: "&copy; 2025 Online Arkáda. Príjemnú zábavu!"
-        }
-    };
-
-    // --- FUNZIONE CAMBIO LINGUA ---
-    function setLanguage(lang) {
-        const elements = document.querySelectorAll('[data-i18n]');
-
-        elements.forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            if (translations[lang] && translations[lang][key]) {
-                element.innerHTML = translations[lang][key];
-            }
-        });
-        
-        document.documentElement.lang = lang;
-    }
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'it', // Lingua originale del sito
+    includedLanguages: 'it,en,sk', // Lingue consentite (Italiano, Inglese, Slovacco)
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE, // Layout semplice (menu a tendina)
+    autoDisplay: false
+  }, 'google_translate_element');
+}
 </script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>
