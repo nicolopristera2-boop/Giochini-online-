@@ -35,25 +35,25 @@
         .char-option {
             font-size: 4rem; cursor: pointer; padding: 25px; border: 3px solid #eee; border-radius: 20px; transition: 0.3s; background: white;
         }
-        .char-option:hover { transform: translateY(-10px); border-color: #00979D; }
+        .char-option:hover { transform: translateY(-10px); border-color: #00979D; background: #e0f7fa; }
 
-        input[type="text"] { padding: 15px; font-size: 1.2rem; border-radius: 8px; width: 300px; text-align: center; margin-bottom: 30px; }
+        input[type="text"] { padding: 15px; font-size: 1.2rem; border-radius: 8px; width: 300px; text-align: center; margin-bottom: 30px; border: 2px solid #ccc; }
         .btn-start { padding: 15px 50px; background-color: #00979D; color: white; border: none; border-radius: 30px; font-size: 1.2rem; cursor: pointer; }
 
         /* --- DIALOG BOX --- */
         #dialogBox {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 80%; background: rgba(0, 0, 0, 0.85); color: white;
+            width: 80%; background: rgba(0, 0, 0, 0.9); color: white;
             padding: 20px; border-radius: 10px; border: 2px solid #00979D;
             font-size: 1.2rem; text-align: center; display: none; z-index: 15;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         canvas { display: block; }
-        .back-btn { position: absolute; top: 15px; left: 15px; text-decoration: none; color: #333; background: white; padding: 8px 15px; border-radius: 20px; z-index: 30; font-weight: bold; }
+        .back-btn { position: absolute; top: 15px; left: 15px; text-decoration: none; color: #333; background: white; padding: 8px 15px; border-radius: 20px; z-index: 30; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
-        /* Hint per i controlli */
         .controls-hint {
-            position: absolute; bottom: 10px; right: 10px; color: rgba(255,255,255,0.5); font-size: 0.9rem; z-index: 5;
+            position: absolute; bottom: 10px; right: 10px; color: rgba(255,255,255,0.7); font-size: 0.9rem; z-index: 5; text-shadow: 1px 1px 2px black;
         }
     </style>
 </head>
@@ -95,12 +95,12 @@
     const dialogBox = document.getElementById('dialogBox');
     
     let isPlaying = false;
-    let currentRoom = "livingRoom"; // Stanza attuale
+    let currentRoom = "livingRoom"; 
     let dialogTimer = null;
     
     // Stato dell'Enigma
     let gameState = {
-        doorLocked: true, // La porta è chiusa?
+        doorLocked: true, 
         hasKey: false,
         chestOpen: false
     };
@@ -114,10 +114,11 @@
             nameKey: "roomName",
             bgType: "parquet",
             objects: [
-                { id: "table", x: 100, y: 150, w: 200, h: 100, type: "table", color: "#8d6e63" },
-                { id: "sofa", x: 500, y: 400, w: 180, h: 80,  type: "sofa", color: "#ef5350" },
+                { id: "table", x: 100, y: 150, w: 200, h: 100, type: "table" },
+                { id: "sofa", x: 500, y: 400, w: 180, h: 80,  type: "sofa" },
                 { id: "shelf", x: 650, y: 50,  w: 100, h: 200, type: "bookshelf" },
-                { id: "door", x: 350, y: 0,    w: 100, h: 20,  type: "door", target: "kitchen" }
+                { id: "door", x: 350, y: 0,    w: 100, h: 20,  type: "door", target: "kitchen" },
+                { id: "plant", x: 50,  y: 450, w: 60,  h: 60,  type: "plant" }
             ]
         },
         kitchen: {
@@ -147,15 +148,14 @@
     }
 
     function showDialog(textKey) {
-        // Cerca la traduzione o usa la stringa diretta se non è una chiave
-        const text = t(textKey) || textKey; 
+        const text = typeof t === 'function' ? t(textKey) : textKey;
         dialogBox.innerText = text;
         dialogBox.style.display = 'block';
         
         if (dialogTimer) clearTimeout(dialogTimer);
         dialogTimer = setTimeout(() => {
             dialogBox.style.display = 'none';
-        }, 3000); // Nascondi dopo 3 secondi
+        }, 3000); 
     }
 
     // --- INPUT ---
@@ -170,62 +170,53 @@
     // --- LOGICA INTERAZIONE ---
     function interact() {
         const room = rooms[currentRoom];
-        let hit = false;
-
-        // Controlla distanza dagli oggetti
+        
         for (let obj of room.objects) {
             const cx = obj.x + obj.w/2;
             const cy = obj.y + obj.h/2;
             const px = player.x + player.w/2;
             const py = player.y + player.h/2;
             
-            // Distanza Euclidea
             const dist = Math.sqrt((cx-px)**2 + (cy-py)**2);
 
-            if (dist < 100) { // Se vicino a 100px
+            if (dist < 100) { 
                 handleObjectInteraction(obj);
-                hit = true;
                 break;
             }
         }
     }
 
     function handleObjectInteraction(obj) {
-        // ENIGMA 1: Libreria apre Porta
         if (obj.id === "shelf") {
             if (gameState.doorLocked) {
                 gameState.doorLocked = false;
-                showDialog("bookshelfHint"); // "Hai trovato un libro..."
-                setTimeout(() => showDialog("foundSwitch"), 2000); // "Click! Porta aperta"
+                showDialog("bookshelfHint"); 
+                setTimeout(() => showDialog("foundSwitch"), 2000); 
             } else {
                 showDialog("Just old books.");
             }
         }
-        // ENIGMA 2: Divano/Tavolo (Flavor text)
-        else if (obj.id === "sofa") showDialog("sofaDesc");
-        else if (obj.id === "table") showDialog("tableDesc");
+        else if (obj.type === "sofa") showDialog("sofaDesc");
+        else if (obj.type === "table") showDialog("tableDesc");
         
-        // PORTA
         else if (obj.type === "door") {
             if (obj.target === "kitchen" && gameState.doorLocked) {
-                showDialog("lockedDoor"); // "È chiusa a chiave"
+                showDialog("lockedDoor"); 
             } else {
                 changeRoom(obj.target);
             }
         }
-        // ENIGMA 2: Chest (Futuro)
-        else if (obj.id === "chest") {
+        else if (obj.type === "chest") {
             showDialog("chestLocked");
         }
     }
 
     function changeRoom(targetRoomName) {
         currentRoom = targetRoomName;
-        // Riposiziona player in base alla porta (logica semplice)
         if (targetRoomName === "kitchen") {
-            player.x = 380; player.y = 530; // Entra dal basso
+            player.x = 380; player.y = 530; 
         } else {
-            player.x = 380; player.y = 50; // Entra dall'alto
+            player.x = 380; player.y = 50; 
         }
     }
 
@@ -233,15 +224,14 @@
     function checkCollision(newX, newY) {
         const pRect = { x: newX, y: newY, w: player.w, h: player.h };
         // Muri
-        if (newX < 20 || newX + player.w > canvas.width - 20 || newY < 20 || newY + player.h > canvas.height - 20) return true;
+        if (newX < 20 || newX + player.w > canvas.width - 20 || newY < 50 || newY + player.h > canvas.height - 20) return true;
         
         // Mobili
         for (let obj of rooms[currentRoom].objects) {
-            // Le porte non sono ostacoli se aperte, ma per ora le attraversiamo con interact
             if (obj.type === "door") continue; 
 
-            // Hitbox un po' più piccola dell'oggetto
-            let hitX = obj.x + 10; let hitY = obj.y + 10;
+            // Hitbox ridotta (piedi dell'oggetto)
+            let hitX = obj.x + 10; let hitY = obj.y + 20;
             let hitW = obj.w - 20; let hitH = obj.h - 20;
 
             if (pRect.x < hitX + hitW && pRect.x + pRect.w > hitX &&
@@ -256,39 +246,137 @@
         if (!isPlaying) return;
         let nextX = player.x;
         let nextY = player.y;
-        let moving = false;
 
-        if (keys.ArrowUp) { nextY -= player.speed; moving = true; }
-        if (keys.ArrowDown) { nextY += player.speed; moving = true; }
-        if (keys.ArrowLeft) { nextX -= player.speed; moving = true; player.facing = -1; }
-        if (keys.ArrowRight) { nextX += player.speed; moving = true; player.facing = 1; }
+        if (keys.ArrowUp) nextY -= player.speed;
+        if (keys.ArrowDown) nextY += player.speed;
+        if (keys.ArrowLeft) { nextX -= player.speed; player.facing = -1; }
+        if (keys.ArrowRight) { nextX += player.speed; player.facing = 1; }
 
         if (!checkCollision(nextX, player.y)) player.x = nextX;
         if (!checkCollision(player.x, nextY)) player.y = nextY;
     }
 
-    // --- DISEGNO ---
+    // --- FUNZIONI DI DISEGNO STILIZZATO ---
+
+    function drawRoomBg() {
+        const room = rooms[currentRoom];
+        
+        if (room.bgType === "parquet") {
+            // Pavimento Parquet
+            ctx.fillStyle = "#d7ccc8"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.strokeStyle = "#a1887f"; ctx.lineWidth = 1; ctx.beginPath();
+            for(let i=0; i<canvas.height; i+=30) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
+            for(let row=0; row<canvas.height/30; row++) {
+                let offset = (row % 2 === 0) ? 0 : 50;
+                for(let j=offset; j<canvas.width; j+=100) { ctx.moveTo(j, row*30); ctx.lineTo(j, row*30+30); }
+            }
+            ctx.stroke();
+
+            // Tappeto Salotto
+            ctx.fillStyle = "#80cbc4"; ctx.beginPath();
+            ctx.ellipse(200, 200, 120, 70, 0, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = "#4db6ac"; ctx.lineWidth=4; ctx.stroke();
+
+        } else {
+            // Piastrelle Cucina
+            ctx.fillStyle = "#e3f2fd"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "#90caf9"; 
+            for(let i=0; i<canvas.width; i+=60) {
+                for(let j=0; j<canvas.height; j+=60) {
+                    if ((i/60 + j/60) % 2 === 0) ctx.fillRect(i,j,60,60);
+                }
+            }
+        }
+
+        // Muri Base
+        const wallH = 50;
+        ctx.fillStyle = "#eceff1"; ctx.fillRect(0, 0, canvas.width, wallH);
+        ctx.fillStyle = "#5d4037"; ctx.fillRect(0, wallH-10, canvas.width, 10); // Battiscopa
+    }
+
+    function drawObject(obj) {
+        ctx.save();
+        
+        // Disegno in base al tipo
+        if (obj.type === "door") {
+            let color = (obj.target === "kitchen" && gameState.doorLocked) ? "#ef5350" : "#66bb6a";
+            // Stipite
+            ctx.fillStyle = "#4e342e"; ctx.fillRect(obj.x-5, obj.y, obj.w+10, obj.h+5);
+            // Porta
+            ctx.fillStyle = color; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+        }
+        else if (obj.type === "table") {
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); // Tavolo
+            ctx.fillStyle = "#fff9c4"; ctx.fillRect(obj.x+10, obj.y+10, obj.w-20, obj.h-20); // Tovaglia
+        } 
+        else if (obj.type === "sofa") {
+            ctx.fillStyle = "#ef5350"; 
+            ctx.fillRect(obj.x, obj.y, obj.w, 30); // Schienale
+            ctx.fillRect(obj.x, obj.y+30, obj.w, obj.h-30); // Seduta
+            ctx.fillStyle = "#c62828"; // Braccioli
+            ctx.fillRect(obj.x, obj.y+20, 20, obj.h-20);
+            ctx.fillRect(obj.x + obj.w - 20, obj.y+20, 20, obj.h-20);
+        }
+        else if (obj.type === "bookshelf") {
+            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            const colors = ["#e57373", "#64b5f6", "#fff176"];
+            for(let i=obj.y+20; i<obj.y+obj.h; i+=40) {
+                ctx.fillStyle = "#3e2723"; ctx.fillRect(obj.x+5, i, obj.w-10, 5); // Ripiano
+                for(let j=obj.x+10; j<obj.x+obj.w-15; j+=15) {
+                    ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
+                    ctx.fillRect(j, i-25, 10, 25); // Libri
+                }
+            }
+        }
+        else if (obj.type === "plant") {
+             ctx.fillStyle = "#d84315"; ctx.beginPath(); ctx.arc(obj.x+30, obj.y+40, 15, 0, Math.PI*2); ctx.fill(); // Vaso
+             ctx.fillStyle = "#2e7d32"; ctx.beginPath(); ctx.arc(obj.x+30, obj.y+20, 20, 0, Math.PI*2); ctx.fill(); // Foglie
+        }
+        else if (obj.type === "chest") {
+            ctx.fillStyle = "#ffb300"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.lineWidth = 2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+        }
+        
+        ctx.restore();
+    }
+
+    function drawPlayer() {
+        ctx.save();
+        ctx.font = "50px Arial"; ctx.textAlign = "center";
+        
+        // Specchio se va a sinistra
+        if (player.facing === -1) {
+            ctx.scale(-1, 1);
+            ctx.fillText(player.sprite, -player.x - 20, player.y + 40);
+        } else {
+            ctx.fillText(player.sprite, player.x + 20, player.y + 40);
+        }
+        ctx.restore();
+
+        // Nome
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.fillRect(player.x - 20, player.y - 15, 80, 15);
+        ctx.fillStyle = "#333"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
+        ctx.fillText(player.name, player.x + 20, player.y - 3);
+    }
+
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const room = rooms[currentRoom];
-
+        
         // 1. Sfondo
-        if (room.bgType === "parquet") drawParquet();
-        else drawTiles();
+        drawRoomBg();
 
         // 2. Info UI
-        ctx.fillStyle = "#333";
-        ctx.font = "bold 20px 'Segoe UI'";
-        ctx.textAlign = "left";
-        ctx.fillText("📍 " + t(room.nameKey), 20, 40);
+        ctx.fillStyle = "#333"; ctx.font = "bold 20px 'Segoe UI'"; ctx.textAlign = "left";
+        let roomNameKey = rooms[currentRoom].nameKey;
+        // Usa t() se disponibile, altrimenti nome chiave
+        let roomLabel = typeof t === 'function' ? t(roomNameKey) : roomNameKey;
+        ctx.fillText("📍 " + roomLabel, 20, 30);
 
-        // 3. Oggetti
-        // Li ordiniamo per Y così il player ci passa "davanti" o "dietro" correttamente
-        // Creiamo una lista unica con player e oggetti
-        let renderList = [...room.objects];
-        renderList.push({ type: "player", y: player.y + player.h, id: "player" }); // Usiamo la Y dei piedi per l'ordine
+        // 3. Ordinamento Profondità (Z-Index)
+        let renderList = [...rooms[currentRoom].objects];
+        renderList.push({ type: "player", y: player.y + player.h, id: "player" });
 
-        // Ordina per coordinata Y (profondità)
         renderList.sort((a, b) => {
             let yA = (a.type === "player") ? a.y : (a.y + a.h);
             let yB = (b.type === "player") ? b.y : (b.y + b.h);
@@ -299,73 +387,6 @@
             if (obj.type === "player") drawPlayer();
             else drawObject(obj);
         });
-    }
-
-    // --- HELPERS GRAFICI ---
-    function drawParquet() {
-        ctx.fillStyle = "#d7ccc8"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.strokeStyle = "#a1887f"; ctx.beginPath();
-        for(let i=0; i<canvas.height; i+=30) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
-        ctx.stroke();
-    }
-    function drawTiles() {
-        ctx.fillStyle = "#e3f2fd"; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "#bbdefb"; 
-        for(let i=0; i<canvas.width; i+=60) {
-            for(let j=0; j<canvas.height; j+=60) {
-                if ((i/60 + j/60) % 2 === 0) ctx.fillRect(i,j,60,60);
-            }
-        }
-    }
-
-    function drawObject(obj) {
-        ctx.save();
-        
-        if (obj.type === "door") {
-            // Porta
-            ctx.fillStyle = (obj.target === "kitchen" && gameState.doorLocked) ? "#e57373" : "#81c784"; // Rosso se chiusa, Verde se aperta
-            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.strokeStyle = "#333"; ctx.lineWidth=2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-        }
-        else if (obj.type === "bookshelf") {
-            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            // Libri
-            ctx.fillStyle = "#ffcc80"; ctx.fillRect(obj.x+10, obj.y+20, 10, 30);
-            ctx.fillStyle = "#ef9a9a"; ctx.fillRect(obj.x+25, obj.y+20, 10, 30);
-            // Il libro segreto (visivamente non distinguibile)
-        }
-        else if (obj.type === "chest") {
-            ctx.fillStyle = "#ffca28"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "black"; ctx.fillRect(obj.x+obj.w/2-5, obj.y+10, 10, 10); // Serratura
-        }
-        else {
-            // Oggetti generici colorati
-            ctx.fillStyle = obj.color || "#888";
-            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            // Dettaglio divano
-            if(obj.type === 'sofa') {
-                ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(obj.x+10, obj.y+10, obj.w-20, obj.h-10);
-            }
-        }
-        ctx.restore();
-    }
-
-    function drawPlayer() {
-        ctx.save();
-        ctx.font = "50px Arial"; ctx.textAlign = "center";
-        
-        // Specchia l'emoji se va a sinistra
-        if (player.facing === -1) {
-            ctx.scale(-1, 1);
-            ctx.fillText(player.sprite, -player.x - 20, player.y + 40);
-        } else {
-            ctx.fillText(player.sprite, player.x + 20, player.y + 40);
-        }
-        ctx.restore();
-
-        // Nome
-        ctx.fillStyle = "#333"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
-        ctx.fillText(player.name, player.x + 20, player.y - 5);
     }
 
     function gameLoop() {
