@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T-Rex Run</title>
     <style>
-        body { margin: 0; background: #f4f4f4; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        canvas { border-bottom: 2px solid #333; background: #fff; }
-        .back-btn { position: absolute; top: 20px; left: 20px; text-decoration: none; color: #00979D; font-weight: bold; font-size: 1.2rem; }
+        body { margin: 0; background: #202124; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; color: #fff; }
+        canvas { border-bottom: 2px solid #535353; background: #202124; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .back-btn { position: absolute; top: 20px; left: 20px; text-decoration: none; color: #ACACAC; font-weight: bold; font-size: 1.2rem; transition: 0.3s; }
+        .back-btn:hover { color: #fff; }
     </style>
 </head>
 <body>
@@ -16,28 +17,53 @@
 <canvas id="gameCanvas" width="800" height="300"></canvas>
 
 <script src="lingue.js"></script>
+
 <script>
-    window.isGamePage = true; // Diciamo a lingue.js che siamo in un gioco
+    window.isGamePage = true; // Attiva le traduzioni
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    let dino = { x: 50, y: 250, width: 40, height: 40, dy: 0, jumpPower: -12, grounded: true };
+    // Variabili di gioco
+    let dino = { x: 50, y: 250, width: 40, height: 40, dy: 0, jumpPower: -13, grounded: true };
     let obstacles = [];
+    let clouds = [];
     let frame = 0;
     let score = 0;
-    let gameSpeed = 5;
+    let gameSpeed = 6;
     let isGameOver = false;
     let isPlaying = false;
 
+    // Disegno Nuvole (Decorazione)
+    function handleClouds() {
+        if (frame % 150 === 0) {
+            clouds.push({ x: canvas.width, y: Math.random() * 100 + 20, w: 40 + Math.random() * 30 });
+        }
+        ctx.fillStyle = "#535353";
+        clouds.forEach((c, i) => {
+            c.x -= gameSpeed * 0.2; // Più lente
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, c.w/2, 0, Math.PI * 2);
+            ctx.fill();
+            if (c.x + c.w < 0) clouds.splice(i, 1);
+        });
+    }
+
     function drawDino() {
-        ctx.fillStyle = '#00979D';
+        ctx.fillStyle = '#E0E0E0';
+        // Semplice forma Dino (Testa e corpo)
         ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+        ctx.fillRect(dino.x + 20, dino.y - 10, 20, 10); // Testa
+        
+        // Occhio
+        ctx.fillStyle = '#202124';
+        ctx.fillRect(dino.x + 30, dino.y - 8, 4, 4);
     }
 
     function drawObstacles() {
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = '#FF5252'; // Colore ostacolo (rosso neon spento)
         obstacles.forEach(obs => {
+            // Disegno cactus stilizzato
             ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
             obs.x -= gameSpeed;
         });
@@ -46,9 +72,11 @@
     function update() {
         if (!isPlaying || isGameOver) return;
 
+        handleClouds();
+
         // Fisica Dino
         if (!dino.grounded) {
-            dino.dy += 0.6; // Gravità
+            dino.dy += 0.7; // Gravità
             dino.y += dino.dy;
         }
         if (dino.y >= 250) {
@@ -57,57 +85,71 @@
             dino.grounded = true;
         }
 
-        // Ostacoli
-        if (frame % 100 === 0) {
+        // Generazione Ostacoli
+        if (frame % 90 === 0) { // Frequenza spawn
             let height = Math.random() > 0.5 ? 40 : 60;
-            obstacles.push({ x: canvas.width, y: 290 - height, width: 20, height: height });
+            obstacles.push({ x: canvas.width, y: 290 - height, width: 25, height: height });
         }
-        // Rimuovi ostacoli passati
-        if (obstacles.length > 0 && obstacles[0].x < -20) obstacles.shift();
+        
+        // Pulizia ostacoli
+        if (obstacles.length > 0 && obstacles[0].x < -30) obstacles.shift();
 
         // Collisioni
         obstacles.forEach(obs => {
-            if (dino.x < obs.x + obs.width && dino.x + dino.width > obs.x &&
+            if (dino.x < obs.x + obs.width - 5 && dino.x + dino.width - 5 > obs.x &&
                 dino.y < obs.y + obs.height && dino.y + dino.height > obs.y) {
                 isGameOver = true;
             }
         });
 
         score++;
-        gameSpeed += 0.002;
+        if(score % 500 === 0) gameSpeed += 0.5; // Aumenta difficoltà
         frame++;
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Disegna linea terra
+        ctx.strokeStyle = "#535353";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 290);
+        ctx.lineTo(canvas.width, 290);
+        ctx.stroke();
+
         if (!isPlaying) {
-            ctx.fillStyle = "black";
-            ctx.font = "24px Arial";
+            ctx.fillStyle = "#E0E0E0";
+            ctx.font = "20px 'Courier New'";
             ctx.textAlign = "center";
-            // USA t() PER TRADURRE
             ctx.fillText(t('startMsg'), canvas.width / 2, canvas.height / 2);
+            // Preview Dino
+            drawDino(); 
             return;
         }
 
+        handleClouds(); // Disegna nuvole anche sopra background
         drawDino();
         drawObstacles();
 
-        // Punteggio
-        ctx.fillStyle = "black";
-        ctx.font = "20px Arial";
-        ctx.textAlign = "left";
-        ctx.fillText(t('score') + Math.floor(score / 10), 10, 30);
+        // Punteggio (Tradotto)
+        ctx.fillStyle = "#ACACAC";
+        ctx.font = "18px 'Courier New'";
+        ctx.textAlign = "right";
+        ctx.fillText(t('score') + Math.floor(score / 10).toString().padStart(5, '0'), canvas.width - 20, 30);
 
         if (isGameOver) {
-            ctx.fillStyle = "red";
-            ctx.font = "40px Arial";
+            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#FF5252";
+            ctx.font = "bold 40px 'Courier New'";
             ctx.textAlign = "center";
             ctx.fillText(t('gameOver'), canvas.width / 2, canvas.height / 2);
             
-            ctx.fillStyle = "black";
-            ctx.font = "20px Arial";
-            ctx.fillText(t('restartMsg'), canvas.width / 2, canvas.height / 2 + 40);
+            ctx.fillStyle = "#fff";
+            ctx.font = "20px 'Courier New'";
+            ctx.fillText(t('restartMsg'), canvas.width / 2, canvas.height / 2 + 50);
         }
     }
 
@@ -117,9 +159,9 @@
         requestAnimationFrame(gameLoop);
     }
 
-    // Controlli
+    // Input
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
+        if (e.code === 'Space' || e.code === 'ArrowUp') {
             if (!isPlaying) { isPlaying = true; return; }
             if (isGameOver) { location.reload(); return; }
             if (dino.grounded) {
@@ -129,7 +171,6 @@
         }
     });
 
-    // Avvia loop
     gameLoop();
 </script>
 </body>
