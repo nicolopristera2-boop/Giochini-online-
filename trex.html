@@ -3,26 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T-Rex Run</title>
+    <title>T-Rex Run Retro</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #202124; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; color: #fff; }
-        canvas { border-bottom: 2px solid #535353; background: #202124; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        .back-btn { position: absolute; top: 20px; left: 20px; text-decoration: none; color: #ACACAC; font-weight: bold; font-size: 1.2rem; transition: 0.3s; }
+        body { 
+            margin: 0; 
+            background: #111; 
+            font-family: 'VT323', monospace; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            color: #33ff00; /* Verde Fosfori */
+        }
+
+        /* Contenitore per effetto Monitor */
+        .monitor-frame {
+            position: relative;
+            padding: 20px;
+            background: #222;
+            border-radius: 20px;
+            box-shadow: inset 0 0 20px #000, 0 0 50px rgba(0,0,0,0.5);
+            border: 5px solid #444;
+        }
+
+        canvas { 
+            background: #0d1a0d; /* Sfondo scuro verdognolo */
+            border: 2px solid #33ff00;
+            box-shadow: 0 0 15px rgba(51, 255, 0, 0.3), inset 0 0 20px rgba(0,0,0,0.8);
+            display: block;
+        }
+
+        /* Effetto Scanlines (Righe TV vecchie) */
+        .scanlines {
+            position: absolute;
+            top: 20px; left: 20px; right: 20px; bottom: 20px;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none; /* Lascia passare i click */
+            z-index: 10;
+        }
+
+        .back-btn { 
+            position: absolute; top: -40px; left: 0; 
+            text-decoration: none; color: #33ff00; 
+            font-size: 1.5rem; text-shadow: 0 0 5px #33ff00; 
+        }
         .back-btn:hover { color: #fff; }
+
     </style>
 </head>
 <body>
 
-<a href="index.html" class="back-btn" data-i18n="backHome">🏠 Home</a>
-<canvas id="gameCanvas" width="800" height="300"></canvas>
+<div class="monitor-frame">
+    <a href="index.html" class="back-btn" data-i18n="backHome">🏠 Home</a>
+    <div class="scanlines"></div>
+    <canvas id="gameCanvas" width="800" height="300"></canvas>
+</div>
 
 <script src="lingue.js"></script>
 
 <script>
-    window.isGamePage = true; // Attiva le traduzioni
+    window.isGamePage = true; 
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+
+    // Colori Retro
+    const COLOR_NEON = "#33ff00";
+    const COLOR_BG = "#0d1a0d";
 
     // Variabili di gioco
     let dino = { x: 50, y: 250, width: 40, height: 40, dy: 0, jumpPower: -13, grounded: true };
@@ -34,122 +91,182 @@
     let isGameOver = false;
     let isPlaying = false;
 
-    // Disegno Nuvole (Decorazione)
+    // --- FUNZIONI DI DISEGNO SPRITE (Pixel Art fatta a codice) ---
+
+    function drawPixelDino(x, y, w, h) {
+        ctx.fillStyle = COLOR_NEON;
+        // Corpo
+        ctx.fillRect(x + 10, y + 15, 20, 25);
+        // Testa
+        ctx.fillRect(x + 20, y, 20, 15);
+        // Coda
+        ctx.fillRect(x, y + 20, 10, 10);
+        // Gambe (animazione semplice)
+        if (frame % 20 < 10 && dino.grounded) {
+            ctx.fillRect(x + 10, y + 40, 5, 5); // Gamba SX
+        } else if (dino.grounded) {
+            ctx.fillRect(x + 25, y + 40, 5, 5); // Gamba DX
+        } else {
+             ctx.fillRect(x + 15, y + 35, 10, 5); // Salto
+        }
+        // Occhio (buco nero)
+        ctx.fillStyle = COLOR_BG;
+        ctx.fillRect(x + 28, y + 3, 4, 4);
+    }
+
+    function drawCactus(x, y, w, h) {
+        ctx.fillStyle = COLOR_NEON;
+        // Fusto centrale
+        ctx.fillRect(x + w/3, y, w/3, h);
+        // Braccio SX
+        ctx.fillRect(x, y + 10, w/3, 5);
+        ctx.fillRect(x, y + 5, 5, 10);
+        // Braccio DX
+        ctx.fillRect(x + 2*w/3, y + 15, w/3, 5);
+        ctx.fillRect(x + w - 5, y + 5, 5, 15);
+    }
+
+    function drawRock(x, y, w, h) {
+        ctx.fillStyle = COLOR_NEON;
+        ctx.beginPath();
+        ctx.moveTo(x, y + h);
+        ctx.lineTo(x + 10, y + 5);
+        ctx.lineTo(x + 20, y + 10);
+        ctx.lineTo(x + 30, y);
+        ctx.lineTo(x + w, y + h);
+        ctx.fill();
+    }
+
+    function drawCloud(x, y, w) {
+        ctx.fillStyle = "rgba(51, 255, 0, 0.3)"; // Verde trasparente
+        ctx.beginPath();
+        ctx.arc(x, y, 15, 0, Math.PI * 2);
+        ctx.arc(x + 15, y - 10, 20, 0, Math.PI * 2);
+        ctx.arc(x + 30, y, 15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // --- LOGICA DI GIOCO ---
+
     function handleClouds() {
         if (frame % 150 === 0) {
-            clouds.push({ x: canvas.width, y: Math.random() * 100 + 20, w: 40 + Math.random() * 30 });
+            clouds.push({ x: canvas.width, y: Math.random() * 80 + 30 });
         }
-        ctx.fillStyle = "#535353";
         clouds.forEach((c, i) => {
-            c.x -= gameSpeed * 0.2; // Più lente
-            ctx.beginPath();
-            ctx.arc(c.x, c.y, c.w/2, 0, Math.PI * 2);
-            ctx.fill();
-            if (c.x + c.w < 0) clouds.splice(i, 1);
-        });
-    }
-
-    function drawDino() {
-        ctx.fillStyle = '#E0E0E0';
-        // Semplice forma Dino (Testa e corpo)
-        ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
-        ctx.fillRect(dino.x + 20, dino.y - 10, 20, 10); // Testa
-        
-        // Occhio
-        ctx.fillStyle = '#202124';
-        ctx.fillRect(dino.x + 30, dino.y - 8, 4, 4);
-    }
-
-    function drawObstacles() {
-        ctx.fillStyle = '#FF5252'; // Colore ostacolo (rosso neon spento)
-        obstacles.forEach(obs => {
-            // Disegno cactus stilizzato
-            ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-            obs.x -= gameSpeed;
+            c.x -= gameSpeed * 0.3; 
+            drawCloud(c.x, c.y);
+            if (c.x < -50) clouds.splice(i, 1);
         });
     }
 
     function update() {
         if (!isPlaying || isGameOver) return;
 
-        handleClouds();
-
         // Fisica Dino
         if (!dino.grounded) {
-            dino.dy += 0.7; // Gravità
+            dino.dy += 0.7; 
             dino.y += dino.dy;
         }
+        // Pavimento (Base 250px)
         if (dino.y >= 250) {
             dino.y = 250;
             dino.dy = 0;
             dino.grounded = true;
         }
 
-        // Generazione Ostacoli
-        if (frame % 90 === 0) { // Frequenza spawn
-            let height = Math.random() > 0.5 ? 40 : 60;
-            obstacles.push({ x: canvas.width, y: 290 - height, width: 25, height: height });
+        // Generazione Ostacoli (Cactus o Roccia)
+        if (frame % 100 === 0) { 
+            let type = Math.random() > 0.7 ? 'rock' : 'cactus';
+            let width, height, yPos;
+
+            if (type === 'cactus') {
+                width = 30; height = 50; yPos = 250; 
+            } else {
+                width = 40; height = 20; yPos = 280; // Roccia è bassa
+            }
+            
+            obstacles.push({ x: canvas.width, y: yPos, width: width, height: height, type: type });
         }
         
-        // Pulizia ostacoli
-        if (obstacles.length > 0 && obstacles[0].x < -30) obstacles.shift();
+        if (obstacles.length > 0 && obstacles[0].x < -50) obstacles.shift();
 
         // Collisioni
         obstacles.forEach(obs => {
-            if (dino.x < obs.x + obs.width - 5 && dino.x + dino.width - 5 > obs.x &&
-                dino.y < obs.y + obs.height && dino.y + dino.height > obs.y) {
+            // Aggiusto la hitbox per essere più precisi
+            if (dino.x < obs.x + obs.width - 10 && 
+                dino.x + dino.width - 10 > obs.x &&
+                dino.y < obs.y + obs.height && 
+                dino.y + dino.height > obs.y) {
                 isGameOver = true;
             }
         });
 
+        obstacles.forEach(obs => obs.x -= gameSpeed);
+
         score++;
-        if(score % 500 === 0) gameSpeed += 0.5; // Aumenta difficoltà
+        if(score % 500 === 0) gameSpeed += 0.5;
         frame++;
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Disegna linea terra
-        ctx.strokeStyle = "#535353";
+        // Disegna Terreno (linea pixelata)
+        ctx.strokeStyle = COLOR_NEON;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(0, 290);
         ctx.lineTo(canvas.width, 290);
         ctx.stroke();
 
+        // Nuvole sfondo
+        handleClouds();
+
         if (!isPlaying) {
-            ctx.fillStyle = "#E0E0E0";
-            ctx.font = "20px 'Courier New'";
+            ctx.fillStyle = COLOR_NEON;
+            ctx.font = "30px 'VT323'";
             ctx.textAlign = "center";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = COLOR_NEON;
             ctx.fillText(t('startMsg'), canvas.width / 2, canvas.height / 2);
-            // Preview Dino
-            drawDino(); 
+            ctx.shadowBlur = 0;
+            drawPixelDino(dino.x, dino.y, dino.width, dino.height);
             return;
         }
 
-        handleClouds(); // Disegna nuvole anche sopra background
-        drawDino();
-        drawObstacles();
+        // Disegna Dino
+        drawPixelDino(dino.x, dino.y, dino.width, dino.height);
 
-        // Punteggio (Tradotto)
-        ctx.fillStyle = "#ACACAC";
-        ctx.font = "18px 'Courier New'";
+        // Disegna Ostacoli
+        obstacles.forEach(obs => {
+            if (obs.type === 'cactus') {
+                drawCactus(obs.x, 290 - obs.height, obs.width, obs.height);
+            } else {
+                drawRock(obs.x, 290 - obs.height, obs.width, obs.height);
+            }
+        });
+
+        // UI Score
+        ctx.fillStyle = COLOR_NEON;
+        ctx.font = "24px 'VT323'";
         ctx.textAlign = "right";
-        ctx.fillText(t('score') + Math.floor(score / 10).toString().padStart(5, '0'), canvas.width - 20, 30);
+        ctx.fillText(t('score') + Math.floor(score / 10).toString().padStart(5, '0'), canvas.width - 20, 40);
 
         if (isGameOver) {
-            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            // Velo scuro
+            ctx.fillStyle = "rgba(13, 26, 13, 0.8)";
             ctx.fillRect(0,0,canvas.width, canvas.height);
             
-            ctx.fillStyle = "#FF5252";
-            ctx.font = "bold 40px 'Courier New'";
+            ctx.fillStyle = COLOR_NEON;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = COLOR_NEON;
+            ctx.font = "60px 'VT323'";
             ctx.textAlign = "center";
             ctx.fillText(t('gameOver'), canvas.width / 2, canvas.height / 2);
             
-            ctx.fillStyle = "#fff";
-            ctx.font = "20px 'Courier New'";
-            ctx.fillText(t('restartMsg'), canvas.width / 2, canvas.height / 2 + 50);
+            ctx.shadowBlur = 0;
+            ctx.font = "30px 'VT323'";
+            ctx.fillText(t('restartMsg'), canvas.width / 2, canvas.height / 2 + 60);
         }
     }
 
@@ -168,6 +285,17 @@
                 dino.dy = dino.jumpPower;
                 dino.grounded = false;
             }
+        }
+    });
+
+    // Supporto Touch/Click per mobile
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Evita scroll
+        if (!isPlaying) { isPlaying = true; return; }
+        if (isGameOver) { location.reload(); return; }
+        if (dino.grounded) {
+            dino.dy = dino.jumpPower;
+            dino.grounded = false;
         }
     });
 
