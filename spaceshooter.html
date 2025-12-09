@@ -2,67 +2,232 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter 3.0 - Retro Shapes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Space Shooter - Hybrid Edition</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     
     <style>
+        /* --- BASE (Comune) --- */
         body { 
-            font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; 
-            display: flex; flex-direction: column; min-height: 100vh; user-select: none;
-        }
-        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
-        .container { max-width: 800px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; flex: 1;}
-        
-        #gameCanvas {
-            background-color: #0d0d1a;
-            border: 4px solid #00979D;
-            display: block;
-            margin: 20px auto;
-            max-width: 100%;
-            cursor: none;
-            box-shadow: 0 0 20px rgba(0, 151, 157, 0.5);
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            background-color: #121212; 
+            color: #eee; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            min-height: 100vh; 
+            touch-action: none; 
+            user-select: none;
+            overflow: hidden;
         }
 
-        .btn-back {
-            display: inline-block; background-color: #666; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-top: 20px; transition: 0.3s;
+        /* --- ISTRUZIONI PC (Nascoste su mobile) --- */
+        .pc-instructions {
+            display: none; /* Di base nascosto */
+            text-align: center;
+            margin-bottom: 20px;
+            color: #888;
         }
-        .btn-back:hover { background-color: #444; }
+        .pc-key {
+            display: inline-block; padding: 5px 10px; border: 1px solid #555; border-radius: 5px; background: #222; margin: 0 5px; font-weight: bold; color: #00979D;
+        }
 
-        .controls-info { background: #e1ecf4; padding: 10px; border-radius: 5px; display: inline-block; margin-bottom: 15px; }
-        #scoreBoard { font-size: 1.8rem; font-weight: bold; color: #00979D; margin: 10px 0; }
-        
+        /* --- CONTENITORE PRINCIPALE (LA SCOCCA) --- */
+        .game-case {
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transition: all 0.5s ease;
+        }
+
+        /* --- LO SCHERMO --- */
+        .screen-container {
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-glass {
+            position: relative;
+            flex-grow: 1;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* HUD Punteggio */
+        #scoreBoard {
+            position: absolute; top: 10px; left: 10px;
+            color: #00979D; font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.5rem; z-index: 5;
+            text-shadow: 0 0 5px rgba(0, 151, 157, 0.8);
+        }
+
+        /* --- CONTROLLI MOBILE (Nascosti su PC) --- */
+        .mobile-controls {
+            display: none; /* Di base nascosto, lo attiviamo con media query */
+        }
+
+        /* =========================================
+           STILE MOBILE (GAME BOY) - Schermi < 800px
+           ========================================= */
+        @media (max-width: 800px) {
+            .game-case {
+                background-color: #c0c0c0; /* Grigio GameBoy */
+                width: 100%;
+                height: 100vh; /* Schermo intero */
+                border-radius: 0;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            .screen-container {
+                background-color: #777; /* Bordo schermo GameBoy */
+                padding: 10px 10px 0 10px;
+                border-radius: 10px 10px 40px 10px;
+                flex-grow: 1; /* Occupa spazio sopra */
+                margin-bottom: 15px;
+                box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            }
+
+            .screen-glass {
+                background: #0d0d1a;
+                border: 2px solid #444;
+            }
+
+            /* Attiviamo i controlli solo qui */
+            .mobile-controls {
+                display: flex;
+                height: 200px;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 10px;
+                position: relative;
+            }
+
+            /* Stili Bottoni Mobile (D-Pad e A) */
+            .d-pad { width: 120px; height: 120px; position: relative; }
+            .d-key { background: #333; position: absolute; border-radius: 4px; box-shadow: 2px 2px 0 #000; }
+            .d-key:active, .d-key.pressed { background: #555; transform: translate(1px,1px); box-shadow: none;}
+            .d-up { width: 40px; height: 40px; top: 0; left: 40px; }
+            .d-down { width: 40px; height: 40px; bottom: 0; left: 40px; }
+            .d-left { width: 40px; height: 40px; top: 40px; left: 0; }
+            .d-right { width: 40px; height: 40px; top: 40px; right: 0; }
+            .d-center { width: 40px; height: 40px; top: 40px; left: 40px; background: #333; }
+
+            .btn-action {
+                width: 70px; height: 70px; background: #ff4444; border-radius: 50%;
+                box-shadow: 2px 2px 0 #800000; display: flex; align-items: center; justify-content: center;
+                font-weight: bold; font-size: 1.5rem; color: rgba(0,0,0,0.3);
+            }
+            .btn-action:active, .btn-action.pressed { transform: translate(1px,1px); box-shadow: none; }
+
+            .btn-reset {
+                position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%) rotate(-20deg);
+                width: 50px; height: 15px; background: #666; border-radius: 10px; border: none;
+            }
+        }
+
+        /* =========================================
+           STILE PC (CABINATO) - Schermi > 800px
+           ========================================= */
+        @media (min-width: 801px) {
+            .pc-instructions { display: block; } /* Mostra istruzioni tastiera */
+
+            .game-case {
+                width: 800px;
+                height: 600px;
+                background-color: #222;
+                border: 10px solid #444; /* Cornice Cabinato */
+                border-radius: 20px;
+                padding: 20px;
+                position: relative;
+            }
+
+            /* Effetto Neon attorno al cabinato */
+            .game-case::after {
+                content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px;
+                border: 5px solid #00979D; border-radius: 30px; z-index: -1;
+                box-shadow: 0 0 30px #00979D;
+            }
+
+            .screen-container {
+                width: 100%; height: 100%;
+                background: #000;
+                border-radius: 10px;
+                border: 4px solid #111;
+            }
+            
+            .screen-glass {
+                border: none;
+                /* Effetto CRT Scanlines leggero per PC */
+                background: repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 0, 0, 0.15),
+                    rgba(0, 0, 0, 0.15) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+                background-size: 100% 2px;
+            }
+        }
+
+        /* Overlay Game Over (Comune) */
         #gameOverOverlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85); color: white; padding: 40px; border-radius: 10px;
-            text-align: center; display: none; z-index: 10;
+            background: rgba(0,0,0,0.9); border: 2px solid #00979D; color: white; padding: 30px;
+            text-align: center; display: none; z-index: 10; min-width: 200px;
         }
-        .container { position: relative; }
+        .btn-retry {
+            margin-top: 15px; padding: 10px 20px; background: #00979D; color: white; border: none; font-size: 1rem; cursor: pointer;
+        }
+
+        .home-link {
+            position: fixed; top: 20px; right: 20px; color: #666; text-decoration: none; font-size: 0.9rem; z-index: 100;
+        }
+        .home-link:hover { color: #fff; }
+
     </style>
 </head>
 <body>
 
-<header>
-    <h1>🚀 Space Shooter 3.0</h1>
-</header>
+<a href="index.html" class="home-link">✖ ESCI</a>
 
-<div class="container">
-    <div class="controls-info">
-        <p>🕹️ <strong>Frecce Direzionali</strong> per muoverti.</p>
-        <p>🔥 <strong>SPAZIO</strong> per sparare.</p>
+<div class="pc-instructions">
+    COMANDI: <span class="pc-key">←</span> <span class="pc-key">↑</span> <span class="pc-key">↓</span> <span class="pc-key">→</span> MUOVI &nbsp;&nbsp; <span class="pc-key">SPACE</span> SPARA
+</div>
+
+<div class="game-case">
+    <div class="screen-container">
+        <div class="screen-glass">
+            <div id="scoreBoard">SCORE: 0000</div>
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="gameOverOverlay">
+                <h2 style="color: #ff4444; margin: 0 0 10px 0;">GAME OVER</h2>
+                <p id="finalScore">Punti: 0</p>
+                <button class="btn-retry" onclick="resetGame()">RIPROVA</button>
+            </div>
+        </div>
     </div>
-    
-    <div id="scoreBoard">Punti: 0</div>
-    <canvas id="gameCanvas" width="600" height="500"></canvas>
 
-    <div id="gameOverOverlay">
-        <h2 style="color: #ff4444; font-size: 2.5rem; margin: 0;">GAME OVER</h2>
-        <p id="finalScore">Punteggio: 0</p>
-        <button onclick="resetGame()" style="padding: 10px 20px; font-size: 1.2rem; background: #00979D; color: white; border: none; border-radius: 5px; cursor: pointer;">🔄 Riprova</button>
+    <div class="mobile-controls">
+        <div class="d-pad">
+            <div class="d-key d-up" id="btnUp"></div>
+            <div class="d-key d-left" id="btnLeft"></div>
+            <div class="d-center"></div>
+            <div class="d-key d-right" id="btnRight"></div>
+            <div class="d-key d-down" id="btnDown"></div>
+        </div>
+        
+        <button class="btn-reset" id="btnResetMobile"></button>
+        
+        <div class="btn-action" id="btnFire">A</div>
     </div>
-
-    <br>
-    <a href="index.html" class="btn-back">⬅ Torna alla Home</a>
 </div>
 
 <script>
@@ -72,255 +237,163 @@
     const gameOverOverlay = document.getElementById('gameOverOverlay');
     const finalScoreText = document.getElementById('finalScore');
 
+    // Funzione Resize Intelligente
+    function resizeCanvas() {
+        // Il canvas prende la dimensione del suo contenitore (screen-glass)
+        const container = document.querySelector('.screen-glass');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    
+    // --- VARIABILI DI GIOCO ---
     let score = 0;
     let gameOver = false;
     let frameCount = 0;
-    
     const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, Space: false };
 
-    // --- OGGETTI ---
-    const player = {
-        x: canvas.width / 2 - 20, y: canvas.height - 60, width: 40, height: 40, speed: 5
-    };
+    // --- SETUP CONTROLLI TOUCH (Solo Mobile) ---
+    function setupTouch(elemId, keyName) {
+        const el = document.getElementById(elemId);
+        if(!el) return; // Se siamo su PC e l'elemento è nascosto/non esiste
+        
+        const press = (e) => { e.preventDefault(); keys[keyName] = true; el.classList.add('pressed'); };
+        const release = (e) => { e.preventDefault(); keys[keyName] = false; el.classList.remove('pressed'); };
 
+        el.addEventListener('touchstart', press);
+        el.addEventListener('touchend', release);
+        el.addEventListener('mousedown', press); // Per debuggare col mouse anche i tasti mobile
+        el.addEventListener('mouseup', release);
+    }
+
+    setupTouch('btnUp', 'ArrowUp');
+    setupTouch('btnDown', 'ArrowDown');
+    setupTouch('btnLeft', 'ArrowLeft');
+    setupTouch('btnRight', 'ArrowRight');
+    setupTouch('btnFire', 'Space');
+    
+    document.getElementById('btnResetMobile').addEventListener('click', resetGame);
+
+    // --- INPUT TASTIERA (PC) ---
+    window.addEventListener('keydown', e => {
+        if(e.code === 'Space') keys.Space = true;
+        if(e.key === 'ArrowUp') keys.ArrowUp = true;
+        if(e.key === 'ArrowDown') keys.ArrowDown = true;
+        if(e.key === 'ArrowLeft') keys.ArrowLeft = true;
+        if(e.key === 'ArrowRight') keys.ArrowRight = true;
+    });
+    window.addEventListener('keyup', e => {
+        if(e.code === 'Space') keys.Space = false;
+        if(e.key === 'ArrowUp') keys.ArrowUp = false;
+        if(e.key === 'ArrowDown') keys.ArrowDown = false;
+        if(e.key === 'ArrowLeft') keys.ArrowLeft = false;
+        if(e.key === 'ArrowRight') keys.ArrowRight = false;
+    });
+
+    // --- LOGICA DI GIOCO ---
+    const player = { x: 100, y: 300, width: 30, height: 30, speed: 6 };
     let bullets = [];
     let enemies = [];
     let stars = [];
-
-    // Tipi di nemici disponibili
     const enemyTypes = ['invader', 'hunter', 'saucer', 'crystal'];
 
-    // --- FUNZIONI DI DISEGNO (NUOVE!) ---
-
-    // Disegna il giocatore (un semplice razzo vettoriale)
     function drawPlayer(x, y, w, h) {
-        ctx.fillStyle = '#00979D';
+        ctx.fillStyle = '#00e5ff';
         ctx.beginPath();
-        ctx.moveTo(x + w / 2, y); // Punta
-        ctx.lineTo(x, y + h); // Base sx
-        ctx.lineTo(x + w / 2, y + h - 10); // Incavo centrale
-        ctx.lineTo(x + w, y + h); // Base dx
-        ctx.closePath();
+        ctx.moveTo(x + w / 2, y);
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x + w / 2, y + h - 8);
+        ctx.lineTo(x + w, y + h);
         ctx.fill();
     }
 
-    // Funzione principale che decide quale nemico disegnare
     function drawEnemy(enemy) {
         const { x, y, width: w, height: h, color, type } = enemy;
         ctx.fillStyle = color;
-        
-        switch(type) {
-            case 'invader': // Classico alieno "pixelloso"
-                ctx.fillRect(x + w*0.25, y, w*0.5, h*0.3); // Testa
-                ctx.fillRect(x, y + h*0.3, w, h*0.4); // Corpo
-                ctx.fillRect(x + w*0.1, y + h*0.7, w*0.2, h*0.3); // Zampa sx
-                ctx.fillRect(x + w*0.7, y + h*0.7, w*0.2, h*0.3); // Zampa dx
-                break;
-            case 'hunter': // Triangolo aggressivo
-                ctx.beginPath();
-                ctx.moveTo(x + w / 2, y + h); // Punta in basso
-                ctx.lineTo(x, y); // Alto sx
-                ctx.lineTo(x + w, y); // Alto dx
-                ctx.closePath();
-                ctx.fill();
-                break;
-            case 'saucer': // Disco volante
-                ctx.beginPath();
-                ctx.ellipse(x + w/2, y + h/2, w/2, h/4, 0, 0, Math.PI * 2); // Disco
-                ctx.fill();
-                ctx.fillStyle = '#add8e6'; // Cupola azzurra
-                ctx.beginPath();
-                ctx.arc(x + w/2, y + h/2 - 5, w/4, 0, Math.PI, true); // Semicerchio sopra
-                ctx.fill();
-                break;
-            case 'crystal': // Rombo/Diamante
-                ctx.beginPath();
-                ctx.moveTo(x + w/2, y); // Alto
-                ctx.lineTo(x + w, y + h/2); // Destra
-                ctx.lineTo(x + w/2, y + h); // Basso
-                ctx.lineTo(x, y + h/2); // Sinistra
-                ctx.closePath();
-                ctx.fill();
-                break;
-        }
-    }
-
-
-    // --- LOGICA DI GIOCO ---
-
-    function createStars() {
-        for(let i=0; i<60; i++) {
-            stars.push({
-                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-                size: Math.random() * 1.5, speed: Math.random() * 2 + 0.5
-            });
-        }
-    }
-
-    function drawStars() {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        stars.forEach(star => {
-            ctx.fillRect(star.x, star.y, star.size, star.size);
-            star.y += star.speed;
-            if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
-        });
+        if(type === 'invader') ctx.fillRect(x, y, w, h);
+        else if(type === 'hunter') { ctx.beginPath(); ctx.moveTo(x+w/2, y+h); ctx.lineTo(x, y); ctx.lineTo(x+w, y); ctx.fill(); }
+        else if(type === 'saucer') { ctx.beginPath(); ctx.ellipse(x+w/2, y+h/2, w/2, h/4, 0,0,Math.PI*2); ctx.fill(); }
+        else { ctx.beginPath(); ctx.moveTo(x+w/2, y); ctx.lineTo(x+w, y+h/2); ctx.lineTo(x+w/2, y+h); ctx.lineTo(x, y+h/2); ctx.fill(); }
     }
 
     function spawnEnemy() {
-        let spawnRate = 60; if (score > 500) spawnRate = 45; if (score > 1000) spawnRate = 30;
-
+        let spawnRate = 60; if (score > 500) spawnRate = 45;
         if (frameCount % spawnRate === 0) {
             const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-            let color;
-            // Assegna un colore in base al tipo
-            if (type === 'invader') color = '#32CD32'; // Lime Green
-            else if (type === 'hunter') color = '#FF4500'; // Orange Red
-            else if (type === 'saucer') color = '#9370DB'; // Medium Purple
-            else if (type === 'crystal') color = '#00BFFF'; // Deep Sky Blue
-
+            let color = type === 'hunter' ? '#FF4500' : (type === 'saucer' ? '#9370DB' : (type === 'crystal' ? '#00BFFF' : '#32CD32'));
             enemies.push({
-                x: Math.random() * (canvas.width - 40),
-                y: -40, width: 40, height: 40,
-                type: type,
-                color: color,
-                speed: 2 + Math.random() * 2
+                x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30,
+                type: type, color: color, speed: 2 + Math.random() * 3
             });
         }
     }
 
-    function movePlayer() {
+    function update() {
+        if (gameOver) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Stelle Sfondo
+        if(stars.length < 50) stars.push({ x: Math.random()*canvas.width, y: 0, size: Math.random()*2, speed: Math.random()*4+1 });
+        stars.forEach((s, i) => { 
+            ctx.fillStyle = "white"; ctx.fillRect(s.x, s.y, s.size, s.size); 
+            s.y += s.speed; if(s.y > canvas.height) stars.splice(i, 1); 
+        });
+
+        // Movimento Player
         if (keys.ArrowUp && player.y > 0) player.y -= player.speed;
         if (keys.ArrowDown && player.y < canvas.height - player.height) player.y += player.speed;
         if (keys.ArrowLeft && player.x > 0) player.x -= player.speed;
         if (keys.ArrowRight && player.x < canvas.width - player.width) player.x += player.speed;
-    }
+        if (keys.Space && frameCount % 10 === 0) bullets.push({ x: player.x+13, y: player.y, width: 4, height: 10, color: '#FFD700', speed: 10 });
 
-    function shoot() {
-        if (frameCount % 10 === 0) {
-            bullets.push({
-                x: player.x + player.width / 2 - 2, 
-                y: player.y, width: 4, height: 12, color: '#FFD700', speed: 8
-            });
+        drawPlayer(player.x, player.y, player.width, player.height);
+
+        // Proiettili e Collisioni
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            let b = bullets[i]; b.y -= b.speed;
+            ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.width, b.height);
+            if (b.y < 0) bullets.splice(i, 1);
         }
+
+        spawnEnemy();
+        
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            let e = enemies[i]; e.y += e.speed;
+            drawEnemy(e);
+
+            // Collisione Nemico-Player
+            let pad = 4;
+            if (player.x+pad < e.x+e.width-pad && player.x+player.width-pad > e.x+pad && player.y+pad < e.y+e.height-pad && player.y+player.height-pad > e.y+pad) {
+                gameOver = true; gameOverOverlay.style.display = 'block'; finalScoreText.innerText = "Punti: " + score;
+            }
+
+            if (e.y > canvas.height) { enemies.splice(i, 1); continue; }
+
+            // Collisione Nemico-Proiettile
+            for (let j = bullets.length - 1; j >= 0; j--) {
+                let b = bullets[j];
+                if (b.x < e.x + e.width && b.x + b.width > e.x && b.y < e.y + e.height && b.y + b.height > e.y) {
+                    score += 20; scoreElement.innerText = "SCORE: " + score.toString().padStart(4, '0');
+                    enemies.splice(i, 1); bullets.splice(j, 1);
+                    break;
+                }
+            }
+        }
+        frameCount++;
+        requestAnimationFrame(update);
     }
 
-    function checkCollision(rect1, rect2) {
-        let padding = 2; // Hitbox leggermente più piccola per essere onesti
-        return (
-            rect1.x + padding < rect2.x + rect2.width - padding &&
-            rect1.x + rect1.width - padding > rect2.x + padding &&
-            rect1.y + padding < rect2.y + rect2.height - padding &&
-            rect1.y + rect1.height - padding > rect2.y + padding
-        );
-    }
-
-    function endGame() {
-        gameOver = true;
-        gameOverOverlay.style.display = 'block';
-        finalScoreText.innerText = "Punteggio Finale: " + score;
-    }
-
-    window.resetGame = function() {
-        gameOver = false; score = 0; scoreElement.innerText = "Punti: 0";
-        enemies = []; bullets = [];
-        player.x = canvas.width / 2 - 20; player.y = canvas.height - 60;
+    function resetGame() {
+        gameOver = false; score = 0; scoreElement.innerText = "SCORE: 0000";
+        enemies = []; bullets = []; player.x = canvas.width/2-15; player.y = canvas.height-50;
         gameOverOverlay.style.display = 'none';
         update();
     }
 
-   // Loop Principale Aggiornato
-function update() {
-    if (gameOver) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    drawStars();
-    movePlayer();
-    if (keys.Space) shoot();
-
-    // Disegna Giocatore
-    drawPlayer(player.x, player.y, player.width, player.height);
-
-    // Gestione Proiettili (Ciclo all'indietro per poter rimuovere elementi in sicurezza)
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        let bullet = bullets[i];
-        bullet.y -= bullet.speed;
-        
-        ctx.fillStyle = bullet.color;
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        
-        // Rimuovi proiettile se esce dallo schermo
-        if (bullet.y < 0) {
-            bullets.splice(i, 1);
-        }
-    }
-
-    // Gestione Nemici (Ciclo all'indietro)
-    spawnEnemy();
-    
-    for (let i = enemies.length - 1; i >= 0; i--) {
-        let enemy = enemies[i];
-        enemy.y += enemy.speed;
-        
-        drawEnemy(enemy);
-
-        // Game Over se toccano il giocatore
-        if (checkCollision(player, enemy)) endGame();
-        
-        // Rimuovi se escono dallo schermo (in basso)
-        if (enemy.y > canvas.height) {
-            enemies.splice(i, 1);
-            continue; // Passa al prossimo nemico
-        }
-
-        // CONTROLLO COLLISIONE CON PROIETTILI
-        // Cicliamo anche i proiettili all'indietro
-        let enemyHit = false;
-        for (let j = bullets.length - 1; j >= 0; j--) {
-            let bullet = bullets[j];
-            
-            if (checkCollision(bullet, enemy)) {
-                // COLPITO!
-                score += 20;
-                scoreElement.innerText = "Punti: " + score;
-                
-                // Effetto visivo "esplosione" veloce (un lampo bianco)
-                ctx.fillStyle = "white";
-                ctx.beginPath();
-                ctx.arc(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 20, 0, Math.PI*2);
-                ctx.fill();
-
-                // Rimuovi nemico e proiettile
-                enemies.splice(i, 1);
-                bullets.splice(j, 1);
-                enemyHit = true;
-                break; // Esci dal ciclo proiettili perché il nemico è morto
-            }
-        }
-    }
-
-    frameCount++;
-    requestAnimationFrame(update);
-}
-  // --- INPUT ---
-    window.addEventListener('keydown', e => {
-        if (e.code === 'Space') keys.Space = true;
-        if (e.key === 'ArrowUp') keys.ArrowUp = true;
-        if (e.key === 'ArrowDown') keys.ArrowDown = true;
-        if (e.key === 'ArrowLeft') keys.ArrowLeft = true;
-        if (e.key === 'ArrowRight') keys.ArrowRight = true;
-        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) e.preventDefault();
-    });
-    window.addEventListener('keyup', e => {
-        if (e.code === 'Space') keys.Space = false;
-        if (e.key === 'ArrowUp') keys.ArrowUp = false;
-        if (e.key === 'ArrowDown') keys.ArrowDown = false;
-        if (e.key === 'ArrowLeft') keys.ArrowLeft = false;
-        if (e.key === 'ArrowRight') keys.ArrowRight = false;
-    });
-
-    createStars();
-    update();
-
+    // Init
+    resizeCanvas();
+    setTimeout(resizeCanvas, 100); // Hack per caricamento sicuro
+    resetGame();
 </script>
 </body>
 </html>
