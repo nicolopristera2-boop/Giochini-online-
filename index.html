@@ -16,7 +16,7 @@
             padding: 2rem; 
             text-align: center; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            position: relative; /* Necessario per posizionare i bottoni lingua */
+            position: relative; 
         }
 
         /* --- Cambio Lingua --- */
@@ -101,7 +101,9 @@
             transition: background-color 0.2s;
         }
         .btn-play:hover { background-color: #007a80; }
-        .btn-play.disabled { background-color: #ccc; pointer-events: none; }
+        
+        /* Stile per bottone disabilitato (In Arrivo) */
+        .btn-play.disabled { background-color: #ccc; pointer-events: none; cursor: default; }
 
         /* --- Footer --- */
         footer {
@@ -152,13 +154,22 @@
             </div>
 
             <div class="project-card">
-    <div class="card-image">🧠</div>
-    <div class="card-content">
-        <h3 data-i18n="game3Title">Memory</h3>
-        <p data-i18n="game3Desc">Metti alla prova la tua memoria trovando tutte le coppie.</p>
-        <a href="memory.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
-    </div>
-</div>
+                <div class="card-image">🧠</div>
+                <div class="card-content">
+                    <h3 data-i18n="game3Title">Memory</h3>
+                    <p data-i18n="game3Desc">Metti alla prova la tua memoria trovando tutte le coppie.</p>
+                    <a href="memory.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">🕵️‍♂️</div>
+                <div class="card-content">
+                    <h3 data-i18n="game4Title">Avventura Grafica</h3>
+                    <p data-i18n="game4Desc">Un mistero da risolvere in questa avventura punta e clicca.</p>
+                    <a href="#" class="btn-play disabled" data-i18n="comingSoon">🚧 In Arrivo</a>
+                </div>
+            </div>
 
         </div>
     </section>
@@ -184,9 +195,13 @@
             
             game3Title: "Memory",
             game3Desc: "Metti alla prova la tua memoria trovando tutte le coppie.",
+
+            // Nuovo gioco
+            game4Title: "Avventura Grafica",
+            game4Desc: "Un mistero da risolvere in questa avventura punta e clicca.",
             
             playBtn: "🎮 Gioca Ora",
-            comingSoon: "🚧 In Arrivo",
+            comingSoon: "🚧 In Arrivo", // Usato per il bottone disabilitato
             footerText: "&copy; 2025 Sala Giochi Online. Buon divertimento!"
         },
         en: {
@@ -202,6 +217,10 @@
             
             game3Title: "Memory",
             game3Desc: "Test your memory by finding all the matching pairs.",
+
+            // New Game
+            game4Title: "Graphic Adventure",
+            game4Desc: "A mystery to solve in this point-and-click adventure.",
             
             playBtn: "🎮 Play Now",
             comingSoon: "🚧 Coming Soon",
@@ -220,6 +239,10 @@
             
             game3Title: "Pexeso", 
             game3Desc: "Otestuj svoju pamäť nájdením všetkých párov.",
+
+            // Nova Hra
+            game4Title: "Grafická Adventúra",
+            game4Desc: "Záhada na vyriešenie v tejto point-and-click adventúre.",
             
             playBtn: "🎮 Hrať teraz",
             comingSoon: "🚧 Čoskoro",
@@ -229,35 +252,18 @@
 
     // --- FUNZIONE CAMBIO LINGUA ---
     function setLanguage(lang) {
-        // 1. Trova tutti gli elementi che hanno l'attributo 'data-i18n'
         const elements = document.querySelectorAll('[data-i18n]');
 
-        // 2. Per ogni elemento, cambia il testo
         elements.forEach(element => {
-            const key = element.getAttribute('data-i18n'); // es: 'mainTitle'
-            
-            // Controlla se esiste la traduzione per evitare errori
+            const key = element.getAttribute('data-i18n');
             if (translations[lang] && translations[lang][key]) {
                 element.innerHTML = translations[lang][key];
             }
         });
         
-        // (Opzionale) Cambia l'attributo lang del tag HTML
         document.documentElement.lang = lang;
     }
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
