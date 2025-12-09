@@ -3,260 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/808/808439.png">
-
-    <title>Memory - Gioca</title>
+    <title>Memory Game</title>
     <style>
-        /* --- Stile Base (uguale agli altri file) --- */
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f4; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background-color: #00979D; color: white; padding: 2rem; text-align: center; }
-        .container { max-width: 640px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center; flex: 1; }
-
-        /* --- Griglia del Memory --- */
-        .memory-game {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 colonne */
-            gap: 10px;
-            margin-top: 20px;
-            perspective: 1000px; /* Per effetto 3D (opzionale) */
-        }
-
-        /* --- La Carta --- */
-        .memory-card {
-            height: 100px;
-            position: relative;
-            background-color: #00979D; /* Colore del "retro" della carta */
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            user-select: none;
-            transition: transform 0.2s, background-color 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .memory-card:active { transform: scale(0.95); }
-
-        /* Quando la carta è girata o indovinata */
-        .memory-card.flip, .memory-card.matched {
-            background-color: #fff;
-            border: 2px solid #00979D;
-            cursor: default;
-        }
-
-        /* Nascondi l'emoji se la carta non è girata */
-        .memory-card .front-face { display: none; }
-        .memory-card.flip .front-face, .memory-card.matched .front-face { display: block; }
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        .header { margin-top: 20px; text-align: center; }
+        .back-btn { position: absolute; top: 20px; left: 20px; color: white; text-decoration: none; font-weight: bold; }
         
-        /* Icona del punto interrogativo sul retro */
-        .back-face { color: rgba(255,255,255,0.5); font-size: 2rem; }
-        .memory-card.flip .back-face, .memory-card.matched .back-face { display: none; }
-
-        /* --- Info Panel (Mosse e Tempo) --- */
-        .info-panel {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .btn-back {
-            display: inline-block;
-            background-color: #666;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 30px;
-        }
-        .btn-back:hover { background-color: #444; }
-
-        #winMessage { display: none; color: #00979D; margin-top: 20px; }
+        .game-info { display: flex; gap: 20px; margin: 20px 0; font-size: 1.2rem; }
         
-        button.restart-btn {
-            background-color: #00979D; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; margin-top: 10px;
-        }
-        button.restart-btn:hover { background-color: #007a80; }
-
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 500px; margin: 0 auto; }
+        
+        .card { width: 80px; height: 80px; background-color: #34495e; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 2rem; transition: transform 0.3s; transform-style: preserve-3d; }
+        .card.flipped { background-color: #f1c40f; transform: rotateY(180deg); }
+        .card.matched { background-color: #2ecc71; visibility: hidden; } /* Oppure lascia visibile ma verde */
+        
+        .btn-restart { padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; margin-top: 30px; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>🧠 Memory Game</h1>
-</header>
+<a href="index.html" class="back-btn" data-i18n="backHome">🏠 Home</a>
 
-<div class="container">
-    
-    <div class="info-panel">
-        <span id="moves">Mosse: 0</span>
-        <span id="timer">Tempo: 0s</span>
+<div class="header">
+    <h1 data-i18n="game3Title">Memory</h1>
+    <div class="game-info">
+        <span id="movesText"><span data-i18n="moves">Mosse: </span> <span id="moves">0</span></span>
+        <span id="timeText"><span data-i18n="time">Tempo: </span> <span id="time">0</span>s</span>
     </div>
-
-    <div class="memory-game" id="gameBoard">
-        </div>
-
-    <div id="winMessage">
-        <h2>🎉 Hai Vinto! 🎉</h2>
-        <p>Ottimo lavoro!</p>
-        <button class="restart-btn" onclick="startGame()">Gioca Ancora</button>
-    </div>
-
-    <a href="index.html" class="btn-back">⬅ Torna alla Home</a>
 </div>
 
+<div class="grid" id="grid"></div>
+
+<button class="btn-restart" onclick="location.reload()" data-i18n="restartMsg">Ricomincia</button>
+
+<script src="lingue.js"></script>
 <script>
-    const gameBoard = document.getElementById('gameBoard');
-    const movesElement = document.getElementById('moves');
-    const timerElement = document.getElementById('timer');
-    const winMessage = document.getElementById('winMessage');
+    window.isGamePage = true;
 
-    // Lista delle icone (8 coppie = 16 carte)
-    const emojis = ['🍕', '🍕', '🚀', '🚀', '🐱', '🐱', '🌵', '🌵', '🎸', '🎸', '🍦', '🍦', '💎', '💎', '🎈', '🎈'];
+    const emojis = ['🍎','🍎','🍌','🍌','🍇','🍇','🍒','🍒','🐶','🐶','🐱','🐱','🐭','🐭','🐹','🐹'];
+    let cards = [...emojis].sort(() => 0.5 - Math.random());
     
-    let cards = []; // Conterrà gli elementi HTML
-    let hasFlippedCard = false;
-    let lockBoard = false; // Blocca il click se stiamo aspettando che le carte si girino
-    let firstCard, secondCard;
+    let grid = document.getElementById('grid');
+    let movesDisplay = document.getElementById('moves');
+    let timeDisplay = document.getElementById('time');
+    
+    let flippedCards = [];
     let moves = 0;
-    let matchedPairs = 0;
-    let time = 0;
-    let timerInterval;
-
-    function shuffle(array) {
-        // Algoritmo di mescolamento (Fisher-Yates)
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    function createBoard() {
-        gameBoard.innerHTML = ''; // Pulisci la tavola
-        const shuffledEmojis = shuffle([...emojis]); // Crea una copia e mescola
-
-        shuffledEmojis.forEach(emoji => {
-            // Crea l'elemento carta
-            const card = document.createElement('div');
-            card.classList.add('memory-card');
-            card.dataset.framework = emoji; // Salviamo il valore per il confronto
-
-            // Contenuto HTML della carta (Fronte e Retro)
-            card.innerHTML = `
-                <span class="front-face">${emoji}</span>
-                <span class="back-face">❓</span>
-            `;
-
-            // Aggiungi evento click
-            card.addEventListener('click', flipCard);
-            
-            gameBoard.appendChild(card);
-            cards.push(card);
-        });
-    }
-
-    function flipCard() {
-        if (lockBoard) return; // Se bloccato, esci
-        if (this === firstCard) return; // Se clicchi due volte la stessa carta, esci
-
-        this.classList.add('flip');
-
-        if (!hasFlippedCard) {
-            // Primo click
-            hasFlippedCard = true;
-            firstCard = this;
-            return;
-        }
-
-        // Secondo click
-        secondCard = this;
-        incrementMoves();
-        checkForMatch();
-    }
-
-    function checkForMatch() {
-        // Controlla se il data-framework (l'emoji) è uguale
-        let isMatch = firstCard.dataset.framework === secondCard.dataset.framework;
-
-        isMatch ? disableCards() : unflipCards();
-    }
-
-    function disableCards() {
-        // È una coppia!
-        firstCard.removeEventListener('click', flipCard);
-        secondCard.removeEventListener('click', flipCard);
-        
-        firstCard.classList.add('matched');
-        secondCard.classList.add('matched');
-
-        matchedPairs++;
-        if (matchedPairs === emojis.length / 2) {
-            endGame();
-        }
-
-        resetBoard();
-    }
-
-    function unflipCards() {
-        lockBoard = true; // Blocca tutto
-        // Aspetta 1 secondo e poi gira le carte
-        setTimeout(() => {
-            firstCard.classList.remove('flip');
-            secondCard.classList.remove('flip');
-            resetBoard();
-        }, 1000);
-    }
-
-    function resetBoard() {
-        [hasFlippedCard, lockBoard] = [false, false];
-        [firstCard, secondCard] = [null, null];
-    }
-
-    function incrementMoves() {
-        moves++;
-        movesElement.innerText = `Mosse: ${moves}`;
-        // Avvia il timer al primo movimento se non è partito
-        if (moves === 1) startTimer();
-    }
+    let timer;
+    let seconds = 0;
+    let matches = 0;
+    let gameStarted = false;
 
     function startTimer() {
-        clearInterval(timerInterval);
-        time = 0;
-        timerInterval = setInterval(() => {
-            time++;
-            timerElement.innerText = `Tempo: ${time}s`;
+        if(gameStarted) return;
+        gameStarted = true;
+        timer = setInterval(() => {
+            seconds++;
+            timeDisplay.innerText = seconds;
         }, 1000);
     }
 
-    function endGame() {
-        clearInterval(timerInterval);
-        setTimeout(() => {
-            winMessage.style.display = 'block';
-            gameBoard.style.display = 'none'; // Nasconde le carte per mostrare il messaggio
-        }, 500);
+    // Creazione Griglia
+    cards.forEach((emoji, index) => {
+        let card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.emoji = emoji;
+        card.dataset.index = index;
+        
+        // Contenuto nascosto inizialmente
+        let content = document.createElement('span');
+        content.innerText = emoji;
+        content.style.opacity = '0';
+        card.appendChild(content);
+
+        card.addEventListener('click', flipCard);
+        grid.appendChild(card);
+    });
+
+    function flipCard() {
+        if (!gameStarted) startTimer();
+        
+        let card = this;
+        if (card.classList.contains('flipped') || flippedCards.length >= 2) return;
+
+        card.classList.add('flipped');
+        card.firstChild.style.opacity = '1';
+        flippedCards.push(card);
+
+        if (flippedCards.length === 2) {
+            moves++;
+            movesDisplay.innerText = moves;
+            checkMatch();
+        }
     }
 
-    function startGame() {
-        moves = 0;
-        matchedPairs = 0;
-        time = 0;
-        movesElement.innerText = 'Mosse: 0';
-        timerElement.innerText = 'Tempo: 0s';
-        winMessage.style.display = 'none';
-        gameBoard.style.display = 'grid';
-        clearInterval(timerInterval);
-        createBoard();
+    function checkMatch() {
+        let [c1, c2] = flippedCards;
+        
+        if (c1.dataset.emoji === c2.dataset.emoji) {
+            // Match!
+            c1.classList.add('matched');
+            c2.classList.add('matched');
+            flippedCards = [];
+            matches++;
+            
+            if (matches === emojis.length / 2) {
+                clearInterval(timer);
+                // Usa t() per il messaggio di vittoria
+                setTimeout(() => alert(t('youWin') + "\n" + t('score') + moves), 500);
+            }
+        } else {
+            // No Match
+            setTimeout(() => {
+                c1.classList.remove('flipped');
+                c1.firstChild.style.opacity = '0';
+                c2.classList.remove('flipped');
+                c2.firstChild.style.opacity = '0';
+                flippedCards = [];
+            }, 1000);
+        }
     }
-
-    // Avvia il gioco appena carica la pagina
-    startGame();
-
 </script>
 
 </body>
