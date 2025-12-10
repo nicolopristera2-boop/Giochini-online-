@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Avventura Pixel - Fix Render</title>
+    <title>Avventura Pixel - Extended Hard Mode</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -70,10 +70,6 @@
             padding: 15px; font-size: 14px; line-height: 20px; text-align: left;
             display: none; z-index: 40; box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
-        #dialogBox::after {
-            content: '▼'; position: absolute; bottom: 10px; right: 10px; animation: blink 1s infinite;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
 
         /* Controlli Mobile */
         #mobileControls { display: none; }
@@ -81,10 +77,7 @@
 
         /* --- MODALITÀ GAMEBOY (MOBILE) --- */
         @media (max-width: 850px) {
-            body { 
-                background-color: #c0c0c0; 
-                justify-content: flex-start; 
-            }
+            body { background-color: #c0c0c0; justify-content: flex-start; }
             
             .game-container {
                 width: 100%; height: 100dvh; 
@@ -104,10 +97,7 @@
                 padding: 15px; min-height: 0; 
             }
 
-            canvas {
-                background-color: #8bac0f; border: 4px solid #333;
-                width: 100%; height: 100%; object-fit: contain; 
-            }
+            canvas { background-color: #8bac0f; border: 4px solid #333; width: 100%; height: 100%; object-fit: contain; }
             
             #mobileControls {
                 display: flex; width: 100%; height: auto; min-height: 240px;
@@ -137,15 +127,8 @@
                 box-shadow: 2px 4px 0 #4a0f25;
             }
             .a-btn:active { transform: translate(2px, 4px); box-shadow: none; }
-
-            .brand {
-                position: absolute; bottom: calc(10px + env(safe-area-inset-bottom)); 
-                right: 20px; font-family: sans-serif; font-style: italic; color: #666; font-weight: bold; font-size: 12px;
-                letter-spacing: 2px; opacity: 0.6;
-            }
-
+            .brand { position: absolute; bottom: calc(10px + env(safe-area-inset-bottom)); right: 20px; font-family: sans-serif; font-style: italic; color: #666; font-weight: bold; font-size: 12px; opacity: 0.6; }
             #dialogBox { width: 90%; bottom: 10px; transform: translateX(-50%); font-size: 12px; }
-            h2 { font-size: 1rem; }
         }
     </style>
 </head>
@@ -154,7 +137,6 @@
 <div class="game-container">
     <div class="screen-bezel">
         <a href="index.html" class="back-btn">RESET</a>
-        
         <div id="screenSelection" class="ui-screen">
             <h2>SCEGLI EROE</h2>
             <div class="char-grid">
@@ -162,17 +144,14 @@
                 <div class="char-btn" onclick="selectChar('👧')">👧</div>
             </div>
         </div>
-
         <div id="screenName" class="ui-screen hidden">
             <h2>INSERISCI NOME</h2>
             <input type="text" id="playerNameInput" placeholder="GIOCATORE" maxlength="8">
             <button class="btn-start" onclick="startGame()">INIZIA</button>
         </div>
-
         <div id="dialogBox"></div>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
-
     <div id="mobileControls">
         <div class="d-pad">
             <div class="d-center"></div>
@@ -181,9 +160,7 @@
             <button id="btnLeft" class="d-btn"></button>
             <button id="btnRight" class="d-btn"></button>
         </div>
-        
         <div class="brand">NINTENDO GAME BOY</div>
-        
         <div class="action-area">
             <button class="a-btn" style="background:#8f1c3f;">B</button>
             <button id="btnAction" class="a-btn">A</button>
@@ -204,6 +181,7 @@
     let player = { x: 380, y: 300, w: 32, h: 32, speed: 6, sprite: "👦", name: "Link", facing: 1 };
     const keys = {};
 
+    // --- NUOVI STATI PER I LIVELLI AVANZATI ---
     let state = {
         livingDoorOpen: false,
         knowsCode: false,
@@ -211,17 +189,27 @@
         hasShovel: false,
         hasLabCard: false,
         powerOn: false,
+        // Nuovi Flag
+        basementUnlocked: false,
+        hasFlashlight: false,
+        valveSequence: [], // Per la stanza 7
+        sewerDrained: false, 
+        hasBoots: false,
+        hasGoggles: false,
+        finalLaserOff: false,
         gameWon: false
     };
 
+    // --- MAPPA ESTESA (10 STANZE) ---
     const rooms = {
+        // --- LIVELLI BASE (1-5) ---
         living: {
             name: "SOGGIORNO", bgType: "wood",
             objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true },
-                { x: 0, y: 550, w: 800, h: 50, solid: true },
-                { x: 0, y: 0, w: 50, h: 600, solid: true },
-                { x: 750, y: 0, w: 50, h: 600, solid: true },
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
                 { id: "shelf", x: 600, y: 50, w: 100, h: 180, type: "shelf", solid: true },
                 { id: "doorKit", x: 350, y: 0, w: 100, h: 50, type: "door", target: "kitchen", req: "livingDoorOpen", solid: false },
                 { id: "sofa", x: 300, y: 350, w: 200, h: 80, type: "sofa", solid: true },
@@ -231,10 +219,10 @@
         kitchen: {
             name: "CUCINA", bgType: "tile",
             objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true },
-                { x: 0, y: 550, w: 800, h: 50, solid: true },
-                { x: 0, y: 0, w: 50, h: 600, solid: true },
-                { x: 750, y: 0, w: 50, h: 600, solid: true },
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
                 { id: "backLiving", x: 350, y: 550, w: 100, h: 50, type: "door", target: "living", solid: false },
                 { id: "fridge", x: 50, y: 50, w: 100, h: 160, type: "fridge", solid: true },
                 { id: "chest1", x: 600, y: 400, w: 80, h: 60, type: "chest", solid: true },
@@ -244,8 +232,8 @@
         garden: {
             name: "GIARDINO", bgType: "grass",
             objects: [
-                { x: 0, y: 0, w: 800, h: 20, solid: true },
-                { x: 0, y: 580, w: 800, h: 20, solid: true },
+                { x: 0, y: 0, w: 800, h: 20, solid: true, type: "wall" },
+                { x: 0, y: 580, w: 800, h: 20, solid: true, type: "wall" },
                 { id: "backKit", x: 0, y: 250, w: 50, h: 100, type: "doorSide", target: "kitchen", solid: false },
                 { id: "fountain", x: 350, y: 250, w: 100, h: 80, type: "fountain", solid: true },
                 { id: "shovel", x: 650, y: 100, w: 40, h: 40, type: "shovel", pickup: true, solid: false },
@@ -256,10 +244,10 @@
         lab: {
             name: "LABORATORIO", bgType: "tech",
             objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true },
-                { x: 0, y: 550, w: 800, h: 50, solid: true },
-                { x: 0, y: 0, w: 50, h: 600, solid: true },
-                { x: 750, y: 0, w: 50, h: 600, solid: true },
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
                 { id: "backGard", x: 350, y: 550, w: 100, h: 50, type: "door", target: "garden", solid: false },
                 { id: "generator", x: 60, y: 100, w: 100, h: 120, type: "gen", solid: true },
                 { id: "pc", x: 600, y: 100, w: 120, h: 80, type: "pc", solid: true },
@@ -269,12 +257,115 @@
         attic: {
             name: "SOFFITTA", bgType: "wood",
             objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true },
-                { x: 0, y: 550, w: 800, h: 50, solid: true },
-                { x: 0, y: 0, w: 50, h: 600, solid: true },
-                { x: 750, y: 0, w: 50, h: 600, solid: true },
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
                 { id: "backLab", x: 0, y: 250, w: 50, h: 100, type: "doorSide", target: "lab", solid: false },
-                { id: "finalChest", x: 350, y: 200, w: 100, h: 80, type: "goldChest", solid: true }
+                { id: "basementChest", x: 350, y: 200, w: 100, h: 80, type: "goldChest", solid: true },
+                // Nuova porta segreta
+                { id: "doorBasement", x: 350, y: 0, w: 100, h: 50, type: "door", target: "basement", req: "basementUnlocked", solid: false }
+            ]
+        },
+
+        // --- LIVELLI AVANZATI (6-10) ---
+        
+        // 6. CANTINA (Labirinto Buio)
+        basement: {
+            name: "CANTINA OSCURA", bgType: "stone",
+            objects: [
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { id: "backAttic", x: 350, y: 550, w: 100, h: 50, type: "door", target: "attic", solid: false },
+                // Labirinto di casse
+                { x: 100, y: 100, w: 50, h: 400, solid: true, type: "crate" },
+                { x: 250, y: 0, w: 50, h: 350, solid: true, type: "crate" },
+                { x: 400, y: 200, w: 50, h: 400, solid: true, type: "crate" },
+                { x: 550, y: 0, w: 50, h: 300, solid: true, type: "crate" },
+                // Oggetti
+                { id: "flashlight", x: 650, y: 500, w: 40, h: 40, type: "flashlight", pickup: true, solid: false },
+                { id: "doorBoiler", x: 750, y: 100, w: 50, h: 100, type: "doorSide", target: "boiler", req: "hasFlashlight", solid: false }
+            ]
+        },
+
+        // 7. CALDAIA (Puzzle Sequenza)
+        boiler: {
+            name: "SALA CALDAIE", bgType: "tech",
+            objects: [
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { id: "backBase", x: 0, y: 400, w: 50, h: 100, type: "doorSide", target: "basement", solid: false },
+                // Valvole Puzzle (Rosso, Blu, Verde)
+                { id: "valve1", x: 200, y: 200, w: 60, h: 60, type: "valve", color: "red", solid: true },
+                { id: "valve2", x: 400, y: 200, w: 60, h: 60, type: "valve", color: "blue", solid: true },
+                { id: "valve3", x: 600, y: 200, w: 60, h: 60, type: "valve", color: "green", solid: true },
+                { id: "sign", x: 400, y: 100, w: 40, h: 40, type: "sign", text: "Sequenza: R -> B -> G", solid: true },
+                
+                { id: "doorSewer", x: 750, y: 400, w: 50, h: 100, type: "doorSide", target: "sewer", req: "sewerDrained", solid: false }
+            ]
+        },
+
+        // 8. FOGNE (Pericolo / Acido)
+        sewer: {
+            name: "FOGNE TOSSICHE", bgType: "stone",
+            objects: [
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { id: "backBoiler", x: 0, y: 400, w: 50, h: 100, type: "doorSide", target: "boiler", solid: false },
+                
+                // Pavimento di Acido (Hazard)
+                { x: 100, y: 150, w: 600, h: 300, solid: false, type: "acid" }, 
+                // Isole sicure
+                { x: 350, y: 250, w: 100, h: 100, solid: false, type: "platform" },
+                
+                { id: "boots", x: 400, y: 280, w: 40, h: 40, type: "boots", pickup: true, solid: false },
+                { id: "doorServer", x: 750, y: 100, w: 50, h: 100, type: "doorSide", target: "server", solid: false }
+            ]
+        },
+
+        // 9. SERVER ROOM (Codice)
+        server: {
+            name: "SALA SERVER", bgType: "tech",
+            objects: [
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { id: "backSewer", x: 0, y: 100, w: 50, h: 100, type: "doorSide", target: "sewer", solid: false },
+                
+                // Server
+                { x: 100, y: 100, w: 100, h: 400, solid: true, type: "serverRack" },
+                { x: 600, y: 100, w: 100, h: 400, solid: true, type: "serverRack" },
+                
+                { id: "mainTerminal", x: 350, y: 50, w: 100, h: 80, type: "terminal", solid: true },
+                { id: "goggles", x: 380, y: 300, w: 40, h: 40, type: "goggles", pickup: true, solid: false },
+                
+                { id: "doorVault", x: 350, y: 550, w: 100, h: 50, type: "door", target: "vault", req: "finalLaserOff", solid: false }
+            ]
+        },
+
+        // 10. CAVEAU (Finale)
+        vault: {
+            name: "IL CAVEAU", bgType: "tile",
+            objects: [
+                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
+                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
+                { id: "backServer", x: 350, y: 0, w: 100, h: 50, type: "door", target: "server", solid: false },
+                
+                // Laser Invisibili (Visibili solo con Goggles)
+                { x: 100, y: 200, w: 600, h: 10, solid: false, type: "laser" },
+                { x: 100, y: 300, w: 600, h: 10, solid: false, type: "laser" },
+                { x: 100, y: 400, w: 600, h: 10, solid: false, type: "laser" },
+                
+                { id: "ultimateTreasure", x: 350, y: 500, w: 100, h: 80, type: "diamondChest", solid: true }
             ]
         }
     };
@@ -292,6 +383,34 @@
             }
         }
         return false;
+    }
+
+    // CONTROLLO HAZARD (ACIDO/LASER) NEL LOOP
+    function checkHazards() {
+        const room = rooms[currentRoom];
+        let px = player.x + player.w/2;
+        let py = player.y + player.h/2; // Centro piedi player
+
+        for (let obj of room.objects) {
+            if (obj.pickedUp) continue;
+            
+            // Logica Acido
+            if (obj.type === "acid" && !state.hasBoots) {
+                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) {
+                    player.x = 20; player.y = 420; // Respawn alla porta
+                    showDialog("AHH! ACIDO! Servono stivali protettivi.");
+                }
+            }
+            // Logica Laser
+            if (obj.type === "laser") {
+                // Semplice collisione linea
+                if (player.x < obj.x + obj.w && player.x + player.w > obj.x &&
+                    player.y < obj.y + obj.h && player.y + player.h > obj.y) {
+                    player.x = 380; player.y = 70; // Respawn in alto
+                    showDialog("BZZT! Laser invisibile! Ti serve un visore.");
+                }
+            }
+        }
     }
 
     function interact() {
@@ -313,72 +432,95 @@
     }
 
     function handleInteraction(obj) {
-        // FIX: Se l'oggetto non ha tipo (es. muri invisibili), ignora
         if (!obj.type) return;
 
+        // --- PORTE ---
         if (obj.type.includes("door")) {
             if (!obj.req) changeRoom(obj.target);
             else if (state[obj.req]) changeRoom(obj.target);
             else {
                 if (obj.req === "livingDoorOpen") showDialog("La libreria sembra strana...");
-                else if (obj.req === "hasGardenKey") showDialog("Chiusa. Serve una chiave.");
-                else if (obj.req === "hasLabCard") showDialog("Serve un tesserino magnetico.");
-                else if (obj.req === "powerOn") showDialog("Serratura elettronica spenta.");
+                else if (obj.req === "hasFlashlight") showDialog("È troppo buio. Mi serve una torcia.");
+                else if (obj.req === "sewerDrained") showDialog("Bloccato idraulicamente.");
+                else if (obj.req === "finalLaserOff") showDialog("Porta blindata chiusa dal terminale.");
+                else showDialog("Chiuso.");
             }
         }
-        else if (obj.id === "shelf") { 
-            state.livingDoorOpen = true; 
-            showDialog("Hai spostato un libro. Click!"); 
-        }
-        else if (obj.id === "fridge") { 
-            state.knowsCode = true; 
-            showDialog("Tra i surgelati c'è un codice: 4-8-15"); 
-        }
+        
+        // --- OGGETTI LIVELLI 1-5 ---
+        else if (obj.id === "shelf") { state.livingDoorOpen = true; showDialog("Hai spostato un libro. Click!"); }
+        else if (obj.id === "fridge") { state.knowsCode = true; showDialog("Codice: 4-8-15"); }
         else if (obj.id === "chest1") {
             if (state.hasGardenKey) showDialog("Vuoto.");
-            else {
-                if (state.knowsCode) {
-                    state.hasGardenKey = true;
-                    showDialog("Codice corretto! Hai trovato la CHIAVE GIARDINO.");
-                } else {
-                    showDialog("È chiuso con un lucchetto a combinazione.");
+            else if (state.knowsCode) { state.hasGardenKey = true; showDialog("Trovata chiave Giardino!"); }
+            else showDialog("Serve un codice.");
+        }
+        else if (obj.id === "shovel") { state.hasShovel = true; obj.pickedUp = true; showDialog("Presa PALA."); }
+        else if (obj.id === "dirt") {
+            if (state.hasShovel && !state.hasLabCard) { state.hasLabCard = true; showDialog("Trovato Tesserino!"); }
+            else showDialog("Terra.");
+        }
+        else if (obj.id === "generator") { state.powerOn = true; showDialog("Generatore ON."); }
+        else if (obj.id === "basementChest") {
+            // MODIFICATO: Ora apre il livello 6
+            if(!state.basementUnlocked) {
+                state.basementUnlocked = true;
+                showDialog("Dentro c'è una CHIAVE ARRUGGINITA. Si apre un passaggio!");
+            } else showDialog("Vuoto.");
+        }
+
+        // --- OGGETTI LIVELLI 6-10 ---
+        else if (obj.id === "flashlight") { state.hasFlashlight = true; obj.pickedUp = true; showDialog("Torcia presa! Ora vedi al buio."); }
+        
+        // PUZZLE VALVOLE (Stanza 7)
+        else if (obj.type === "valve") {
+            if (state.sewerDrained) { showDialog("Già fatto."); return; }
+            
+            const expected = ["red", "blue", "green"];
+            const currentIdx = state.valveSequence.length;
+            
+            if (obj.color === expected[currentIdx]) {
+                state.valveSequence.push(obj.color);
+                showDialog("Valvola " + obj.color + " OK...");
+                if (state.valveSequence.length === 3) {
+                    state.sewerDrained = true;
+                    showDialog("L'acqua defluisce! La porta si apre.");
                 }
+            } else {
+                state.valveSequence = [];
+                showDialog("Errore! Sequenza resettata (R -> B -> G).");
             }
         }
-        else if (obj.id === "shovel") { 
-            state.hasShovel = true; obj.pickedUp = true; 
-            showDialog("Hai preso la PALA."); 
+        else if (obj.id === "sign") showDialog("Nota: 'Prima il sangue (R), poi il mare (B), infine l'erba (G)'.");
+
+        else if (obj.id === "boots") { state.hasBoots = true; obj.pickedUp = true; showDialog("Stivali anti-acido presi!"); }
+        else if (obj.id === "goggles") { state.hasGoggles = true; obj.pickedUp = true; showDialog("Visore Termico preso!"); }
+        
+        else if (obj.id === "mainTerminal") {
+            if(!state.finalLaserOff) {
+                state.finalLaserOff = true; 
+                showDialog("Hacking completato. Porta Caveau aperta.");
+            } else showDialog("Sistema sbloccato.");
         }
-        else if (obj.id === "dirt") {
-            if (state.hasShovel) {
-                if (!state.hasLabCard) { 
-                    state.hasLabCard = true; 
-                    showDialog("Hai scavato. Trovato un TESSERINO!"); 
-                } else showDialog("Solo terra.");
-            } else showDialog("Terra smossa. Mi serve qualcosa per scavare.");
-        }
-        else if (obj.id === "generator") { 
-            state.powerOn = true; 
-            showDialog("Generatore AVVIATO. Le luci si accendono!"); 
-        }
-        else if (obj.id === "pc") {
-            showDialog(state.powerOn ? "Schermo: 'SISTEMA ATTIVO'" : "Schermo nero.");
-        }
-        else if (obj.id === "finalChest") {
+        
+        // VITTORIA FINALE
+        else if (obj.id === "ultimateTreasure") {
             state.gameWon = true;
-            showDialog("CONGRATULAZIONI! HAI FINITO IL GIOCO!");
-        }
-        else {
-            showDialog("Niente di interessante.");
+            showDialog("HAI FINITO L'HARD MODE! SEI UN LEGGENDA!");
         }
     }
 
     function changeRoom(target) {
         currentRoom = target;
-        if (player.x < 100) player.x = 650;
-        else if (player.x > 700) player.x = 100;
-        else if (player.y < 100) player.y = 450;
-        else if (player.y > 500) player.y = 100;
+        // Coordinate di spawn intelligenti per ogni stanza
+        if (target === "living") { player.x = 350; player.y = 450; }
+        else if (target === "kitchen") { player.x = 350; player.y = 100; }
+        else if (target === "basement") { player.x = 350; player.y = 450; } // Entri dall'attic
+        else if (target === "boiler") { player.x = 50; player.y = 450; } 
+        else if (target === "sewer") { player.x = 50; player.y = 450; }
+        else if (target === "server") { player.x = 50; player.y = 150; }
+        else if (target === "vault") { player.x = 350; player.y = 100; }
+        else { player.x = 400; player.y = 300; } // Default
     }
 
     function showDialog(text) {
@@ -388,10 +530,21 @@
         dialogTimer = setTimeout(()=>dialogBox.style.display='none', 4000);
     }
 
+    // --- DISEGNO ---
     function draw() {
         const room = rooms[currentRoom];
         drawFloor(room.bgType);
         
+        // Effetto buio per la cantina
+        if (currentRoom === "basement" && !state.hasFlashlight) {
+            ctx.fillStyle = "rgba(0,0,0,0.95)";
+            ctx.fillRect(0,0,800,600);
+            // Spot di luce attorno al player
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath(); ctx.arc(player.x+16, player.y+16, 60, 0, Math.PI*2); ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
         let renderList = [...room.objects];
         renderList.push({ ...player, isPlayer: true });
         renderList.sort((a,b) => (a.y + a.h) - (b.y + b.h));
@@ -399,9 +552,15 @@
         renderList.forEach(obj => {
             if (obj.pickedUp) return;
             if (obj.isPlayer) drawPlayer();
-            // FIX: Disegna SOLO se l'oggetto ha un 'type'. I muri invisibili (senza type) causavano il crash.
             else if (obj.type) drawObject(obj); 
         });
+
+        // Visore Goggles Effect
+        if (currentRoom === "vault" && state.hasGoggles) {
+            ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
+            ctx.fillRect(0,0,800,600);
+            ctx.fillStyle = "#0f0"; ctx.fillText("VISORE ON", 700, 50);
+        }
 
         ctx.fillStyle = "#fff"; ctx.font = "20px 'Press Start 2P'"; 
         ctx.textAlign = "left";
@@ -413,7 +572,8 @@
         if (type === "wood") { col1 = "#5d4037"; col2 = "#4e342e"; size = 40; }
         else if (type === "tile") { col1 = "#bbdefb"; col2 = "#90caf9"; size = 60; }
         else if (type === "grass") { col1 = "#66bb6a"; col2 = "#81c784"; size = 20; }
-        else { col1 = "#37474f"; col2 = "#263238"; size = 50; }
+        else if (type === "stone") { col1 = "#424242"; col2 = "#212121"; size = 50; }
+        else { col1 = "#37474f"; col2 = "#263238"; size = 50; } // Tech
 
         for(let y=0; y<600; y+=size) {
             for(let x=0; x<800; x+=size) {
@@ -424,78 +584,81 @@
     }
 
     function drawObject(obj) {
-        // FIX: Doppio controllo di sicurezza
         if (!obj.type) return; 
 
         ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,0.4)";
-        ctx.fillRect(obj.x + 5, obj.y + obj.h - 5, obj.w, 10);
+        if(obj.type !== "acid" && obj.type !== "laser") {
+            ctx.fillStyle = "rgba(0,0,0,0.4)";
+            ctx.fillRect(obj.x + 5, obj.y + obj.h - 5, obj.w, 10);
+        }
 
+        // --- OGGETTI CLASSICI ---
         if (obj.type === "shelf") {
             ctx.fillStyle = "#3e2723"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#d7ccc8";
-            for(let i=20; i<obj.h; i+=40) ctx.fillRect(obj.x+10, obj.y+i, obj.w-20, 5);
-            if(!state.livingDoorOpen) { ctx.fillStyle = "red"; ctx.fillRect(obj.x+30, obj.y+60, 10, 25); }
+            ctx.fillStyle = "#d7ccc8"; for(let i=20; i<obj.h; i+=40) ctx.fillRect(obj.x+10, obj.y+i, obj.w-20, 5);
         }
         else if (obj.type.includes("door")) {
             let isOpen = !obj.req || state[obj.req];
             ctx.fillStyle = isOpen ? "#1b5e20" : "#b71c1c";
             ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "gold"; ctx.beginPath(); ctx.arc(obj.x+10, obj.y + obj.h/2, 5, 0, Math.PI*2); ctx.fill();
         }
-        else if (obj.type === "fridge") {
-            ctx.fillStyle = "#fff"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#ddd"; ctx.fillRect(obj.x+5, obj.y+50, obj.w-10, 2);
-            ctx.fillStyle = "#aaa"; ctx.fillRect(obj.x+10, obj.y+60, 10, 40);
-            ctx.fillStyle = "yellow"; ctx.fillRect(obj.x+60, obj.y+20, 20, 20);
-        }
-        else if (obj.type.includes("chest")) {
-            ctx.fillStyle = obj.type === "goldChest" ? "#ffeb3b" : "#795548";
+        else if (obj.type === "chest" || obj.type === "goldChest" || obj.type === "diamondChest") {
+            ctx.fillStyle = obj.type === "goldChest" ? "#ffeb3b" : (obj.type === "diamondChest" ? "#00bcd4" : "#795548");
             ctx.fillRect(obj.x, obj.y+10, obj.w, obj.h-10);
-            ctx.fillStyle = obj.type === "goldChest" ? "#fbc02d" : "#5d4037";
+            ctx.fillStyle = obj.type === "goldChest" ? "#fbc02d" : (obj.type === "diamondChest" ? "#00acc1" : "#5d4037");
             ctx.fillRect(obj.x, obj.y, obj.w, 20);
-            ctx.fillStyle = "#000"; ctx.fillRect(obj.x + obj.w/2 - 5, obj.y + 15, 10, 10);
         }
-        else if (obj.type === "table") {
-            ctx.fillStyle = "#3e2723"; 
-            ctx.fillRect(obj.x+10, obj.y+20, 10, obj.h-20);
-            ctx.fillRect(obj.x+obj.w-20, obj.y+20, 10, obj.h-20);
-            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, 30);
-            ctx.fillStyle = "#fff"; ctx.fillRect(obj.x+40, obj.y, obj.w-80, 30);
+        
+        // --- OGGETTI NUOVI ---
+        else if (obj.type === "crate") {
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.strokeStyle = "#5d4037"; ctx.lineWidth = 4; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            // X sulla cassa
+            ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
         }
-        else if (obj.type === "sofa") {
-            ctx.fillStyle = "#b71c1c"; 
-            ctx.fillRect(obj.x, obj.y+20, obj.w, obj.h-20);
-            ctx.fillStyle = "#880e4f";
-            ctx.fillRect(obj.x, obj.y, obj.w, 20);
-            ctx.fillRect(obj.x, obj.y+20, 20, obj.h-20);
-            ctx.fillRect(obj.x+obj.w-20, obj.y+20, 20, obj.h-20);
+        else if (obj.type === "flashlight") {
+            ctx.fillStyle = "#ffa000"; ctx.fillRect(obj.x+10, obj.y+10, 20, 20); // Manico
+            ctx.fillStyle = "#fff59d"; ctx.fillRect(obj.x+10, obj.y, 20, 10); // Luce
         }
-        else if (obj.type === "shovel") {
-            ctx.translate(obj.x, obj.y); ctx.rotate(Math.PI/4);
-            ctx.fillStyle = "#8d6e63"; ctx.fillRect(10, 0, 5, 40);
-            ctx.fillStyle = "#b0bec5"; ctx.fillRect(0, 40, 25, 25);
-            ctx.restore();
+        else if (obj.type === "valve") {
+            ctx.fillStyle = obj.color; 
+            ctx.beginPath(); ctx.arc(obj.x+30, obj.y+30, 25, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(obj.x+30, obj.y+30, 10, 0, Math.PI*2); ctx.fill();
         }
-        else if (obj.type === "fountain") {
-            ctx.fillStyle = "#90caf9"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+40, 40, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = "#e3f2fd"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+40, 30, 0, Math.PI*2); ctx.fill();
-        }
-        else if (obj.type === "gen") {
-            ctx.fillStyle = state.powerOn ? "#ffeb3b" : "#37474f";
+        else if (obj.type === "acid") {
+            ctx.fillStyle = "rgba(0, 255, 0, 0.6)"; 
             ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.strokeStyle = "#000"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-            if(state.powerOn) { ctx.fillStyle="red"; ctx.font="30px Arial"; ctx.fillText("⚡", obj.x+35, obj.y+70); }
+            // Bolle
+            if(Math.random()>0.9) ctx.fillStyle="#fff"; ctx.fillRect(obj.x+Math.random()*obj.w, obj.y+Math.random()*obj.h, 5, 5);
         }
-        else if (obj.type === "pc") {
-             ctx.fillStyle = "#000"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h-20);
-             ctx.fillStyle = state.powerOn ? "#0f0" : "#222"; ctx.fillRect(obj.x+10, obj.y+10, obj.w-20, obj.h-40);
-             ctx.fillStyle = "#555"; ctx.fillRect(obj.x+40, obj.y+obj.h-20, 40, 20);
+        else if (obj.type === "boots") {
+            ctx.fillStyle = "#333"; ctx.fillRect(obj.x, obj.y+10, 15, 20); ctx.fillRect(obj.x+20, obj.y+10, 15, 20);
         }
-        else if (obj.type === "dirt") {
-            ctx.fillStyle = "#3e2723"; ctx.beginPath(); ctx.ellipse(obj.x+40, obj.y+40, 35, 20, 0, 0, Math.PI*2); ctx.fill();
+        else if (obj.type === "serverRack") {
+            ctx.fillStyle = "#222"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#0f0"; // Luci
+            for(let i=10; i<obj.h; i+=20) if(Math.random()>0.5) ctx.fillRect(obj.x+10, obj.y+i, 5, 5);
         }
+        else if (obj.type === "terminal") {
+            ctx.fillStyle = "#444"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#0ff"; ctx.fillRect(obj.x+10, obj.y+10, obj.w-20, 30);
+        }
+        else if (obj.type === "laser") {
+            if(state.hasGoggles) {
+                ctx.strokeStyle = "red"; ctx.lineWidth = 2; 
+                ctx.beginPath(); ctx.moveTo(obj.x, obj.y+5); ctx.lineTo(obj.x+obj.w, obj.y+5); ctx.stroke();
+            }
+        }
+        else if (obj.type === "goggles") {
+            ctx.fillStyle = "#333"; ctx.fillRect(obj.x, obj.y+10, 40, 10);
+            ctx.fillStyle = "red"; ctx.fillRect(obj.x+5, obj.y+10, 10, 10); ctx.fillRect(obj.x+25, obj.y+10, 10, 10);
+        }
+        // Fallback per altri oggetti classici
+        else {
+             ctx.fillStyle = "#999"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+        }
+
         ctx.restore();
     }
 
@@ -541,6 +704,9 @@
 
         if (!checkCollision(nx, player.y)) player.x = nx;
         if (!checkCollision(player.x, ny)) player.y = ny;
+
+        // Nuova funzione per pericoli
+        checkHazards();
     }
 
     function loop() {
