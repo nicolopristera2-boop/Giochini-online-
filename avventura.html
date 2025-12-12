@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Avventura Pixel - ROGUE EDITION</title>
+    <title>Rogue Pixel - Final Fix</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -29,24 +29,27 @@
 
         .ui-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); color: #fff;
+            background: rgba(0,0,0,0.95); color: #fff;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
         }
         .hidden { display: none !important; }
 
-        h2 { color: #e74c3c; margin-bottom: 40px; text-shadow: 4px 4px #000; font-size: 1.5rem; text-align: center; line-height: 2rem;}
-        .char-grid { display: flex; gap: 40px; }
+        h2 { color: #e74c3c; margin-bottom: 30px; text-shadow: 4px 4px #000; font-size: 1.5rem; text-align: center; line-height: 2rem;}
+        
+        .char-grid { display: flex; gap: 40px; margin-bottom: 30px; }
         .char-btn { font-size: 3rem; background: #222; border: 4px solid #fff; padding: 20px; cursor: pointer; transition: 0.2s; }
         .char-btn:hover { transform: scale(1.1); border-color: #e74c3c; color: #e74c3c; }
 
         input { font-family: 'Press Start 2P'; padding: 15px; font-size: 1rem; background: #222; color: #fff; border: 2px solid #fff; text-align: center; margin-bottom: 20px; outline: none; }
         .btn-start { font-family: 'Press Start 2P'; padding: 15px 30px; background: #e74c3c; color: #fff; border: 4px solid #fff; cursor: pointer; border-radius: 4px; }
 
-        /* HUD Livello */
-        #level-hud {
-            position: absolute; top: 10px; left: 10px; color: white; z-index: 10;
-            font-size: 16px; text-shadow: 2px 2px 0 #000; pointer-events: none;
+        /* HUD */
+        #hud-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; padding: 15px;
+            display: flex; justify-content: space-between; align-items: flex-start;
         }
+        .hud-text { font-size: 16px; text-shadow: 2px 2px 0 #000; color: white; }
+        .key-icon { font-size: 24px; display: none; text-shadow: 0 0 10px gold; }
 
         /* Dialog Box */
         #dialogBox {
@@ -58,17 +61,17 @@
         }
 
         #mobileControls { display: none; }
-        .back-btn { position: absolute; top: 10px; right: 10px; text-decoration: none; color: #aaa; font-size: 10px; z-index: 60; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; }
+        .back-btn { pointer-events: auto; text-decoration: none; color: #aaa; font-size: 10px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; }
 
         @media (max-width: 850px) {
             body { background-color: #c0c0c0; justify-content: flex-start; }
             .game-container { width: 100%; height: 100dvh; border: none; border-radius: 0; background-color: #c0c0c0; }
             .screen-bezel {
                 background-color: #555; border-radius: 10px 10px 40px 10px; margin: 5px 10px 0 10px; 
-                flex: 1; display: flex; justify-content: center; align-items: center; padding: 15px; position: relative;
-                box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
+                flex: 1; display: flex; justify-content: center; align-items: center; padding: 0; position: relative;
+                box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6); overflow: hidden;
             }
-            canvas { background-color: #111; border: 4px solid #222; width: 100%; height: 100%; object-fit: contain; }
+            canvas { background-color: #111; width: 100%; height: 100%; object-fit: contain; }
             #mobileControls {
                 display: flex; width: 100%; height: auto; min-height: 220px;
                 justify-content: space-between; align-items: center;
@@ -93,22 +96,25 @@
 
 <div class="game-container">
     <div class="screen-bezel">
-        <div id="level-hud">LIVELLO: 1</div>
-        <a href="index.html" class="back-btn">EXIT</a>
-        
+        <div id="hud-layer">
+            <div class="hud-text" id="level-text">LVL 1</div>
+            <div class="key-icon" id="key-icon">🔑</div>
+            <a href="index.html" class="back-btn">EXIT</a>
+        </div>
+
         <div id="screenSelection" class="ui-screen">
-            <h2>ROGUE PIXEL<br>ADVENTURE</h2>
-            <p style="margin-bottom:20px; color:#aaa; font-size:0.8rem">Generazione Procedurale Attiva</p>
+            <h2>ROGUE PIXEL<br>DUNGEON</h2>
             <div class="char-grid">
                 <div class="char-btn" onclick="selectChar('👦')">👦</div>
                 <div class="char-btn" onclick="selectChar('👧')">👧</div>
             </div>
+            <p style="color:#aaa; font-size:0.7rem; margin-top:20px;">Livelli infiniti • Generazione Procedurale</p>
         </div>
         
         <div id="screenName" class="ui-screen hidden">
-            <h2>NOME EROE</h2>
-            <input type="text" id="playerNameInput" placeholder="NOME" maxlength="8">
-            <button class="btn-start" onclick="startGame()">ENTRA NEL DUNGEON</button>
+            <h2>CHI SEI?</h2>
+            <input type="text" id="playerNameInput" placeholder="EREO" maxlength="8">
+            <button class="btn-start" onclick="startGame()">ENTRA</button>
         </div>
 
         <div id="dialogBox"></div>
@@ -135,125 +141,115 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const dialogBox = document.getElementById('dialogBox');
-    const levelHud = document.getElementById('level-hud');
+    const levelText = document.getElementById('level-text');
+    const keyIcon = document.getElementById('key-icon');
 
     let isPlaying = false;
     let dialogTimer = null;
     let gameTime = 0;
     
-    // --- STATO DEL GIOCO E DEL GIOCATORE ---
-    let player = { x: 400, y: 300, w: 28, h: 28, speed: 6, sprite: "👦", name: "Link", facing: 1 };
+    let player = { x: 100, y: 300, w: 28, h: 28, speed: 6, sprite: "👦", name: "Link", facing: 1 };
     const keys = {};
 
     let state = {
         level: 1,
-        hasKey: false,      // Chiave del livello corrente
-        hasBoots: false,    // Persistente
-        hasFlashlight: false, // Persistente
-        hasGoggles: false   // Persistente
+        hasKey: false,
+        hasBoots: false,
+        hasFlashlight: false,
+        hasGoggles: false
     };
 
-    // Dati della stanza corrente (Generati proceduralmente)
-    let currentRoom = {
-        name: "",
-        bgType: "",
-        objects: [],
-        darkness: false
-    };
+    let currentRoom = { name: "", bgType: "", objects: [], darkness: false };
 
-    // --- GENERATORE PROCEDURALE ---
+    // --- GENERATORE DI LIVELLI (CORRETTO) ---
     
     function generateLevel(level) {
-        state.hasKey = false; // Reset chiave per nuovo livello
-        levelHud.innerText = "LIVELLO: " + level;
+        state.hasKey = false;
+        keyIcon.style.display = "none";
+        levelText.innerText = "LVL " + level;
 
-        // 1. Scegli un tema
         const themes = ["wood", "stone", "tile", "tech", "wood_old"];
-        // Più vai avanti, più è probabile trovare temi "duri" come stone o tech
         let themeIndex = Math.min(Math.floor(Math.random() * (2 + level * 0.5)), themes.length - 1);
-        let theme = themes[themeIndex]; 
-        if(level % 5 === 0) theme = "tech"; // Ogni 5 livelli tema boss/tech
+        let theme = themes[themeIndex];
+        if(level % 5 === 0) theme = "tech"; 
 
-        // 2. Setup Base Stanza
         currentRoom = {
             name: "PIANO " + level + " - " + theme.toUpperCase(),
             bgType: theme,
             objects: [],
-            darkness: (level > 6 && Math.random() > 0.5) // Dal livello 7 può essere buio
+            darkness: (level > 6 && Math.random() > 0.5)
         };
 
-        // 3. Aggiungi Muri Perimetrali (Sempre presenti)
+        // --- MURI PERIMETRALI (FIX USCITA) ---
         addObj(0, 0, 800, 50, "wall"); // Top
         addObj(0, 550, 800, 50, "wall"); // Bottom
         addObj(0, 0, 50, 600, "wall"); // Left
-        addObj(750, 0, 50, 600, "wall"); // Right
-
-        // 4. Posiziona Giocatore e Uscita
-        player.x = 100; player.y = 300; // Start a sinistra
         
-        // Porta di uscita (a destra)
+        // Muro Destro SPEZZATO per l'uscita
+        addObj(750, 0, 50, 250, "wall"); // Parte sopra
+        addObj(750, 350, 50, 250, "wall"); // Parte sotto
+        
+        // La Porta (nel buco)
         addObj(750, 250, 50, 100, "door", { req: "hasKey" });
 
-        // 5. Genera Ostacoli Interni (Difficoltà Crescente)
-        let numObstacles = 2 + level * 2; // Più livelli, più roba
-        if (numObstacles > 15) numObstacles = 15;
+        // Player start
+        player.x = 100; player.y = 300; 
+
+        // Generazione Ostacoli
+        let numObstacles = 3 + level * 2;
+        if (numObstacles > 20) numObstacles = 20;
 
         for(let i=0; i<numObstacles; i++) {
             let type = "crate";
             let rand = Math.random();
             
-            // Varietà in base al tema
             if(theme === "wood" || theme === "wood_old") {
                 if(rand > 0.7) type = "table";
-                else if(rand > 0.5) type = "wall_hedge"; // Siepi in casa? Magari piante
+                else if(rand > 0.5) type = "wall_hedge"; 
                 else type = "shelf";
             } else if (theme === "tech") {
                 if(rand > 0.6) type = "serverRack";
                 else if(rand > 0.4) type = "gen";
                 else type = "pipe";
             } else {
-                if(rand > 0.8) type = "rock"; // Muri interni
+                if(rand > 0.7) type = "rock"; 
                 else type = "wall";
             }
 
-            // Pericoli (da livello 4 in su)
-            if (level >= 4 && Math.random() > 0.8) type = "acid"; 
-            if (level >= 8 && Math.random() > 0.8) type = "laser";
+            if (level >= 4 && Math.random() > 0.85) type = "acid"; 
+            if (level >= 8 && Math.random() > 0.9) type = "laser";
 
-            // Posizione Random (Griglia 50x50, evitando spawn e exit)
-            let rx = 100 + Math.floor(Math.random() * 12) * 50; // tra 100 e 700
-            let ry = 100 + Math.floor(Math.random() * 8) * 50;  // tra 100 e 500
+            let rx = 100 + Math.floor(Math.random() * 11) * 50; 
+            let ry = 100 + Math.floor(Math.random() * 8) * 50;
             
-            // Dimensioni variabili
+            // Verifica sovrapposizione con porta/spawn
+            if (Math.abs(rx - 750) < 100 && Math.abs(ry - 250) < 100) continue; // Zona uscita
+            if (Math.abs(rx - 100) < 100 && Math.abs(ry - 300) < 100) continue; // Zona spawn
+
             let rw = 50; let rh = 50;
-            if(type === "wall" || type === "shelf" || type === "acid") { 
+            if(type === "wall" || type === "shelf" || type === "acid" || type === "rock") { 
                 if(Math.random()>0.5) rw = 100; else rh = 100; 
             }
-
             addObj(rx, ry, rw, rh, type);
         }
 
-        // 6. Piazza la CHIAVE (Obbligatoria)
-        // Cerca un posto libero
-        let keyX, keyY;
-        let safe = false;
-        while(!safe) {
-            keyX = 150 + Math.random() * 500;
-            keyY = 100 + Math.random() * 400;
-            safe = true;
-            // Controllo sovrapposizione molto semplice
-            for(let o of currentRoom.objects) {
-                if(checkRect(keyX, keyY, 40, 40, o)) safe = false;
+        // Chiave
+        let keyPlaced = false;
+        while(!keyPlaced) {
+            let kx = 200 + Math.random() * 400;
+            let ky = 100 + Math.random() * 400;
+            let safe = true;
+            for(let o of currentRoom.objects) { if(checkRect(kx, ky, 40, 40, o)) safe = false; }
+            if(safe) {
+                let loot = (level % 3 === 0) ? "goldChest" : "chest";
+                addObj(kx, ky, 50, 40, loot, { contains: "key" });
+                keyPlaced = true;
             }
         }
-        // Metto la chiave in un baule o per terra
-        let lootType = (level % 3 === 0) ? "goldChest" : "chest";
-        addObj(keyX, keyY, 50, 40, lootType, { contains: "key" });
 
-        // 7. Oggetti Speciali (Aiuti) - Rari
+        // Aiuti
         if(level === 3 && !state.hasBoots) spawnItem("boots");
         if(level === 5 && !state.hasFlashlight) spawnItem("flashlight");
-        if(level === 7 && !state.hasGoggles) spawnItem("goggles");
     }
 
     function spawnItem(itemType) {
@@ -264,25 +260,19 @@
 
     function addObj(x, y, w, h, type, props = {}) {
         let obj = { x, y, w, h, type, solid: true, ...props };
-        // Eccezioni solidità
-        if(type === "rug" || type === "flower" || type === "acid" || type === "laser" || type === "cobweb" || props.pickup) {
-            obj.solid = false;
-        }
+        if(["rug", "flower", "acid", "laser", "cobweb", "pipe"].includes(type) || props.pickup) obj.solid = false;
         currentRoom.objects.push(obj);
     }
 
-    // --- LOGICA GIOCO ---
-
+    // --- LOGICA ---
     function checkRect(x, y, w, h, obj) {
         return (x < obj.x + obj.w && x + w > obj.x && y < obj.y + obj.h && y + h > obj.y);
     }
 
     function checkCollision(nx, ny) {
-        // Bordi canvas
         if (nx < 0 || nx > 800 - player.w || ny < 0 || ny > 600 - player.h) return true;
-        
         for (let obj of currentRoom.objects) {
-            if (obj.pickedUp) continue; // Ignora oggetti raccolti
+            if (obj.pickedUp) continue; 
             if (obj.solid) {
                 if (nx < obj.x + obj.w && nx + player.w > obj.x &&
                     ny < obj.y + obj.h && ny + player.h > obj.y) {
@@ -293,79 +283,54 @@
         return false;
     }
 
-    function checkHazards() {
-        let px = player.x + player.w/2; let py = player.y + player.h/2;
-        for (let obj of currentRoom.objects) {
-            if (obj.pickedUp) continue;
-            
-            if (obj.type === "acid" && !state.hasBoots) {
-                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) {
-                    // Respawn inizio stanza
-                    player.x = 100; player.y = 300; 
-                    showDialog("AHHH! L'acido brucia! (Servono stivali)");
-                }
-            }
-            if (obj.type === "laser") {
-                // Laser colpisce se non hai occhiali per vederli (o anche se li vedi e li tocchi)
-                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) {
-                    player.x = 100; player.y = 300; 
-                    showDialog("BZZT! Colpito da un laser di sicurezza.");
-                }
-            }
-        }
-    }
-
     function interact() {
         let cx = player.x + player.w/2; let cy = player.y + player.h/2;
         for (let obj of currentRoom.objects) {
             if (obj.pickedUp) continue;
             let ox = obj.x + obj.w/2; let oy = obj.y + obj.h/2;
-            if (Math.hypot(cx - ox, cy - oy) < 70) { 
-                handleInteraction(obj); return; 
-            }
+            if (Math.hypot(cx - ox, cy - oy) < 80) { handleInteraction(obj); return; }
         }
     }
 
     function handleInteraction(obj) {
-        // Raccoglibili
         if(obj.pickup) {
             obj.pickedUp = true;
-            if(obj.type === "flashlight") { state.hasFlashlight = true; showDialog("Hai preso la TORCIA!"); }
-            else if(obj.type === "boots") { state.hasBoots = true; showDialog("Hai preso gli STIVALI!"); }
-            else if(obj.type === "goggles") { state.hasGoggles = true; showDialog("Hai preso il VISORE TERMICO!"); }
+            if(obj.type === "flashlight") state.hasFlashlight = true;
+            if(obj.type === "boots") state.hasBoots = true;
+            showDialog("Hai preso: " + obj.type.toUpperCase());
             return;
         }
-
-        // Bauli
         if(obj.type.includes("chest")) {
             if(obj.opened) { showDialog("Già aperto."); return; }
             obj.opened = true;
-            // Cambia grafica (semplice trucco, in draw guarderemo 'opened')
             if(obj.contains === "key") {
                 state.hasKey = true;
-                showDialog("Hai trovato la CHIAVE del livello!");
-            } else {
-                showDialog("Solo polvere...");
-            }
+                keyIcon.style.display = "block";
+                showDialog("Hai trovato la CHIAVE!");
+            } else { showDialog("Vuoto."); }
             return;
         }
-
-        // Porta (Uscita)
         if(obj.type === "door") {
             if(state.hasKey) {
-                showDialog("La porta si apre! Livello completato.");
+                showDialog("Livello Completato!");
                 state.level++;
                 setTimeout(() => generateLevel(state.level), 1000);
-            } else {
-                showDialog("Chiusa. Devi trovare la chiave.");
-            }
-            return;
+            } else { showDialog("Chiusa. Trova la chiave."); }
         }
+        if(obj.type === "gen") showDialog("Bzzzt...");
+        if(obj.type === "shelf") showDialog("Libri vecchi.");
+    }
 
-        // Flavour text
-        if(obj.type === "pc") showDialog("Un terminale antico...");
-        if(obj.type === "gen") showDialog("Ronza leggermente.");
-        if(obj.type === "shelf") showDialog("Libri ammuffiti.");
+    function checkHazards() {
+        let px = player.x + player.w/2; let py = player.y + player.h/2;
+        for (let obj of currentRoom.objects) {
+            if (obj.pickedUp) continue;
+            if (obj.type === "acid" && !state.hasBoots) {
+                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) {
+                    player.x = 100; player.y = 300; showDialog("L'acido brucia!");
+                }
+            }
+        }
     }
 
     function showDialog(text) {
@@ -374,28 +339,18 @@
         dialogTimer = setTimeout(()=>dialogBox.style.display='none', 3000);
     }
 
-    // --- RENDERER (STILE 2.5D MIGLIORATO) ---
+    // --- RENDERER (FIX QUADRATI GRIGI) ---
     function draw() {
         gameTime++;
         drawFloor(currentRoom.bgType);
 
-        // Disegna oggetti "Floor"
+        // Disegna PRIMA le cose piatte (pavimento, tappeti, macchie)
         currentRoom.objects.forEach(obj => {
-            if(["rug", "dirt", "acid", "flower"].includes(obj.type)) drawObject(obj);
+            if(["rug", "dirt", "acid", "flower", "cobweb"].includes(obj.type)) drawObject(obj);
         });
 
-        // Buio
-        if (currentRoom.darkness && !state.hasFlashlight) {
-            ctx.fillStyle = "rgba(0,0,0,0.98)"; ctx.fillRect(0,0,800,600);
-            let grad = ctx.createRadialGradient(player.x+14, player.y+14, 20, player.x+14, player.y+14, 120);
-            grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(1, "rgba(0,0,0,1)");
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(player.x+14, player.y+14, 120, 0, Math.PI*2); ctx.fill();
-            ctx.globalCompositeOperation = 'source-over';
-        }
-
-        // Sort Y per profondità
-        let renderList = currentRoom.objects.filter(obj => !["rug", "dirt", "acid", "flower"].includes(obj.type));
+        // Sort Y per oggetti 3D
+        let renderList = currentRoom.objects.filter(obj => !["rug", "dirt", "acid", "flower", "cobweb"].includes(obj.type));
         renderList.push({ ...player, isPlayer: true });
         renderList.sort((a,b) => (a.y + a.h) - (b.y + b.h));
 
@@ -405,101 +360,115 @@
             else drawObject(obj); 
         });
 
-        // Visore Goggles
-        if (state.hasGoggles) {
-            ctx.strokeStyle = "rgba(0, 255, 0, 0.3)"; ctx.lineWidth=1;
-            for(let o of currentRoom.objects) { if(o.type==="laser") ctx.strokeRect(o.x, o.y, o.w, o.h); }
+        // Buio
+        if (currentRoom.darkness && !state.hasFlashlight) {
+            ctx.fillStyle = "rgba(0,0,0,0.96)"; ctx.fillRect(0,0,800,600);
+            let grad = ctx.createRadialGradient(player.x+14, player.y+14, 20, player.x+14, player.y+14, 130);
+            grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(1, "rgba(0,0,0,1)");
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(player.x+14, player.y+14, 130, 0, Math.PI*2); ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
         }
 
         ctx.fillStyle = "#fff"; ctx.font = "20px 'Press Start 2P'"; ctx.textAlign = "left"; 
         ctx.fillText(currentRoom.name, 20, 40);
-        
-        // Inventario HUD
-        let invText = "INV: ";
-        if(state.hasKey) invText += "🔑 ";
-        if(state.hasBoots) invText += "👢 ";
-        if(state.hasFlashlight) invText += "🔦 ";
-        ctx.textAlign = "right"; ctx.fillText(invText, 780, 40);
     }
 
     function drawFloor(type) {
         let sz = 40;
-        if (type === "wood" || type === "wood_old") {
-            for(let y=0; y<600; y+=sz) for(let x=0; x<800; x+=sz) {
-                ctx.fillStyle = (y%(sz*2)===0) ? "#5d4037" : "#4e342e"; ctx.fillRect(x, y, sz, sz);
-                ctx.fillStyle="rgba(0,0,0,0.1)"; ctx.fillRect(x,y,sz,2);
-            }
-        } else if (type === "tile" || type === "tech") {
-            sz = 50; 
-            for(let y=0; y<600; y+=sz) for(let x=0; x<800; x+=sz) {
-                let c1 = type==="tile"?"#ecf0f1":"#263238";
-                let c2 = type==="tile"?"#bdc3c7":"#37474f";
-                ctx.fillStyle = ((x/sz + y/sz)%2===0) ? c1 : c2; ctx.fillRect(x, y, sz, sz);
-            }
-        } else if (type === "stone") {
-            ctx.fillStyle = "#424242"; ctx.fillRect(0,0,800,600);
-            ctx.fillStyle = "rgba(0,0,0,0.2)"; for(let i=0; i<800; i+=50) ctx.fillRect(i, 0, 2, 600);
+        let c1="#5d4037", c2="#4e342e";
+        if (type === "stone") { c1="#424242"; c2="#616161"; sz=50; }
+        if (type === "tile") { c1="#ecf0f1"; c2="#bdc3c7"; sz=50; }
+        if (type === "tech") { c1="#263238"; c2="#37474f"; sz=50; }
+        
+        for(let y=0; y<600; y+=sz) for(let x=0; x<800; x+=sz) {
+            ctx.fillStyle = ((x+y)%(sz*2)===0) ? c1 : c2; ctx.fillRect(x, y, sz, sz);
+            if(type==="wood" || type==="wood_old") { ctx.fillStyle="rgba(0,0,0,0.1)"; ctx.fillRect(x,y,sz,2); }
         }
     }
 
     function drawObject(obj) {
         ctx.save();
-        
-        // MURI 2.5D
-        if (obj.type === "wall" || obj.type === "rock") {
-            let colFace = obj.type==="wall"?"#616161":"#546e7a";
-            let colTop = obj.type==="wall"?"#757575":"#78909c";
-            ctx.fillStyle = colFace; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = colTop; ctx.fillRect(obj.x, obj.y, obj.w, 15);
-            ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+
+        // 1. OGGETTI 2.5D (Muri, Rocce)
+        if (obj.type === "wall" || obj.type === "wall_hedge" || obj.type === "rock") {
+            let isHedge = obj.type === "wall_hedge";
+            let isRock = obj.type === "rock";
+            let face = isHedge ? "#1b5e20" : (isRock ? "#546e7a" : "#616161"); 
+            let top = isHedge ? "#2e7d32" : (isRock ? "#78909c" : "#757575");
+            
+            ctx.fillStyle = face; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); // Fronte
+            ctx.fillStyle = top; ctx.fillRect(obj.x, obj.y, obj.w, 15); // Sopra
+            ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            
+            if(isRock) { // Dettagli roccia
+                ctx.fillStyle="rgba(0,0,0,0.2)"; ctx.fillRect(obj.x+10, obj.y+20, 10, 10);
+            }
             ctx.restore(); return;
         }
-        
-        // OMBRA
-        if(!["acid", "rug", "flower"].includes(obj.type)) {
-            ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(obj.x + obj.w/2, obj.y + obj.h, obj.w/2, 6, 0, 0, Math.PI*2); ctx.fill();
+
+        // Ombra Base
+        if(!["acid", "rug", "flower", "cobweb"].includes(obj.type)) {
+            ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(obj.x + obj.w/2, obj.y + obj.h - 2, obj.w/2, 6, 0, 0, Math.PI*2); ctx.fill();
         }
 
-        // OGGETTI VARI
+        // 2. ARREDAMENTO & INTERATTIVI
         if (obj.type.includes("chest")) {
             let col = obj.opened ? "#5d4037" : (obj.type==="goldChest"?"#f1c40f":"#8d6e63");
-            ctx.fillStyle = col; ctx.fillRect(obj.x, obj.y+10, obj.w, obj.h-10); // Base
+            ctx.fillStyle = col; ctx.fillRect(obj.x, obj.y+10, obj.w, obj.h-10); 
             if(!obj.opened) {
-                ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(obj.x, obj.y+10, obj.w, 5);
-                ctx.fillStyle = col; ctx.filter="brightness(1.2)"; ctx.fillRect(obj.x, obj.y, obj.w, 15); // Coperchio chiuso
+                ctx.fillStyle = col; ctx.filter="brightness(1.2)"; ctx.fillRect(obj.x, obj.y, obj.w, 15); // Coperchio
+                ctx.fillStyle = "#000"; ctx.fillRect(obj.x+obj.w/2-3, obj.y+10, 6, 8); 
             } else {
-                ctx.fillStyle = "#000"; ctx.fillRect(obj.x+5, obj.y+5, obj.w-10, 10); // Aperto dentro
+                ctx.fillStyle = "#000"; ctx.fillRect(obj.x+5, obj.y+5, obj.w-10, 10); 
             }
             ctx.filter="none"; ctx.strokeStyle="#000"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
         }
         else if(obj.type === "door") {
             ctx.fillStyle = state.hasKey ? "#27ae60" : "#c0392b"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle="#fff"; ctx.font="10px Arial"; ctx.fillText("EXIT", obj.x+10, obj.y+obj.h/2);
+            ctx.fillStyle="#fff"; ctx.font="10px Arial"; ctx.fillText(state.hasKey ? "OPEN" : "LOCK", obj.x+5, obj.y+obj.h/2);
+        }
+        else if (obj.type === "crate") {
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.strokeStyle = "#5d4037"; ctx.lineWidth=2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
+        }
+        else if (obj.type === "table") {
+            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x+5, obj.y+10, 10, obj.h-10); ctx.fillRect(obj.x+obj.w-15, obj.y+10, 10, obj.h-10);
+            ctx.fillStyle = "#ecf0f1"; ctx.fillRect(obj.x, obj.y, obj.w, 20); 
+        }
+        else if (obj.type === "shelf") {
+            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            for(let i=15; i<obj.h; i+=25) {
+                ctx.fillStyle = "#3e2723"; ctx.fillRect(obj.x, obj.y+i, obj.w, 4);
+                for(let k=5; k<obj.w-10; k+=10) { ctx.fillStyle = `hsl(${(k*20)%360}, 60%, 50%)`; ctx.fillRect(obj.x+k, obj.y+i-15, 6, 15); }
+            }
+        }
+        else if (obj.type === "gen") {
+            ctx.fillStyle = "#34495e"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#f1c40f"; ctx.fillRect(obj.x+10, obj.y+20, 10, obj.h-40);
+        }
+        else if (obj.type === "serverRack") {
+            ctx.fillStyle = "#2d3436"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#00b894"; for(let i=10; i<obj.h; i+=15) if(Math.random()>0.5) ctx.fillRect(obj.x+5, obj.y+i, 4, 4);
+        }
+        else if (obj.type === "pipe") {
+            ctx.fillStyle = "#95a5a6"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
         }
         else if (obj.type === "acid") {
             ctx.fillStyle = "rgba(46, 204, 113, 0.8)"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             if(gameTime%20<10) { ctx.fillStyle="#fff"; ctx.fillRect(obj.x+Math.random()*obj.w, obj.y+Math.random()*obj.h, 4, 4); }
         }
-        else if (obj.type === "laser") {
-            // Invisibili a meno che non hai visore (gestito in draw)
-            // Se li tocchi muori
-        }
-        else if (obj.type === "crate") {
-            ctx.fillStyle = "#a1887f"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.strokeStyle = "#5d4037"; ctx.lineWidth=2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
-        }
-        // Fallback per altri oggetti decorativi generati
         else if (obj.pickup) {
-            // Oggetti raccoglibili
             ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(obj.x+obj.w/2, obj.y+obj.h/2, 10, 0, Math.PI*2); ctx.fill();
             if(obj.type==="boots") ctx.fillStyle="orange"; 
             if(obj.type==="flashlight") ctx.fillStyle="white";
             ctx.fill();
         }
         else {
-            ctx.fillStyle = "#7f8c8d"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            // Fallback (per non vedere grigio se dimentico qualcosa)
+            ctx.fillStyle = "#795548"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
         }
         ctx.restore();
     }
@@ -513,7 +482,6 @@
         ctx.restore();
     }
 
-    // --- CONTROLLI ---
     window.addEventListener('keydown', e => { keys[e.code] = true; if(e.code==='Space' && isPlaying) interact(); });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
 
@@ -542,7 +510,7 @@
         player.name = document.getElementById('playerNameInput').value || "Eroe"; 
         document.getElementById('screenName').classList.add('hidden'); 
         isPlaying = true; 
-        generateLevel(1); // Genera primo livello
+        generateLevel(1); 
         loop(); 
     }
 </script>
