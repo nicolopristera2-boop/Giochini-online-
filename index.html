@@ -75,10 +75,15 @@
         
         .container { 
             width: 100%;
-            max-width: 900px; 
+            max-width: 1000px; /* Aumentato leggermente per far stare 3 card */
             margin: 0 auto; 
             padding: 30px 20px; 
             flex: 1; 
+        }
+
+        /* SEPARATORE DI SEZIONE */
+        section {
+            margin-bottom: 50px; /* Spazio tra le due file di riquadri */
         }
         
         h2 { 
@@ -94,17 +99,25 @@
             font-size: 1.4rem;
         }
         
-        /* GRIGLIA */
+        /* GRIGLIA BASE (2 Colonne) */
         .games-grid {
             display: grid;
             grid-template-columns: 1fr; 
             gap: 25px;
         }
 
+        /* CONFIGURAZIONI RESPONSIVE */
         @media (min-width: 700px) {
+            /* Griglia Standard a 2 colonne */
             .games-grid {
                 grid-template-columns: 1fr 1fr; 
             }
+            
+            /* NUOVA CLASSE: Griglia a 3 colonne per la prima fila */
+            .games-grid.three-cols {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
             /* Hover effects solo su PC per evitare problemi touch */
             header h1:hover { transform: scale(1.1) rotate(-3deg); }
             .lang-btn:hover { background: #ffeaa7; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #000; }
@@ -187,27 +200,27 @@
             }
 
             .lang-switch {
-                position: static; /* Smette di essere assoluto */
-                margin-bottom: 15px; /* Spazio prima del titolo */
+                position: static; 
+                margin-bottom: 15px; 
                 width: 100%;
                 justify-content: center;
             }
 
             header h1 {
-                font-size: 2.2rem; /* Titolo più piccolo */
+                font-size: 2.2rem; 
                 margin-top: 0;
             }
 
             .container {
-                padding: 20px 15px; /* Meno padding laterale */
+                padding: 20px 15px; 
             }
 
             .project-card {
-                margin-bottom: 5px; /* Spazio extra */
+                margin-bottom: 5px; 
             }
 
             .btn-play {
-                padding: 18px; /* Touch target più grande */
+                padding: 18px; 
             }
         }
     </style>
@@ -225,10 +238,20 @@
 </header>
 
 <div class="container">
+    
     <section>
-        <h2 data-i18n="sectionSingle">Giochi Single Player</h2>
-        <div class="games-grid">
+        <h2 data-i18n="sectionArcade">Arcade & Action</h2>
+        <div class="games-grid three-cols">
             
+            <div class="project-card">
+                <div class="card-image">🍄</div>
+                <div class="card-content">
+                    <h3 data-i18n="gameMarioTitle">Super Platform</h3>
+                    <p data-i18n="gameMarioDesc">Corri, salta e raccogli monete!</p>
+                    <a href="supermario.html" class="btn-play" data-i18n="playBtn">Gioca</a>
+                </div>
+            </div>
+
             <div class="project-card">
                 <div class="card-image">🦖</div>
                 <div class="card-content">
@@ -242,16 +265,23 @@
                 <div class="card-image">🚀</div>
                 <div class="card-content">
                     <h3 data-i18n="game2Title">Space Shooter</h3>
-                    <p data-i18n="game2Desc">Difendi la galassia.</p>
+                    <p data-i18n="game2Desc">Difendi la galassia dagli alieni.</p>
                     <a href="spaceshooter.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
+        </div>
+    </section>
+
+    <section>
+        <h2 data-i18n="sectionLogic">Rompicapo & Avventura</h2>
+        <div class="games-grid">
+            
             <div class="project-card">
                 <div class="card-image">🧠</div>
                 <div class="card-content">
                     <h3 data-i18n="game3Title">Memory</h3>
-                    <p data-i18n="game3Desc">Metti alla prova la memoria.</p>
+                    <p data-i18n="game3Desc">Metti alla prova la tua memoria.</p>
                     <a href="memory.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
@@ -260,13 +290,14 @@
                 <div class="card-image">🕵️‍♂️</div>
                 <div class="card-content">
                     <h3 data-i18n="game4Title">Avventura</h3>
-                    <p data-i18n="game4Desc">Un mistero da risolvere.</p>
+                    <p data-i18n="game4Desc">Un mistero testuale da risolvere.</p>
                     <a href="avventura.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
         </div>
     </section>
+
 </div>
 
 <footer>
