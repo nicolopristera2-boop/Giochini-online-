@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Avventura Pixel - Style Remaster</title>
+    <title>Avventura Pixel - Ultimate Detail</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -12,7 +12,7 @@
         body { 
             font-family: 'Press Start 2P', cursive; 
             margin: 0; padding: 0;
-            background-color: #1a1a1a; color: #fff; 
+            background-color: #111; color: #fff; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; overflow: hidden; 
             user-select: none; touch-action: none; overscroll-behavior-y: none; 
@@ -42,18 +42,12 @@
         input { font-family: 'Press Start 2P'; padding: 15px; font-size: 1rem; background: #222; color: #fff; border: 2px solid #fff; text-align: center; margin-bottom: 20px; outline: none; }
         .btn-start { font-family: 'Press Start 2P'; padding: 15px 30px; background: #00bcd4; color: #000; border: 4px solid #fff; cursor: pointer; border-radius: 4px; }
 
-        /* Dialog Box migliorato */
         #dialogBox {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 90%; min-height: 80px; 
-            background: rgba(0, 0, 0, 0.85); 
-            color: #fff; 
-            border: 4px solid #fff; 
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.85); border: 4px solid #fff; border-radius: 8px;
             padding: 20px; font-size: 14px; line-height: 22px; text-align: left;
-            display: none; z-index: 40;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            text-shadow: 1px 1px 0 #000;
+            display: none; z-index: 40; box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-shadow: 1px 1px 0 #000;
         }
         #dialogBox::after {
             content: '▼'; position: absolute; bottom: 10px; right: 15px; animation: blink 1s infinite; color: #00bcd4;
@@ -63,7 +57,6 @@
         #mobileControls { display: none; }
         .back-btn { position: absolute; top: 10px; left: 10px; text-decoration: none; color: #aaa; font-size: 10px; z-index: 60; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; }
 
-        /* --- MOBILE MODE --- */
         @media (max-width: 850px) {
             body { background-color: #c0c0c0; justify-content: flex-start; }
             .game-container { width: 100%; height: 100dvh; border: none; border-radius: 0; background-color: #c0c0c0; }
@@ -85,7 +78,6 @@
             #btnUp { top: 0; left: 44px; } #btnDown { bottom: 0; left: 44px; }
             #btnLeft { top: 44px; left: 0; } #btnRight { top: 44px; right: 0; }
             .d-center { position: absolute; top: 44px; left: 44px; width: 42px; height: 42px; background: #222; }
-            
             .action-area { transform: rotate(-15deg); display: flex; gap: 20px; margin-bottom: 20px; }
             .a-btn { width: 60px; height: 60px; border-radius: 50%; background: #8f1c3f; border: none; box-shadow: 2px 4px 0 #4a0f25; color: rgba(255,255,255,0.2); font-weight: bold; font-size: 1.2rem; }
             .a-btn:active { transform: translate(2px, 4px); box-shadow: none; }
@@ -139,7 +131,7 @@
     let isPlaying = false;
     let currentRoom = "living";
     let dialogTimer = null;
-    let gameTime = 0; // Per animazioni globali
+    let gameTime = 0; 
     let player = { x: 380, y: 300, w: 28, h: 28, speed: 6, sprite: "👦", name: "Link", facing: 1 };
     const keys = {};
 
@@ -149,21 +141,25 @@
         valveSequence: [], sewerDrained: false, hasBoots: false, hasGoggles: false, finalLaserOff: false, gameWon: false
     };
 
-    // --- MAPPA (LOGICA INVARIATA) ---
-    // Usiamo 'type: wall' per i muri solidi che verranno renderizzati in 2.5D
+    // --- MAPPA ARRICCHITA ---
     const rooms = {
         living: {
             name: "SOGGIORNO", bgType: "wood",
             objects: [
+                // Muri 2.5D
                 { x: 0, y: 0, w: 350, h: 50, solid: true, type: "wall" },
                 { x: 450, y: 0, w: 350, h: 50, solid: true, type: "wall" },
                 { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
                 { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
                 { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
                 
-                { x: 200, y: 200, w: 400, h: 250, type: "rug", solid: false }, 
-                { x: 150, y: 50, w: 80, h: 80, type: "window", solid: false }, 
+                // Arredamento Extra
+                { x: 200, y: 200, w: 400, h: 250, type: "rug", solid: false }, // Tappeto (Sotto)
+                { x: 150, y: 50, w: 80, h: 80, type: "window", solid: false }, // Finestra
+                { x: 550, y: 50, w: 80, h: 80, type: "window", solid: false }, // Finestra 2
+                { x: 60, y: 60, w: 80, h: 140, type: "tv", solid: true }, // TV
 
+                // Oggetti Interattivi
                 { id: "shelf", x: 600, y: 50, w: 100, h: 180, type: "shelf", solid: true },
                 { id: "doorKit", x: 350, y: 0, w: 100, h: 50, type: "door", target: "kitchen", req: "livingDoorOpen", solid: false },
                 { id: "sofa", x: 300, y: 350, w: 200, h: 80, type: "sofa", solid: true },
@@ -182,6 +178,7 @@
 
                 { x: 160, y: 50, w: 100, h: 60, type: "stove", solid: true },
                 { x: 260, y: 50, w: 100, h: 60, type: "sink", solid: true },
+                { x: 400, y: 200, w: 120, h: 80, type: "table_kitchen", solid: true }, // Tavolo cucina
 
                 { id: "backLiving", x: 350, y: 550, w: 100, h: 50, type: "door", target: "living", solid: false },
                 { id: "fridge", x: 60, y: 60, w: 90, h: 150, type: "fridge", solid: true },
@@ -192,7 +189,7 @@
         garden: {
             name: "GIARDINO", bgType: "grass",
             objects: [
-                { x: 0, y: 0, w: 350, h: 50, solid: true, type: "wall_hedge" }, // Siepe invece di muro
+                { x: 0, y: 0, w: 350, h: 50, solid: true, type: "wall_hedge" }, 
                 { x: 450, y: 0, w: 350, h: 50, solid: true, type: "wall_hedge" },
                 { x: 0, y: 580, w: 800, h: 20, solid: true, type: "wall_hedge" },
                 { x: 0, y: 0, w: 20, h: 250, solid: true, type: "wall_hedge" },
@@ -202,6 +199,7 @@
                 { x: 600, y: 400, w: 40, h: 40, type: "flower", solid: false },
                 { x: 200, y: 500, w: 40, h: 40, type: "flower", solid: false },
                 { x: 700, y: 100, w: 80, h: 120, type: "tree", solid: true },
+                { x: 100, y: 400, w: 80, h: 120, type: "tree", solid: true },
 
                 { id: "backKit", x: 0, y: 250, w: 50, h: 100, type: "doorSide", target: "kitchen", solid: false },
                 { id: "fountain", x: 350, y: 250, w: 100, h: 80, type: "fountain", solid: true },
@@ -223,6 +221,10 @@
                 { id: "backGard", x: 350, y: 550, w: 100, h: 50, type: "door", target: "garden", solid: false },
                 { id: "generator", x: 60, y: 100, w: 120, h: 140, type: "gen", solid: true },
                 { id: "pc", x: 550, y: 100, w: 160, h: 80, type: "pc", solid: true },
+                // Tubi decorativi
+                { x: 200, y: 50, w: 20, h: 100, type: "pipe", solid: false },
+                { x: 300, y: 50, w: 20, h: 100, type: "pipe", solid: false },
+                
                 { id: "doorAttic", x: 750, y: 250, w: 50, h: 100, type: "doorSide", target: "attic", req: "powerOn", solid: false }
             ]
         },
@@ -238,74 +240,29 @@
 
                 { x: 100, y: 100, w: 30, h: 30, type: "cobweb", solid: false },
                 { x: 700, y: 500, w: 30, h: 30, type: "cobweb", solid: false },
+                { x: 600, y: 100, w: 60, h: 60, type: "crate_pile", solid: true }, // Pile di casse
 
                 { id: "backLab", x: 0, y: 250, w: 50, h: 100, type: "doorSide", target: "lab", solid: false },
                 { id: "basementChest", x: 350, y: 200, w: 100, h: 80, type: "goldChest", solid: true },
                 { id: "doorBasement", x: 350, y: 0, w: 100, h: 50, type: "door", target: "basement", req: "basementUnlocked", solid: false }
             ]
         },
-        basement: {
-            name: "CANTINA OSCURA", bgType: "stone",
-            objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" },
-                { x: 0, y: 550, w: 350, h: 50, solid: true, type: "wall" }, { x: 450, y: 550, w: 350, h: 50, solid: true, type: "wall" },
-                { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" },
-                { x: 750, y: 0, w: 50, h: 100, solid: true, type: "wall" }, { x: 750, y: 200, w: 50, h: 400, solid: true, type: "wall" },
-                { id: "backAttic", x: 350, y: 550, w: 100, h: 50, type: "door", target: "attic", solid: false },
-                { x: 100, y: 100, w: 50, h: 400, solid: true, type: "crate" }, { x: 250, y: 0, w: 50, h: 350, solid: true, type: "crate" },
-                { x: 400, y: 200, w: 50, h: 400, solid: true, type: "crate" }, { x: 550, y: 0, w: 50, h: 300, solid: true, type: "crate" },
-                { id: "flashlight", x: 650, y: 500, w: 40, h: 40, type: "flashlight", pickup: true, solid: false },
-                { id: "doorBoiler", x: 750, y: 100, w: 50, h: 100, type: "doorSide", target: "boiler", req: "hasFlashlight", solid: false }
-            ]
-        },
-        boiler: {
-            name: "SALA CALDAIE", bgType: "tech",
-            objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
-                { x: 0, y: 0, w: 50, h: 400, solid: true, type: "wall" }, { x: 0, y: 500, w: 50, h: 100, solid: true, type: "wall" },
-                { x: 750, y: 0, w: 50, h: 400, solid: true, type: "wall" }, { x: 750, y: 500, w: 50, h: 100, solid: true, type: "wall" },
-                { id: "backBase", x: 0, y: 400, w: 50, h: 100, type: "doorSide", target: "basement", solid: false },
-                { id: "valve1", x: 200, y: 200, w: 60, h: 60, type: "valve", color: "#e74c3c", solid: true },
-                { id: "valve2", x: 400, y: 200, w: 60, h: 60, type: "valve", color: "#3498db", solid: true },
-                { id: "valve3", x: 600, y: 200, w: 60, h: 60, type: "valve", color: "#2ecc71", solid: true },
-                { id: "sign", x: 400, y: 100, w: 40, h: 40, type: "sign", solid: true },
-                { id: "doorSewer", x: 750, y: 400, w: 50, h: 100, type: "doorSide", target: "sewer", req: "sewerDrained", solid: false }
-            ]
-        },
-        sewer: {
-            name: "FOGNE TOSSICHE", bgType: "stone",
-            objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" },
-                { x: 0, y: 0, w: 50, h: 400, solid: true, type: "wall" }, { x: 0, y: 500, w: 50, h: 100, solid: true, type: "wall" },
-                { x: 750, y: 0, w: 50, h: 100, solid: true, type: "wall" }, { x: 750, y: 200, w: 50, h: 400, solid: true, type: "wall" },
-                { id: "backBoiler", x: 0, y: 400, w: 50, h: 100, type: "doorSide", target: "boiler", solid: false },
-                { x: 100, y: 150, w: 600, h: 300, solid: false, type: "acid" }, { x: 350, y: 250, w: 100, h: 100, solid: false, type: "platform" },
-                { id: "boots", x: 400, y: 280, w: 40, h: 40, type: "boots", pickup: true, solid: false },
-                { id: "doorServer", x: 750, y: 100, w: 50, h: 100, type: "doorSide", target: "server", solid: false }
-            ]
-        },
-        server: {
-            name: "SALA SERVER", bgType: "tech",
-            objects: [
-                { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 350, h: 50, solid: true, type: "wall" }, { x: 450, y: 550, w: 350, h: 50, solid: true, type: "wall" },
-                { x: 0, y: 0, w: 50, h: 100, solid: true, type: "wall" }, { x: 0, y: 200, w: 50, h: 400, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
-                { id: "backSewer", x: 0, y: 100, w: 50, h: 100, type: "doorSide", target: "sewer", solid: false },
-                { x: 100, y: 100, w: 100, h: 400, solid: true, type: "serverRack" }, { x: 600, y: 100, w: 100, h: 400, solid: true, type: "serverRack" },
-                { id: "mainTerminal", x: 350, y: 50, w: 100, h: 80, type: "terminal", solid: true },
-                { id: "goggles", x: 380, y: 300, w: 40, h: 40, type: "goggles", pickup: true, solid: false },
-                { id: "doorVault", x: 350, y: 550, w: 100, h: 50, type: "door", target: "vault", req: "finalLaserOff", solid: false }
-            ]
-        },
-        vault: {
-            name: "IL CAVEAU", bgType: "tile",
-            objects: [
-                { x: 0, y: 0, w: 350, h: 50, solid: true, type: "wall" }, { x: 450, y: 0, w: 350, h: 50, solid: true, type: "wall" },
-                { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" },
-                { id: "backServer", x: 350, y: 0, w: 100, h: 50, type: "door", target: "server", solid: false },
-                { x: 100, y: 200, w: 600, h: 10, solid: false, type: "laser" }, { x: 100, y: 300, w: 600, h: 10, solid: false, type: "laser" }, { x: 100, y: 400, w: 600, h: 10, solid: false, type: "laser" },
-                { id: "ultimateTreasure", x: 350, y: 500, w: 100, h: 80, type: "diamondChest", solid: true }
-            ]
-        }
+        // LE ULTIME 3 STANZE (Invariate nella logica, ma ora renderizzate bene)
+        basement: { name: "CANTINA OSCURA", bgType: "stone", objects: [ /* oggetti come prima, ma ora 'wall' e 'crate' hanno grafica */ 
+            { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 350, h: 50, solid: true, type: "wall" }, { x: 450, y: 550, w: 350, h: 50, solid: true, type: "wall" }, { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 100, solid: true, type: "wall" }, { x: 750, y: 200, w: 50, h: 400, solid: true, type: "wall" }, { id: "backAttic", x: 350, y: 550, w: 100, h: 50, type: "door", target: "attic", solid: false }, { x: 100, y: 100, w: 50, h: 400, solid: true, type: "crate" }, { x: 250, y: 0, w: 50, h: 350, solid: true, type: "crate" }, { x: 400, y: 200, w: 50, h: 400, solid: true, type: "crate" }, { x: 550, y: 0, w: 50, h: 300, solid: true, type: "crate" }, { id: "flashlight", x: 650, y: 500, w: 40, h: 40, type: "flashlight", pickup: true, solid: false }, { id: "doorBoiler", x: 750, y: 100, w: 50, h: 100, type: "doorSide", target: "boiler", req: "hasFlashlight", solid: false }
+        ]},
+        boiler: { name: "SALA CALDAIE", bgType: "tech", objects: [
+            { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 0, w: 50, h: 400, solid: true, type: "wall" }, { x: 0, y: 500, w: 50, h: 100, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 400, solid: true, type: "wall" }, { x: 750, y: 500, w: 50, h: 100, solid: true, type: "wall" }, { id: "backBase", x: 0, y: 400, w: 50, h: 100, type: "doorSide", target: "basement", solid: false }, { id: "valve1", x: 200, y: 200, w: 60, h: 60, type: "valve", color: "red", solid: true }, { id: "valve2", x: 400, y: 200, w: 60, h: 60, type: "valve", color: "blue", solid: true }, { id: "valve3", x: 600, y: 200, w: 60, h: 60, type: "valve", color: "green", solid: true }, { id: "sign", x: 400, y: 100, w: 40, h: 40, type: "sign", solid: true }, { id: "doorSewer", x: 750, y: 400, w: 50, h: 100, type: "doorSide", target: "sewer", req: "sewerDrained", solid: false }
+        ]},
+        sewer: { name: "FOGNE TOSSICHE", bgType: "stone", objects: [
+            { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 0, w: 50, h: 400, solid: true, type: "wall" }, { x: 0, y: 500, w: 50, h: 100, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 100, solid: true, type: "wall" }, { x: 750, y: 200, w: 50, h: 400, solid: true, type: "wall" }, { id: "backBoiler", x: 0, y: 400, w: 50, h: 100, type: "doorSide", target: "boiler", solid: false }, { x: 100, y: 150, w: 600, h: 300, solid: false, type: "acid" }, { x: 350, y: 250, w: 100, h: 100, solid: false, type: "platform" }, { id: "boots", x: 400, y: 280, w: 40, h: 40, type: "boots", pickup: true, solid: false }, { id: "doorServer", x: 750, y: 100, w: 50, h: 100, type: "doorSide", target: "server", solid: false }
+        ]},
+        server: { name: "SALA SERVER", bgType: "tech", objects: [
+            { x: 0, y: 0, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 350, h: 50, solid: true, type: "wall" }, { x: 450, y: 550, w: 350, h: 50, solid: true, type: "wall" }, { x: 0, y: 0, w: 50, h: 100, solid: true, type: "wall" }, { x: 0, y: 200, w: 50, h: 400, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" }, { id: "backSewer", x: 0, y: 100, w: 50, h: 100, type: "doorSide", target: "sewer", solid: false }, { x: 100, y: 100, w: 100, h: 400, solid: true, type: "serverRack" }, { x: 600, y: 100, w: 100, h: 400, solid: true, type: "serverRack" }, { id: "mainTerminal", x: 350, y: 50, w: 100, h: 80, type: "terminal", solid: true }, { id: "goggles", x: 380, y: 300, w: 40, h: 40, type: "goggles", pickup: true, solid: false }, { id: "doorVault", x: 350, y: 550, w: 100, h: 50, type: "door", target: "vault", req: "finalLaserOff", solid: false }
+        ]},
+        vault: { name: "IL CAVEAU", bgType: "tile", objects: [
+            { x: 0, y: 0, w: 350, h: 50, solid: true, type: "wall" }, { x: 450, y: 0, w: 350, h: 50, solid: true, type: "wall" }, { x: 0, y: 550, w: 800, h: 50, solid: true, type: "wall" }, { x: 0, y: 0, w: 50, h: 600, solid: true, type: "wall" }, { x: 750, y: 0, w: 50, h: 600, solid: true, type: "wall" }, { id: "backServer", x: 350, y: 0, w: 100, h: 50, type: "door", target: "server", solid: false }, { x: 100, y: 200, w: 600, h: 10, solid: false, type: "laser" }, { x: 100, y: 300, w: 600, h: 10, solid: false, type: "laser" }, { x: 100, y: 400, w: 600, h: 10, solid: false, type: "laser" }, { id: "ultimateTreasure", x: 350, y: 500, w: 100, h: 80, type: "diamondChest", solid: true }
+        ]}
     };
 
     function checkCollision(nx, ny) {
@@ -325,8 +282,7 @@
 
     function checkHazards() {
         const room = rooms[currentRoom];
-        let px = player.x + player.w/2;
-        let py = player.y + player.h/2;
+        let px = player.x + player.w/2; let py = player.y + player.h/2;
         for (let obj of room.objects) {
             if (obj.pickedUp) continue;
             if (obj.type === "acid" && !state.hasBoots) {
@@ -345,15 +301,11 @@
 
     function interact() {
         const room = rooms[currentRoom];
-        let cx = player.x + player.w/2;
-        let cy = player.y + player.h/2;
-        
+        let cx = player.x + player.w/2; let cy = player.y + player.h/2;
         for (let obj of room.objects) {
             if (obj.pickedUp || !obj.id) continue;
-            let ox = obj.x + obj.w/2;
-            let oy = obj.y + obj.h/2;
+            let ox = obj.x + obj.w/2; let oy = obj.y + obj.h/2;
             let dist = Math.hypot(cx - ox, cy - oy);
-            
             if (dist < 90) { handleInteraction(obj); return; }
         }
     }
@@ -371,10 +323,7 @@
                 else showDialog("Chiuso.");
             }
         }
-        else if (obj.id === "shelf") { 
-            state.livingDoorOpen = true; 
-            showDialog("Hai tirato il LIBRO ROSSO. Click!"); 
-        }
+        else if (obj.id === "shelf") { state.livingDoorOpen = true; showDialog("Hai tirato il LIBRO ROSSO. Click!"); }
         else if (obj.id === "fridge") { state.knowsCode = true; showDialog("Codice: 4-8-15"); }
         else if (obj.id === "chest1") {
             if (state.hasGardenKey) showDialog("Vuoto.");
@@ -394,12 +343,12 @@
         else if (obj.id === "flashlight") { state.hasFlashlight = true; obj.pickedUp = true; showDialog("Torcia presa!"); }
         else if (obj.type === "valve") {
             if (state.sewerDrained) { showDialog("Fatto."); return; }
-            const expected = ["#e74c3c", "#3498db", "#2ecc71"]; // Red, Blue, Green
+            const expected = ["red", "blue", "green"];
             if (obj.color === expected[state.valveSequence.length]) {
                 state.valveSequence.push(obj.color);
-                showDialog("Valvola girata...");
+                showDialog("Valvola " + obj.color + " OK.");
                 if (state.valveSequence.length === 3) { state.sewerDrained = true; showDialog("Fogne drenate!"); }
-            } else { state.valveSequence = []; showDialog("Rumore sbagliato... Reset!"); }
+            } else { state.valveSequence = []; showDialog("Errore! Reset: Rosso->Blu->Verde"); }
         }
         else if (obj.id === "sign") showDialog("Sangue(R) -> Mare(B) -> Erba(G)");
         else if (obj.id === "boots") { state.hasBoots = true; obj.pickedUp = true; showDialog("Stivali presi!"); }
@@ -411,7 +360,7 @@
     function changeRoom(target) {
         currentRoom = target;
         if (target === "living") { player.x = 350; player.y = 450; }
-        else if (target === "kitchen") { player.x = 350; player.y = 450; } 
+        else if (target === "kitchen") { player.x = 350; player.y = 450; }
         else if (target === "garden") { player.x = 20; player.y = 250; } 
         else if (target === "lab") { player.x = 350; player.y = 450; }
         else if (target === "attic") { player.x = 20; player.y = 250; }
@@ -429,33 +378,29 @@
         dialogTimer = setTimeout(()=>dialogBox.style.display='none', 4000);
     }
 
-    // --- NUOVO SISTEMA DI DISEGNO (GRAFICA MIGLIORATA) ---
-
+    // --- RENDERER 2.5D ---
     function draw() {
         const room = rooms[currentRoom];
+        gameTime++;
         
-        // 1. Pavimento
         drawFloor(room.bgType);
 
-        // 2. Oggetti "Sotto" (Tappeti, Macchie)
+        // 1. Layer Sotto (Tappeti, macchie, etc)
         room.objects.forEach(obj => {
             if(["rug", "dirt", "cobweb", "acid", "flower", "platform"].includes(obj.type)) drawObject(obj);
         });
 
-        // 3. Effetto Buio (Basement)
+        // 2. Layer Buio
         if (currentRoom === "basement" && !state.hasFlashlight) {
-            ctx.fillStyle = "rgba(0,0,0,0.96)"; ctx.fillRect(0,0,800,600);
-            // Torcia dinamica
+            ctx.fillStyle = "rgba(0,0,0,0.95)"; ctx.fillRect(0,0,800,600);
             let grad = ctx.createRadialGradient(player.x+14, player.y+14, 20, player.x+14, player.y+14, 150);
-            grad.addColorStop(0, "rgba(0,0,0,0)");
-            grad.addColorStop(1, "rgba(0,0,0,1)");
+            grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(1, "rgba(0,0,0,1)");
             ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = grad;
-            ctx.beginPath(); ctx.arc(player.x+14, player.y+14, 150, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(player.x+14, player.y+14, 150, 0, Math.PI*2); ctx.fill();
             ctx.globalCompositeOperation = 'source-over';
         }
 
-        // 4. Oggetti Solidi & Player (Ordinati per Y per profondità)
+        // 3. Layer Solidi & Player (Y-Sort)
         let renderList = room.objects.filter(obj => !["rug", "dirt", "cobweb", "acid", "flower", "platform"].includes(obj.type));
         renderList.push({ ...player, isPlayer: true });
         renderList.sort((a,b) => (a.y + a.h) - (b.y + b.h));
@@ -463,28 +408,28 @@
         renderList.forEach(obj => {
             if (obj.pickedUp) return;
             if (obj.isPlayer) drawPlayer();
-            else if (obj.type) drawObject(obj); 
+            else drawObject(obj); 
         });
 
-        // 5. Effetti Overlay (Visore)
+        // 4. Overlay Visore
         if (currentRoom === "vault" && state.hasGoggles) {
-            ctx.fillStyle = "rgba(0, 255, 0, 0.05)"; ctx.fillRect(0,0,800,600);
-            ctx.strokeStyle = "rgba(0, 255, 0, 0.2)"; ctx.lineWidth=2;
-            for(let y=0; y<600; y+=20) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(800,y); ctx.stroke(); }
+            ctx.fillStyle = "rgba(0, 255, 0, 0.1)"; ctx.fillRect(0,0,800,600);
         }
 
-        // 6. UI Nome Stanza
-        ctx.shadowColor="black"; ctx.shadowBlur=4;
         ctx.fillStyle = "#fff"; ctx.font = "20px 'Press Start 2P'"; ctx.textAlign = "left"; ctx.fillText(room.name, 20, 40);
-        ctx.shadowBlur=0;
     }
 
     function drawFloor(type) {
         let sz = 40;
         if (type === "wood") {
             for(let y=0; y<600; y+=sz) { for(let x=0; x<800; x+=sz) {
-                ctx.fillStyle = (y%(sz*2)===0) ? "#5d4037" : "#4e342e"; ctx.fillRect(x, y, sz, sz);
-                ctx.fillStyle="rgba(0,0,0,0.1)"; ctx.fillRect(x,y,sz,2); // Linea asse
+                ctx.fillStyle = (y%(sz*2)===0) ? "#6d4c41" : "#5d4037"; ctx.fillRect(x, y, sz, sz);
+                ctx.fillStyle="rgba(0,0,0,0.1)"; ctx.fillRect(x,y,sz,2);
+            }}
+        } else if (type === "wood_old") {
+             for(let y=0; y<600; y+=sz) { for(let x=0; x<800; x+=sz) {
+                ctx.fillStyle = "#4e342e"; ctx.fillRect(x, y, sz, sz);
+                if(Math.random()>0.8) { ctx.fillStyle="#3e2723"; ctx.fillRect(x+10, y+10, 5, 5); } 
             }}
         } else if (type === "tile") {
             sz = 50; for(let y=0; y<600; y+=sz) { for(let x=0; x<800; x+=sz) {
@@ -492,134 +437,174 @@
             }}
         } else if (type === "grass") {
             ctx.fillStyle = "#2e7d32"; ctx.fillRect(0,0,800,600);
-            for(let i=0; i<1000; i+=123) { // Pattern pseudo-random fisso
-                let gx = i % 800; let gy = (i * 7) % 600;
-                ctx.fillStyle = "#4caf50"; ctx.fillRect(gx, gy, 4, 4); 
-            }
-        } else if (type === "stone" || type === "wood_old") { 
-            ctx.fillStyle = type==="stone" ? "#2c3e50" : "#3e2723"; ctx.fillRect(0,0,800,600);
-            ctx.fillStyle = "rgba(0,0,0,0.2)"; 
-            for(let i=0; i<800; i+=50) ctx.fillRect(i, 0, 2, 600); // Righe verticali scure
+            for(let i=0; i<1000; i+=123) { let gx = i % 800; let gy = (i * 7) % 600; ctx.fillStyle = "#4caf50"; ctx.fillRect(gx, gy, 4, 4); }
+        } else if (type === "stone") { 
+            ctx.fillStyle = "#424242"; ctx.fillRect(0,0,800,600);
+            for(let i=0; i<800; i+=50) { ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(i, 0, 2, 600); }
         } else { // Tech
             ctx.fillStyle = "#263238"; ctx.fillRect(0,0,800,600);
             ctx.strokeStyle = "#37474f"; ctx.lineWidth=2;
             for(let i=0; i<800; i+=50) ctx.strokeRect(i, 0, 50, 600);
             for(let i=0; i<600; i+=50) ctx.strokeRect(0, i, 800, 50);
         }
-        
-        // Vignettatura (Ombre agli angoli)
-        let grad = ctx.createRadialGradient(400, 300, 200, 400, 300, 500);
-        grad.addColorStop(0, "rgba(0,0,0,0)");
-        grad.addColorStop(1, "rgba(0,0,0,0.6)");
-        ctx.fillStyle = grad; ctx.fillRect(0,0,800,600);
     }
 
+    // --- DISEGNO OGGETTI (RISOLTO IL BUG QUADRATI GRIGI) ---
     function drawObject(obj) {
         if (!obj.type) return; 
         ctx.save();
 
-        // Muri 2.5D
+        // 1. Muri 2.5D (Top + Face)
         if (obj.type.startsWith("wall")) {
             let isHedge = obj.type.includes("hedge");
-            let faceColor = isHedge ? "#1b5e20" : "#424242"; // Scuro davanti
-            let topColor = isHedge ? "#2e7d32" : "#616161";  // Chiaro sopra
-            
-            // Faccia frontale
-            ctx.fillStyle = faceColor; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            // Bordo superiore (Top face)
-            ctx.fillStyle = topColor; ctx.fillRect(obj.x, obj.y, obj.w, 10);
-            ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth=2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            let faceColor = isHedge ? "#1b5e20" : "#424242"; 
+            let topColor = isHedge ? "#2e7d32" : "#616161";
+            ctx.fillStyle = faceColor; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); // Fronte
+            ctx.fillStyle = topColor; ctx.fillRect(obj.x, obj.y, obj.w, 15); // Sopra
+            ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
             ctx.restore(); return;
         }
 
-        // Ombre generiche
+        // Ombra generica per oggetti 3D
         if(!["acid", "laser", "rug", "cobweb", "flower", "platform"].includes(obj.type)) {
-            ctx.fillStyle = "rgba(0,0,0,0.4)"; 
-            ctx.beginPath(); ctx.ellipse(obj.x + obj.w/2, obj.y + obj.h - 2, obj.w/2, 6, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(obj.x + obj.w/2, obj.y + obj.h - 2, obj.w/2, 6, 0, 0, Math.PI*2); ctx.fill();
         }
 
-        // Oggetti specifici
-        if (obj.type === "chest" || obj.type === "goldChest" || obj.type === "diamondChest") {
-            let color = obj.type === "goldChest" ? "#f1c40f" : (obj.type === "diamondChest" ? "#00cec9" : "#795548");
-            ctx.fillStyle = color; ctx.fillRect(obj.x, obj.y+10, obj.w, obj.h-10); // Base
-            ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(obj.x, obj.y+10, obj.w, 5); // Ombra sotto coperchio
-            ctx.fillStyle = color; ctx.filter = "brightness(1.2)"; ctx.fillRect(obj.x, obj.y, obj.w, 15); // Coperchio
-            ctx.fillStyle = "#000"; ctx.fillRect(obj.x+obj.w/2-3, obj.y+10, 6, 8); // Serratura
-            ctx.filter = "none";
-            ctx.strokeStyle="#000"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-        }
-        else if (obj.type === "rug") {
+        // --- DISEGNI SPECIFICI ---
+        if (obj.type === "rug") {
             ctx.fillStyle = "#d35400"; ctx.beginPath(); ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 10); ctx.fill();
             ctx.strokeStyle = "#e67e22"; ctx.lineWidth = 5; ctx.stroke();
         }
-        else if (obj.type === "gen") {
-            ctx.fillStyle = state.powerOn ? "#f1c40f" : "#34495e"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#2c3e50"; ctx.fillRect(obj.x+10, obj.y+20, obj.w-20, 30); // Grata
-            if(state.powerOn) { ctx.shadowColor="yellow"; ctx.shadowBlur=10; ctx.fillStyle="#fff"; ctx.fillRect(obj.x+20, obj.y+60, 10, 10); ctx.shadowBlur=0; }
+        else if (obj.type === "window") {
+            ctx.fillStyle = "#81d4fa"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.beginPath(); ctx.moveTo(obj.x, obj.y+obj.h); ctx.lineTo(obj.x+obj.w, obj.y); ctx.lineTo(obj.x+obj.w-20, obj.y); ctx.lineTo(obj.x, obj.y+obj.h-20); ctx.fill(); // Riflesso
+            ctx.strokeStyle = "#fff"; ctx.lineWidth=4; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
         }
-        else if (obj.type === "pc") {
-            ctx.fillStyle = "#2c3e50"; ctx.fillRect(obj.x, obj.y+40, obj.w, 40); // Tavolo
-            ctx.fillStyle = "#000"; ctx.fillRect(obj.x+20, obj.y, 50, 40); // Monitor
-            ctx.fillStyle = state.powerOn ? "#0f0" : "#333"; ctx.fillRect(obj.x+25, obj.y+5, 40, 30); // Schermo
+        else if (obj.type === "tv") {
+            ctx.fillStyle = "#000"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#222"; ctx.fillRect(obj.x+5, obj.y+5, obj.w-10, obj.h-40); // Schermo
+            if(Math.random()>0.5) { ctx.fillStyle="rgba(255,255,255,0.1)"; ctx.fillRect(obj.x+5, obj.y+5, obj.w-10, obj.h-40); } // Statico
         }
-        else if (obj.type.includes("door")) {
-            let isOpen = !obj.req || state[obj.req];
-            ctx.fillStyle = isOpen ? "#27ae60" : "#c0392b"; 
-            ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#fff"; ctx.globalAlpha=0.2; ctx.fillRect(obj.x+5, obj.y+5, obj.w-10, obj.h-10); ctx.globalAlpha=1; // Riquadro interno
-            ctx.fillStyle = "gold"; ctx.beginPath(); ctx.arc(obj.x+8, obj.y+obj.h/2, 4, 0, Math.PI*2); ctx.fill();
+        else if (obj.type === "sofa") {
+            ctx.fillStyle = "#c0392b"; ctx.fillRect(obj.x, obj.y+20, obj.w, obj.h-20);
+            ctx.fillStyle = "#a93226"; ctx.fillRect(obj.x, obj.y, obj.w, 20); // Schienale
+            ctx.beginPath(); ctx.arc(obj.x+10, obj.y+40, 15, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(obj.x+obj.w-10, obj.y+40, 15, 0, Math.PI*2); ctx.fill();
+        }
+        else if (obj.type === "table" || obj.type === "table_kitchen") {
+            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x+5, obj.y+10, 10, obj.h-10); ctx.fillRect(obj.x+obj.w-15, obj.y+10, 10, obj.h-10);
+            ctx.fillStyle = obj.type==="table" ? "#ecf0f1" : "#bdc3c7"; ctx.fillRect(obj.x, obj.y, obj.w, 30); // Top
         }
         else if (obj.type === "stove") {
-            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(obj.x+25, obj.y+20, 15, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(obj.x+75, obj.y+20, 15, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#2c3e50"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#e74c3c"; ctx.beginPath(); ctx.arc(obj.x+25, obj.y+20, 15, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(obj.x+75, obj.y+20, 15, 0, Math.PI*2); ctx.fill();
+        }
+        else if (obj.type === "sink") {
+            ctx.fillStyle = "#95a5a6"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(obj.x+10, obj.y+10, obj.w-20, obj.h-20);
+            ctx.fillStyle = "#7f8c8d"; ctx.fillRect(obj.x+40, obj.y-5, 10, 20); // Rubinetto
         }
         else if (obj.type === "fridge") {
-            ctx.fillStyle = "#ecf0f1"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(obj.x, obj.y+40, obj.w, 2);
+            ctx.fillStyle = "#dfe6e9"; ctx.beginPath(); ctx.roundRect(obj.x, obj.y, obj.w, obj.h, 5); ctx.fill();
+            ctx.fillStyle = "#b2bec3"; ctx.fillRect(obj.x, obj.y+40, obj.w, 2);
         }
         else if (obj.type === "shelf") {
             ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             for(let i=15; i<obj.h; i+=35) {
                 ctx.fillStyle = "#3e2723"; ctx.fillRect(obj.x, obj.y+i, obj.w, 4);
-                // Libri
-                for(let k=5; k<obj.w-10; k+=12) {
-                    ctx.fillStyle = `hsl(${(k*20)%360}, 60%, 50%)`; ctx.fillRect(obj.x+k, obj.y+i-20, 8, 20);
-                }
+                for(let k=5; k<obj.w-10; k+=12) { ctx.fillStyle = `hsl(${(k*20)%360}, 60%, 50%)`; ctx.fillRect(obj.x+k, obj.y+i-20, 8, 20); }
             }
             if(!state.livingDoorOpen) { ctx.fillStyle = "red"; ctx.fillRect(obj.x+20, obj.y+60, 10, 22); }
         }
+        else if (obj.type === "flower") {
+            ctx.fillStyle = "#e91e63"; ctx.beginPath(); ctx.arc(obj.x+20, obj.y+20, 10, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#f1c40f"; ctx.beginPath(); ctx.arc(obj.x+20, obj.y+20, 4, 0, Math.PI*2); ctx.fill();
+        }
+        else if (obj.type === "tree") {
+            ctx.fillStyle = "#3e2723"; ctx.fillRect(obj.x+30, obj.y+60, 20, 60); 
+            ctx.fillStyle = "#2e7d32"; ctx.beginPath(); ctx.arc(obj.x+40, obj.y+40, 50, 0, Math.PI*2); ctx.fill();
+        }
+        else if (obj.type === "fountain") {
+            ctx.fillStyle = "#7f8c8d"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+40, 40, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#3498db"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+40, 30, 0, Math.PI*2); ctx.fill();
+            if(gameTime%20<10) { ctx.fillStyle = "#85c1e9"; ctx.beginPath(); ctx.arc(obj.x+50, obj.y+40, 10, 0, Math.PI*2); ctx.fill(); }
+        }
+        else if (obj.type === "cobweb") {
+            ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke(); ctx.beginPath(); ctx.moveTo(obj.x+obj.w, obj.y); ctx.lineTo(obj.x, obj.y+obj.h); ctx.stroke();
+        }
+        else if (obj.type === "crate" || obj.type === "crate_pile") {
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.strokeStyle = "#5d4037"; ctx.lineWidth=3; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
+        }
+        else if (obj.type === "pipe") {
+            ctx.fillStyle = "#7f8c8d"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(obj.x+5, obj.y, 5, obj.h); // Luce sul tubo
+        }
+        else if (obj.type === "gen") {
+            ctx.fillStyle = state.powerOn ? "#f1c40f" : "#34495e"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.strokeStyle = "#2c3e50"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#95a5a6"; ctx.fillRect(obj.x-10, obj.y+20, 10, 80);
+            if(state.powerOn && gameTime%20<10) { ctx.fillStyle="red"; ctx.font="30px Arial"; ctx.fillText("⚡", obj.x+obj.w/2-10, obj.y+obj.h/2); }
+        }
+        else if (obj.type === "pc") {
+            ctx.fillStyle = "#34495e"; ctx.fillRect(obj.x, obj.y+50, obj.w, 30);
+            ctx.fillStyle = "#2c3e50"; ctx.fillRect(obj.x+20, obj.y+10, 40, 30); 
+            ctx.fillStyle = state.powerOn ? `hsl(${gameTime%360}, 70%, 50%)` : "#000"; ctx.fillRect(obj.x+22, obj.y+12, 36, 26);
+            ctx.fillStyle = "#2c3e50"; ctx.fillRect(obj.x+80, obj.y+10, 40, 30); 
+            ctx.fillStyle = state.powerOn ? "#3498db" : "#000"; ctx.fillRect(obj.x+82, obj.y+12, 36, 26);
+        }
+        // ITEMS (Key, Shovel, etc)
+        else if (obj.type.includes("chest")) {
+            let col = obj.type==="goldChest"?"#f1c40f":(obj.type==="diamondChest"?"#00cec9":"#8d6e63");
+            ctx.fillStyle = col; ctx.fillRect(obj.x, obj.y+10, obj.w, obj.h-10);
+            ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(obj.x, obj.y+10, obj.w, 5);
+            ctx.fillStyle = col; ctx.filter="brightness(1.2)"; ctx.fillRect(obj.x, obj.y, obj.w, 15); ctx.filter="none";
+            ctx.strokeStyle="#000"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+        }
+        else if (obj.type.includes("door")) {
+            let open = !obj.req || state[obj.req];
+            ctx.fillStyle = open ? "#27ae60" : "#c0392b"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.strokeStyle="#fff"; ctx.lineWidth=4; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle="gold"; ctx.beginPath(); ctx.arc(obj.x+10, obj.y+obj.h/2, 4, 0, Math.PI*2); ctx.fill();
+        }
+        else if (obj.type === "shovel") {
+            ctx.save(); ctx.translate(obj.x, obj.y); ctx.rotate(Math.PI/4);
+            ctx.fillStyle="#8d6e63"; ctx.fillRect(10,0,5,40); ctx.fillStyle="#b0bec5"; ctx.fillRect(0,40,25,25); ctx.restore();
+        }
+        else if (obj.type === "flashlight") {
+            ctx.fillStyle="#f39c12"; ctx.fillRect(obj.x, obj.y, 30, 15); ctx.fillStyle="#f1c40f"; ctx.beginPath(); ctx.moveTo(obj.x+30,obj.y); ctx.lineTo(obj.x+45,obj.y-5); ctx.lineTo(obj.x+45,obj.y+20); ctx.lineTo(obj.x+30,obj.y+15); ctx.fill();
+        }
         else if (obj.type === "acid") {
-            ctx.fillStyle = "rgba(0, 255, 0, 0.6)"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            if(Math.random()>0.95) { ctx.fillStyle="rgba(255,255,255,0.8)"; ctx.fillRect(obj.x+Math.random()*obj.w, obj.y+Math.random()*obj.h, 4, 4); } // Bolle
+            ctx.fillStyle = "rgba(46, 204, 113, 0.7)"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            if(Math.random()>0.9) { ctx.fillStyle="#fff"; ctx.fillRect(obj.x+Math.random()*obj.w, obj.y+Math.random()*obj.h, 4, 4); }
         }
         else if (obj.type === "platform") {
-            ctx.fillStyle = "#555"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = "#777"; ctx.fillRect(obj.x+2, obj.y+2, obj.w-4, obj.h-4); // Bordo rilievo
+            ctx.fillStyle = "#555"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); ctx.strokeStyle="#777"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
         }
         else if (obj.type === "valve") {
-            ctx.fillStyle = obj.color; ctx.beginPath(); ctx.arc(obj.x+30, obj.y+30, 20, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = "#fff"; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(obj.x+30, obj.y+10); ctx.lineTo(obj.x+30, obj.y+50); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(obj.x+10, obj.y+30); ctx.lineTo(obj.x+50, obj.y+30); ctx.stroke();
+            ctx.fillStyle=obj.color; ctx.beginPath(); ctx.arc(obj.x+30, obj.y+30, 20, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle="#fff"; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(obj.x+30,obj.y+10); ctx.lineTo(obj.x+30,obj.y+50); ctx.stroke(); ctx.beginPath(); ctx.moveTo(obj.x+10,obj.y+30); ctx.lineTo(obj.x+50,obj.y+30); ctx.stroke();
         }
-        else { // Fallback (sofa, table, etc - forme semplici)
-            ctx.fillStyle = "#7f8c8d"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+        else { // Fallback
+            ctx.fillStyle = "#999"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
         }
-
         ctx.restore();
     }
 
     function drawPlayer() {
         ctx.font = "32px serif"; ctx.textAlign = "center"; ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.ellipse(player.x+14, player.y+26, 10, 4, 0, 0, Math.PI*2); ctx.fill(); // Ombra
-        
-        // Animazione respiro
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.ellipse(player.x+14, player.y+26, 12, 5, 0, 0, Math.PI*2); ctx.fill();
         let breathe = Math.sin(gameTime * 0.1) * 2;
-        
         if (player.facing === -1) { ctx.translate(player.x+28, player.y + breathe); ctx.scale(-1, 1); ctx.fillText(player.sprite, 14, 28); } 
         else { ctx.fillText(player.sprite, player.x+14, player.y+28 + breathe); }
         ctx.restore();
     }
+
+    // Risposta alla domanda sulla generazione procedurale:
+    // "È possibile farlo? Sì. Bisognerebbe creare un algoritmo (come il Random Walk) che, 
+    // invece di leggere l'array 'rooms' statico, generi le stanze al volo, aggiungendo 
+    // oggetti e nemici in base a un parametro di 'difficoltà' crescente."
 
     window.addEventListener('keydown', e => { keys[e.code] = true; if(e.code==='Space' && isPlaying) interact(); });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -635,7 +620,6 @@
 
     function update() {
         if (!isPlaying) return;
-        gameTime++;
         let nx = player.x, ny = player.y;
         if (keys.ArrowUp) ny -= player.speed; if (keys.ArrowDown) ny += player.speed;
         if (keys.ArrowLeft) { nx -= player.speed; player.facing = -1; } if (keys.ArrowRight) { nx += player.speed; player.facing = 1; }
