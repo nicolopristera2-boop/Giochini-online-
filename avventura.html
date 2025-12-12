@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rogue Pixel - ENDLESS</title>
+    <title>Rogue Pixel - Fixed Graphics</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -65,7 +65,7 @@
         #gameOverScreen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(139, 0, 0, 0.8); z-index: 60;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex-direction: column; align-items: center; justify-content: center;
             display: none;
         }
 
@@ -116,7 +116,7 @@
 
         <div id="gameOverScreen">
             <h1 style="color:red; font-size:3rem; text-shadow:4px 4px 0 #000;">GAME OVER</h1>
-            <p id="finalStats" style="margin:20px 0;">Livello 5 - Punti 1200</p>
+            <p id="finalStats" style="margin:20px 0; font-size:1.2rem; color:white; text-shadow:2px 2px 0 #000;"></p>
             <button class="btn-start" onclick="restartGame()">RIPROVA</button>
         </div>
 
@@ -126,7 +126,7 @@
                 <div class="char-btn" onclick="selectChar('👦')">👦</div>
                 <div class="char-btn" onclick="selectChar('👧')">👧</div>
             </div>
-            <p style="color:#aaa; font-size:0.7rem; margin-top:20px;">Sopravvivi all'infinito</p>
+            <p style="color:#aaa; font-size:0.7rem; margin-top:20px;">Livelli infiniti</p>
         </div>
         
         <div id="screenName" class="ui-screen hidden">
@@ -183,19 +183,16 @@
 
     let currentRoom = { name: "", bgType: "", objects: [], darkness: false };
 
-    // --- GENERATORE INFINITO ---
-    
+    // --- GENERATORE DI LIVELLI (CORRETTO PER L'USCITA) ---
     function generateLevel(level) {
         state.hasKey = false;
         levelText.innerText = "LVL " + level;
         
-        // Temi (Ciclo infinito ma con logica)
         const themes = ["wood", "stone", "tile", "tech", "wood_old"];
-        // Ogni 10 livelli cambia "era" o difficoltà tematica
         let themeIndex = (Math.floor((level-1)/2)) % themes.length; 
         let theme = themes[themeIndex];
         
-        let darkChance = Math.min(0.8, (level - 5) * 0.1); // Buio aumenta col livello
+        let darkChance = Math.min(0.8, (level - 5) * 0.1); 
         let isDark = Math.random() < darkChance;
 
         currentRoom = {
@@ -205,26 +202,26 @@
             darkness: isDark
         };
 
-        // Muri Perimetrali + Uscita
-        addObj(0, 0, 800, 50, "wall"); 
-        addObj(0, 550, 800, 50, "wall"); 
-        addObj(0, 0, 50, 600, "wall"); 
+        // --- MURI PERIMETRALI ---
+        addObj(0, 0, 800, 50, "wall"); // Top
+        addObj(0, 550, 800, 50, "wall"); // Bottom
+        addObj(0, 0, 50, 600, "wall"); // Left
         
-        // Muro Uscita Spezzato
-        addObj(750, 0, 50, 250, "wall"); 
-        addObj(750, 350, 50, 250, "wall"); 
-        addObj(750, 250, 50, 100, "door", { req: "hasKey" }); // Porta
+        // --- FIX USCITA: Muro destro SPEZZATO ---
+        addObj(750, 0, 50, 250, "wall"); // Pezzo sopra
+        addObj(750, 350, 50, 250, "wall"); // Pezzo sotto
+        // La porta è nel buco (Y=250 a Y=350)
+        addObj(750, 250, 50, 100, "door", { req: "hasKey" });
 
         player.x = 100; player.y = 300; 
 
-        // Generazione Ostacoli (Scala all'infinito ma con cap fisico)
+        // Generazione Ostacoli
         let density = Math.min(25, 4 + level * 2); 
         
         for(let i=0; i<density; i++) {
             let type = "crate";
             let rand = Math.random();
             
-            // Logica Tema
             if(theme.includes("wood")) {
                 type = rand>0.6 ? "table" : (rand>0.3 ? "wall_hedge" : "shelf");
             } else if (theme === "tech") {
@@ -233,16 +230,14 @@
                 type = rand>0.7 ? "rock" : "wall";
             }
 
-            // Pericoli (Aumentano col livello)
-            let hazardChance = Math.min(0.5, level * 0.05);
-            if (Math.random() < hazardChance) type = (Math.random()>0.5) ? "acid" : "laser";
+            if (Math.random() < Math.min(0.5, level * 0.05)) type = (Math.random()>0.5) ? "acid" : "laser";
 
             let rx = 100 + Math.floor(Math.random() * 11) * 50; 
             let ry = 100 + Math.floor(Math.random() * 8) * 50;
             
-            // Check zona sicura
-            if (Math.abs(rx - 750) < 100 && Math.abs(ry - 250) < 100) continue; 
-            if (Math.abs(rx - 100) < 100 && Math.abs(ry - 300) < 100) continue; 
+            // Check zona sicura per non bloccare spawn e uscita
+            if (Math.abs(rx - 750) < 100 && Math.abs(ry - 250) < 150) continue; // Zona uscita
+            if (Math.abs(rx - 100) < 100 && Math.abs(ry - 300) < 100) continue; // Zona spawn
 
             let rw = 50; let rh = 50;
             if(type.startsWith("wall") || type==="acid") { if(Math.random()>0.5) rw=100; else rh=100; }
@@ -261,8 +256,8 @@
             }
         }
 
-        // Oggetti Aiuto (Rari) o Cura
-        if(Math.random() < 0.2 || state.hp < 2) spawnItem("potion"); // 20% o se stai morendo
+        // Oggetti Aiuto
+        if(Math.random() < 0.2 || state.hp < 2) spawnItem("potion"); 
         if(level > 3 && !state.hasBoots && Math.random() < 0.3) spawnItem("boots");
         if(level > 5 && !state.hasFlashlight && Math.random() < 0.3) spawnItem("flashlight");
         if(level > 7 && !state.hasGoggles && Math.random() < 0.3) spawnItem("goggles");
@@ -284,7 +279,6 @@
     }
 
     // --- GAMEPLAY LOOP ---
-
     function update() {
         if (!isPlaying) return;
         gameTime++;
@@ -317,46 +311,32 @@
 
     function checkHazards() {
         if(player.invulnerable > 0) return;
-
         let px = player.x + player.w/2; let py = player.y + player.h/2;
         let hit = false;
-        let msg = "";
-
         for (let obj of currentRoom.objects) {
             if (obj.pickedUp) continue;
-            
             if (obj.type === "acid" && !state.hasBoots) {
-                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) {
-                    hit = true; msg = "L'acido brucia! -1 Cuore";
-                }
+                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) { hit = true; }
             }
             if (obj.type === "laser") {
-                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) {
-                    hit = true; msg = "ZAP! Laser! -1 Cuore";
-                }
+                if (px > obj.x && px < obj.x + obj.w && py > obj.y && py < obj.y + obj.h) { hit = true; }
             }
         }
-
-        if(hit) takeDamage(msg);
+        if(hit) takeDamage();
     }
 
-    function takeDamage(msg) {
+    function takeDamage() {
         state.hp--;
-        player.invulnerable = 60; // 1 secondo invulnerabilità
-        showDialog(msg);
-        
-        // Effetto danno (rosso)
+        player.invulnerable = 60; 
+        showDialog("AHIA! Danno subito!");
         ctx.fillStyle = "rgba(255,0,0,0.5)"; ctx.fillRect(0,0,800,600);
-        
-        // Knockback
         player.x = 100; player.y = 300; 
-
         if(state.hp <= 0) gameOver();
     }
 
     function gameOver() {
         isPlaying = false;
-        document.getElementById('finalStats').innerText = `Livello Raggiunto: ${state.level}\nPunti Totali: ${state.score}`;
+        document.getElementById('finalStats').innerText = `Livello: ${state.level} - Punti: ${state.score}`;
         gameOverScreen.style.display = "flex";
     }
 
@@ -376,8 +356,7 @@
             if(obj.type === "flashlight") { state.hasFlashlight = true; showDialog("Torcia presa!"); }
             if(obj.type === "boots") { state.hasBoots = true; showDialog("Stivali presi!"); }
             if(obj.type === "goggles") { state.hasGoggles = true; showDialog("Visore preso!"); }
-            addScore(50);
-            return;
+            addScore(50); return;
         }
         if(obj.type.includes("chest")) {
             if(obj.opened) return;
@@ -385,10 +364,8 @@
             if(obj.contains === "key") {
                 state.hasKey = true;
                 addScore(100);
-                showDialog("CHIAVE TROVATA! Corri all'uscita!");
-            } else { 
-                addScore(20); showDialog("Monete d'oro!"); 
-            }
+                showDialog("CHIAVE TROVATA!");
+            } else { addScore(20); showDialog("Monete d'oro!"); }
             return;
         }
         if(obj.type === "door") {
@@ -407,9 +384,8 @@
         let hearts = "❤".repeat(state.hp) + "♡".repeat(3-state.hp);
         lifeText.innerText = hearts;
         scoreText.innerText = "PTS: " + state.score;
-        // Icona chiave
-        ctx.fillStyle = state.hasKey ? "gold" : "rgba(0,0,0,0)";
-        ctx.font = "20px Arial"; ctx.fillText("🔑", 760, 30);
+        // Icona chiave nell'hud
+        if(state.hasKey) { ctx.font="30px Arial"; ctx.fillText("🔑", 750, 50); }
     }
 
     function showDialog(text) {
@@ -418,17 +394,12 @@
         dialogTimer = setTimeout(()=>dialogBox.style.display='none', 2000);
     }
 
-    // --- DISEGNO ---
+    // --- DISEGNO OGGETTI (FIX GRAFICA) ---
     function draw() {
-        const room = currentRoom;
-        drawFloor(room.bgType);
-
-        room.objects.forEach(obj => {
-            if(["rug", "dirt", "acid", "flower", "cobweb"].includes(obj.type)) drawObject(obj);
-        });
-
-        // Buio
-        if (room.darkness && !state.hasFlashlight) {
+        drawFloor(currentRoom.bgType);
+        currentRoom.objects.forEach(obj => { if(!obj.solid && obj.type !== "door") drawObject(obj); }); // Layer sotto
+        
+        if (currentRoom.darkness && !state.hasFlashlight) {
             ctx.fillStyle = "rgba(0,0,0,0.96)"; ctx.fillRect(0,0,800,600);
             let grad = ctx.createRadialGradient(player.x+14, player.y+14, 20, player.x+14, player.y+14, 130);
             grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(1, "rgba(0,0,0,1)");
@@ -437,7 +408,7 @@
             ctx.globalCompositeOperation = 'source-over';
         }
 
-        let renderList = room.objects.filter(obj => !["rug", "dirt", "acid", "flower", "cobweb"].includes(obj.type));
+        let renderList = currentRoom.objects.filter(obj => obj.solid || obj.type === "door");
         renderList.push({ ...player, isPlayer: true });
         renderList.sort((a,b) => (a.y + a.h) - (b.y + b.h));
 
@@ -449,14 +420,11 @@
 
         if (state.hasGoggles) {
             ctx.strokeStyle = "rgba(0, 255, 0, 0.3)"; ctx.lineWidth=1;
-            for(let o of room.objects) { if(o.type==="laser") ctx.strokeRect(o.x, o.y, o.w, o.h); }
+            for(let o of currentRoom.objects) { if(o.type==="laser") ctx.strokeRect(o.x, o.y, o.w, o.h); }
         }
-
-        // Blink player if damage
-        if(player.invulnerable > 0 && Math.floor(gameTime/5)%2===0) { /* Blink invisible */ } 
+        updateHUD();
     }
 
-    // (Funzioni drawFloor e drawObject identiche alla versione precedente ma incluse qui per completezza)
     function drawFloor(type) {
         let sz = 40; let c1="#5d4037", c2="#4e342e";
         if (type === "stone") { c1="#424242"; c2="#616161"; sz=50; }
@@ -470,30 +438,45 @@
 
     function drawObject(obj) {
         ctx.save();
-        if (obj.type.startsWith("wall") || obj.type === "rock") {
-            let isHedge = obj.type === "wall_hedge"; let isRock = obj.type === "rock";
-            ctx.fillStyle = isHedge ? "#1b5e20" : (isRock ? "#546e7a" : "#616161"); ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle = isHedge ? "#2e7d32" : (isRock ? "#78909c" : "#757575"); ctx.fillRect(obj.x, obj.y, obj.w, 15);
+        // Muri 2.5D
+        if (obj.type === "wall" || obj.type === "rock" || obj.type === "wall_hedge") {
+            let isHedge = obj.type === "wall_hedge";
+            let isRock = obj.type === "rock";
+            let face = isHedge ? "#1b5e20" : (isRock ? "#546e7a" : "#616161"); 
+            let top = isHedge ? "#2e7d32" : (isRock ? "#78909c" : "#757575");
+            ctx.fillStyle = face; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); 
+            ctx.fillStyle = top; ctx.fillRect(obj.x, obj.y, obj.w, 15); 
             ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            if(isRock) { ctx.fillStyle="rgba(0,0,0,0.2)"; ctx.fillRect(obj.x+10, obj.y+20, 10, 10); }
             ctx.restore(); return;
         }
-        if(!["acid", "rug", "flower", "cobweb"].includes(obj.type)) {
+
+        // Ombra
+        if(!["acid", "rug", "flower"].includes(obj.type)) {
             ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(obj.x + obj.w/2, obj.y + obj.h - 2, obj.w/2, 6, 0, 0, Math.PI*2); ctx.fill();
         }
+
+        // Oggetti specifici
         if (obj.type.includes("chest")) {
             let col = obj.opened ? "#5d4037" : (obj.type==="goldChest"?"#f1c40f":"#8d6e63");
             ctx.fillStyle = col; ctx.fillRect(obj.x, obj.y+10, obj.w, obj.h-10); 
-            if(!obj.opened) { ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(obj.x, obj.y+10, obj.w, 5); ctx.fillStyle = col; ctx.filter="brightness(1.2)"; ctx.fillRect(obj.x, obj.y, obj.w, 15); } 
+            if(!obj.opened) { ctx.fillStyle = col; ctx.filter="brightness(1.2)"; ctx.fillRect(obj.x, obj.y, obj.w, 15); ctx.fillStyle="#000"; ctx.fillRect(obj.x+obj.w/2-3, obj.y+10, 6, 8); } 
             else { ctx.fillStyle = "#000"; ctx.fillRect(obj.x+5, obj.y+5, obj.w-10, 10); }
             ctx.filter="none"; ctx.strokeStyle="#000"; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
         }
         else if(obj.type === "door") {
             ctx.fillStyle = state.hasKey ? "#27ae60" : "#c0392b"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-            ctx.fillStyle="#fff"; ctx.font="10px Arial"; ctx.fillText(state.hasKey?"OPEN":"LOCK", obj.x+5, obj.y+obj.h/2);
+            ctx.fillStyle="#fff"; ctx.font="10px Arial"; ctx.fillText(state.hasKey?"EXIT":"LOCK", obj.x+5, obj.y+obj.h/2);
         }
         else if (obj.type === "crate") {
-            ctx.fillStyle = "#a1887f"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); ctx.strokeStyle = "#5d4037"; ctx.lineWidth=2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h); ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.strokeStyle = "#5d4037"; ctx.lineWidth=2; ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.beginPath(); ctx.moveTo(obj.x, obj.y); ctx.lineTo(obj.x+obj.w, obj.y+obj.h); ctx.stroke();
+        }
+        else if (obj.type === "table") {
+            ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#ecf0f1"; ctx.fillRect(obj.x, obj.y, obj.w, 20); 
         }
         else if (obj.type === "shelf") {
             ctx.fillStyle = "#5d4037"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
@@ -505,23 +488,33 @@
         else if (obj.type === "gen") {
             ctx.fillStyle = "#34495e"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); ctx.fillStyle = "#f1c40f"; ctx.fillRect(obj.x+10, obj.y+20, 10, obj.h-40);
         }
+        else if (obj.type === "serverRack") {
+            ctx.fillStyle = "#2d3436"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#00b894"; for(let i=10; i<obj.h; i+=15) if(Math.random()>0.5) ctx.fillRect(obj.x+5, obj.y+i, 4, 4);
+        }
+        else if (obj.type === "pipe") {
+            ctx.fillStyle = "#95a5a6"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(obj.x+5, obj.y, 5, obj.h); 
+        }
         else if (obj.type === "acid") {
             ctx.fillStyle = "rgba(46, 204, 113, 0.8)"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
             if(gameTime%20<10) { ctx.fillStyle="#fff"; ctx.fillRect(obj.x+Math.random()*obj.w, obj.y+Math.random()*obj.h, 4, 4); }
         }
         else if (obj.pickup) {
             ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(obj.x+obj.w/2, obj.y+obj.h/2, 10, 0, Math.PI*2); ctx.fill();
-            if(obj.type==="potion") { ctx.fillStyle="red"; ctx.fillText("♥", obj.x+10, obj.y+25); } 
+            if(obj.type==="potion") { ctx.fillStyle="red"; ctx.fillText("♥", obj.x+10, obj.y+25); }
             else if(obj.type==="boots") ctx.fillStyle="orange"; 
             else if(obj.type==="flashlight") ctx.fillStyle="white";
             ctx.fill();
         }
-        else { ctx.fillStyle = "#7f8c8d"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h); }
+        else {
+            ctx.fillStyle = "#7f8c8d"; ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+        }
         ctx.restore();
     }
 
     function drawPlayer() {
-        if(player.invulnerable > 0 && Math.floor(gameTime/4)%2===0) return; // Lampeggio danno
+        if(player.invulnerable > 0 && Math.floor(gameTime/4)%2===0) return; 
         ctx.font = "32px serif"; ctx.textAlign = "center"; ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.ellipse(player.x+14, player.y+26, 10, 4, 0, 0, Math.PI*2); ctx.fill();
         let breathe = Math.sin(gameTime * 0.1) * 2;
@@ -545,8 +538,6 @@
 
     function update() {
         if (!isPlaying) return;
-        updateHUD(); // Aggiorna i cuori
-        // Logica movimento e collisioni (vedi blocco precedente)
         gameTime++;
         if(player.invulnerable > 0) player.invulnerable--;
         let nx = player.x, ny = player.y;
