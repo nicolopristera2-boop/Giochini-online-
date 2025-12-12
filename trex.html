@@ -2,81 +2,191 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T-Rex Run 2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>T-Rex Run - Mobile Edition</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦖</text></svg>">
     
     <style>
+        /* --- STILE GENERALE E LAYOUT GAMEBOY --- */
+        * { box-sizing: border-box; }
+
         body { 
             font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            background-color: #f4f4f4; 
+            margin: 0; padding: 0;
+            background-color: #111; /* Sfondo scuro esterno */
             color: #333; 
-            display: flex; 
-            flex-direction: column; 
-            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; 
+            overflow: hidden; 
             user-select: none;
-        }
-        
-        .container { 
-            max-width: 800px; 
-            margin: 40px auto; 
-            padding: 20px; 
-            background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
-            text-align: center;
-            flex: 1;
-            position: relative;
-        }
-        
-        #gameCanvas {
-            background-color: #fff;
-            border-bottom: 2px solid #535353;
-            display: block;
-            margin: 20px auto;
-            max-width: 100%;
-            cursor: pointer;
+            touch-action: none; 
+            overscroll-behavior-y: none; 
         }
 
+        /* Contenitore Principale (La console) */
+        .game-container {
+            width: 100%; 
+            height: 100dvh; 
+            background-color: #c0c0c0; /* Plastica Grigia */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- PARTE SUPERIORE: SCHERMO --- */
+        .screen-bezel {
+            background-color: #555; /* Cornice scura schermo */
+            border-radius: 10px 10px 40px 10px;
+            margin: 10px 10px 0 10px;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
+            flex: 1; /* Prende tutto lo spazio disponibile in altezza */
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Statistiche dentro lo schermo */
         .stats {
             display: flex;
             justify-content: space-between;
-            width: 600px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 10px;
             font-weight: bold;
-            font-size: 1.2rem;
-            color: #535353;
+            font-size: 1rem;
+            color: #fff; /* Testo bianco su cornice scura */
+            text-shadow: 1px 1px 0 #000;
+            z-index: 10;
+        }
+
+        /* Il Canvas del Gioco */
+        #gameCanvas {
+            background-color: #f7f7f7; /* Sfondo chiaro del gioco */
+            border: 4px solid #333;
+            border-radius: 4px;
+            /* Trucco per mantenere le proporzioni ma adattarsi */
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            aspect-ratio: 3/1; /* Mantiene il ratio 600x200 */
+            image-rendering: pixelated;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            color: #ccc;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            text-align: center;
         }
 
         .btn-back {
-            display: inline-block;
-            background-color: #00979D; 
-            color: white;
-            padding: 10px 15px;
+            position: absolute;
+            top: 10px; left: 10px;
+            color: #aaa;
             text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            font-weight: bold;
+            font-size: 0.8rem;
+            border: 1px solid #777;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
-        .btn-back:hover { background-color: #007a80; }
 
-        .instructions { color: #888; font-size: 0.9rem; margin-top: 10px;}
+        /* --- PARTE INFERIORE: CONTROLLI --- */
+        #mobileControls {
+            display: flex; 
+            width: 100%;
+            height: auto; 
+            min-height: 220px; /* Spazio per i tasti */
+            justify-content: space-between; 
+            align-items: center;
+            padding: 10px 30px; 
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            background: #c0c0c0;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        /* D-PAD (Croce direzionale) */
+        .d-pad { position: relative; width: 120px; height: 120px; }
+        .d-btn {
+            position: absolute; background: #222; border: none; width: 40px; height: 40px;
+            box-shadow: 0 4px 0 #000; -webkit-tap-highlight-color: transparent;
+        }
+        .d-btn:active { transform: translate(0, 4px); box-shadow: none; background: #444; }
+        
+        #btnUp { top: 0; left: 40px; border-radius: 5px 5px 0 0; }
+        #btnDown { bottom: 0; left: 40px; border-radius: 0 0 5px 5px; }
+        #btnLeft { top: 40px; left: 0; border-radius: 5px 0 0 5px; }
+        #btnRight { top: 40px; right: 0; border-radius: 0 5px 5px 0; }
+        .d-center { position: absolute; top: 40px; left: 40px; width: 40px; height: 40px; background: #222; }
+
+        /* Tasti A e B */
+        .action-area { 
+            transform: rotate(-15deg); 
+            display: flex; gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .a-btn {
+            width: 55px; height: 55px; border-radius: 50%; border: none;
+            background: #8f1c3f; color: rgba(0,0,0,0.3); 
+            font-family: sans-serif; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 2px 4px 0 #4a0f25;
+        }
+        .a-btn:active { transform: translate(2px, 4px); box-shadow: none; }
+
+        .brand {
+            position: absolute; bottom: calc(10px + env(safe-area-inset-bottom)); 
+            right: 20px; 
+            font-family: sans-serif; font-style: italic; color: #666; font-weight: bold; font-size: 12px;
+            letter-spacing: 2px; opacity: 0.6;
+        }
+
+        /* Per schermi desktop (rimuove lo stile mobile forzato se vuoi vederlo normale su PC, 
+           ma qui manteniamo il look console) */
+        @media (min-width: 850px) {
+            .game-container {
+                max-width: 450px; /* Limita larghezza su PC per sembrare un telefono/Gameboy */
+                height: 800px;
+                border: 2px solid #333;
+                border-radius: 20px;
+                margin-top: 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="stats">
-        <span id="scoreText"></span>
-        <span id="highScoreText">Record: 0</span>
+<div class="game-container">
+    <div class="screen-bezel">
+        <a href="index.html" class="btn-back">RESET / HOME</a>
+        
+        <div class="stats">
+            <span id="scoreText">Punti: 0</span>
+            <span id="highScoreText">Record: 0</span>
+        </div>
+
+        <canvas id="gameCanvas" width="600" height="200"></canvas>
+        
+        <p class="instructions" data-i18n="startMsg">Premi A o ⬆ per saltare</p>
     </div>
 
-    <canvas id="gameCanvas" width="600" height="200"></canvas>
-    
-    <p class="instructions" data-i18n="startMsg">Premi SPAZIO o CLICCA per saltare</p>
-    
-    <a href="index.html" class="btn-back" data-i18n="backHome">⬅ Torna alla Home</a>
+    <div id="mobileControls">
+        <div class="d-pad">
+            <div class="d-center"></div>
+            <button id="btnUp" class="d-btn"></button> <button id="btnDown" class="d-btn"></button>
+            <button id="btnLeft" class="d-btn"></button>
+            <button id="btnRight" class="d-btn"></button>
+        </div>
+        
+        <div class="brand">NINTENDO GAME BOY</div>
+        
+        <div class="action-area">
+            <button class="a-btn" style="background:#8f1c3f;">B</button>
+            <button id="btnAction" class="a-btn">A</button> </div>
+    </div>
 </div>
 
 <script src="lingue.js"></script>
@@ -98,24 +208,13 @@
 
     highScoreText.innerText = "Record: " + highScore;
 
-    // --- OGGETTI DEL GIOCO ---
-
-    // 1. Il Dinosauro
+    // --- OGGETTI DEL GIOCO (Invariati) ---
     const dino = {
-        x: 50,
-        y: 150,
-        width: 40, 
-        height: 40,
-        dy: 0,
-        jumpPower: -11,
-        gravity: 0.6,
-        grounded: true,
-        emoji: "🦖",
-        
+        x: 50, y: 150, width: 40, height: 40, dy: 0,
+        jumpPower: -11, gravity: 0.6, grounded: true, emoji: "🦖",
         draw: function() {
             ctx.font = "40px Arial"; 
-            ctx.save(); 
-            ctx.scale(-1, 1); 
+            ctx.save(); ctx.scale(-1, 1); 
             ctx.fillText(this.emoji, -this.x - 40, this.y + 35);
             ctx.restore(); 
         },
@@ -131,73 +230,41 @@
                 this.y += this.dy;
             }
             if (this.y > 150) {
-                this.y = 150;
-                this.dy = 0;
-                this.grounded = true;
+                this.y = 150; this.dy = 0; this.grounded = true;
             }
             this.draw();
         }
     };
 
-    // 2. Ostacoli (Randomici: Cactus, Roccia, Albero)
     const obstacles = {
-        list: [],
-        spawnTimer: 0,
+        list: [], spawnTimer: 0,
         draw: function() {
             this.list.forEach(obs => {
-                ctx.font = "40px Arial";
-                // Disegna l'emoji specifica dell'ostacolo
-                ctx.fillText(obs.emoji, obs.x, obs.y + 35);
+                ctx.font = "40px Arial"; ctx.fillText(obs.emoji, obs.x, obs.y + 35);
             });
         },
         update: function() {
             this.spawnTimer--;
             if (this.spawnTimer <= 0) {
-                // LOGICA RANDOMICA OSTAKOLI
                 const rand = Math.random();
                 let typeData = {};
-
-                if (rand < 0.45) {
-                    // Cactus (45% probabilità) - Standard
-                    typeData = { emoji: "🌵", width: 30, height: 40, yOffset: 0 };
-                } else if (rand < 0.75) {
-                    // Roccia (30% probabilità) - Bassa e piccola
-                    typeData = { emoji: "🪨", width: 30, height: 25, yOffset: 15 }; 
-                } else {
-                    // Albero (25% probabilità) - Largo
-                    typeData = { emoji: "🌳", width: 40, height: 40, yOffset: 0 };
-                }
+                if (rand < 0.45) typeData = { emoji: "🌵", width: 30, height: 40, yOffset: 0 };
+                else if (rand < 0.75) typeData = { emoji: "🪨", width: 30, height: 25, yOffset: 15 }; 
+                else typeData = { emoji: "🌳", width: 40, height: 40, yOffset: 0 };
 
                 this.list.push({
-                    x: canvas.width,
-                    y: 150 + typeData.yOffset, // Offset per abbassare le rocce
-                    width: typeData.width, 
-                    height: typeData.height,
-                    emoji: typeData.emoji
+                    x: canvas.width, y: 150 + typeData.yOffset,
+                    width: typeData.width, height: typeData.height, emoji: typeData.emoji
                 });
-                
-                // Randomizza tempo prossimo spawn (più veloce se gameSpeed è alto)
                 let minTime = 60 - (gameSpeed * 2); 
-                if (minTime < 30) minTime = 30; // Limite minimo
+                if (minTime < 30) minTime = 30;
                 this.spawnTimer = minTime + Math.random() * 60;
             }
-
             for (let i = 0; i < this.list.length; i++) {
-                let obs = this.list[i];
-                obs.x -= gameSpeed;
-
-                if (obs.x + obs.width < 0) {
-                    this.list.splice(i, 1);
-                    i--;
-                }
-
-                // Collisione
-                if (
-                    dino.x < obs.x + obs.width - 10 &&
-                    dino.x + dino.width - 10 > obs.x + 10 &&
-                    dino.y < obs.y + obs.height &&
-                    dino.y + dino.height > obs.y + 10
-                ) {
+                let obs = this.list[i]; obs.x -= gameSpeed;
+                if (obs.x + obs.width < 0) { this.list.splice(i, 1); i--; }
+                if (dino.x < obs.x + obs.width - 10 && dino.x + dino.width - 10 > obs.x + 10 &&
+                    dino.y < obs.y + obs.height && dino.y + dino.height > obs.y + 10) {
                     gameOver();
                 }
             }
@@ -205,114 +272,87 @@
         }
     };
 
-    // 3. Sfondo (Nuvole)
     const clouds = {
-        list: [],
-        spawnTimer: 0,
+        list: [], spawnTimer: 0,
         update: function() {
             this.spawnTimer--;
             if (this.spawnTimer <= 0) {
-                this.list.push({
-                    x: canvas.width,
-                    y: Math.random() * 80 + 20,
-                    speed: gameSpeed * 0.3
-                });
+                this.list.push({ x: canvas.width, y: Math.random() * 80 + 20, speed: gameSpeed * 0.3 });
                 this.spawnTimer = 100 + Math.random() * 100;
             }
-
             this.list.forEach((cloud, index) => {
                 cloud.x -= cloud.speed;
-                ctx.font = "30px Arial";
-                ctx.fillText("☁️", cloud.x, cloud.y);
+                ctx.font = "30px Arial"; ctx.fillText("☁️", cloud.x, cloud.y);
                 if (cloud.x < -50) this.list.splice(index, 1);
             });
         }
     };
 
     // --- LOGICA PRINCIPALE ---
-
-    function start() {
-        if (isGameOver) reset();
-        requestAnimationFrame(update);
-    }
-
+    function start() { if (isGameOver) reset(); requestAnimationFrame(update); }
     function reset() {
-        isGameOver = false;
-        score = 0;
-        gameSpeed = 5;
-        obstacles.list = [];
-        clouds.list = [];
-        dino.y = 150;
-        dino.dy = 0;
-        scoreText.innerText = t('score') + "0";
+        isGameOver = false; score = 0; gameSpeed = 5;
+        obstacles.list = []; clouds.list = [];
+        dino.y = 150; dino.dy = 0;
+        scoreText.innerText = (typeof t !== 'undefined' ? t('score') : "Punti: ") + "0";
     }
 
     function gameOver() {
         isGameOver = true;
-        
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = "white";
-        ctx.font = "bold 40px Segoe UI";
-        ctx.textAlign = "center";
-        
-        ctx.fillText(t('gameOver'), canvas.width / 2, canvas.height / 2);
-        
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white"; ctx.font = "bold 40px Segoe UI"; ctx.textAlign = "center";
+        ctx.fillText((typeof t !== 'undefined' ? t('gameOver') : "GAME OVER"), canvas.width / 2, canvas.height / 2);
         ctx.font = "20px Segoe UI";
-        ctx.fillText(t('restartMsg'), canvas.width / 2, canvas.height / 2 + 40);
-        
+        ctx.fillText((typeof t !== 'undefined' ? t('restartMsg') : "Premi A per riprovare"), canvas.width / 2, canvas.height / 2 + 40);
         ctx.textAlign = "left"; 
-
         if (score > highScore) {
-            highScore = score;
-            localStorage.setItem('trexHighScore', highScore);
+            highScore = score; localStorage.setItem('trexHighScore', highScore);
             highScoreText.innerText = "Record: " + highScore;
         }
     }
 
     function update() {
         if (isGameOver) return;
-
         requestAnimationFrame(update);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         frames++;
-
         if (frames % 10 === 0) {
             score++;
-            scoreText.innerText = t('score') + score;
-            
-            // VELOCITÀ INCREMENTALE: Ogni 100 punti
-            if (score > 0 && score % 100 === 0) {
-                gameSpeed += 0.5;
-            }
+            scoreText.innerText = (typeof t !== 'undefined' ? t('score') : "Punti: ") + score;
+            if (score > 0 && score % 100 === 0) gameSpeed += 0.5;
         }
-
-        clouds.update();
-        dino.update();
-        obstacles.update();
+        clouds.update(); dino.update(); obstacles.update();
     }
 
-    // --- CONTROLLI ---
-    function handleInput(e) {
-        if ((e.code === "Space" || e.code === "ArrowUp") && !isGameOver) {
-            dino.jump();
-        } else if ((e.code === "Space" || e.code === "ArrowUp") && isGameOver) {
-            start(); 
-        }
+    // --- INPUT GESTIONE (Tastiera + Touch Buttons) ---
+    function doJump() {
+        if (!isGameOver) dino.jump();
+        else start();
     }
 
-    window.addEventListener("keydown", handleInput);
-    canvas.addEventListener("touchstart", function(e) {
-        e.preventDefault();
-        if (!isGameOver) dino.jump();
-        else start();
-    });
-    canvas.addEventListener("mousedown", function() {
-        if (!isGameOver) dino.jump();
-        else start();
+    // Tastiera
+    window.addEventListener("keydown", e => {
+        if (e.code === "Space" || e.code === "ArrowUp") doJump();
     });
 
+    // Touch su Canvas (legacy)
+    canvas.addEventListener("touchstart", function(e) { e.preventDefault(); doJump(); });
+    canvas.addEventListener("mousedown", function() { doJump(); });
+
+    // --- NUOVI CONTROLLI GAMEBOY ---
+    function bindButton(id) {
+        const btn = document.getElementById(id);
+        if(!btn) return;
+        // Supporto sia mouse che touch per testare su pc e mobile
+        btn.addEventListener("touchstart", (e) => { e.preventDefault(); doJump(); });
+        btn.addEventListener("mousedown", (e) => { e.preventDefault(); doJump(); });
+    }
+
+    // Colleghiamo il tasto "UP" della croce e il tasto "A" al salto
+    bindButton("btnUp");
+    bindButton("btnAction");
+
+    // Avvio iniziale
     setTimeout(start, 100);
 
 </script>
