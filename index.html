@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕹️</text></svg>">
     
@@ -13,10 +13,11 @@
     <title>Giochi Arcade</title>
     <style>
         /* STILE BASE */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body { 
-            font-family: 'Fredoka', sans-serif; /* Font cambiato */
+            font-family: 'Fredoka', sans-serif; 
             margin: 0; 
-            /* Sfondo giocoso con pattern a pallini */
             background-color: #6c5ce7; 
             background-image: radial-gradient(#a29bfe 2px, transparent 2px);
             background-size: 20px 20px;
@@ -27,58 +28,73 @@
         }
         
         header { 
-            background: linear-gradient(135deg, #fd79a8, #e84393); /* Gradiente rosa */
+            background: linear-gradient(135deg, #fd79a8, #e84393); 
             color: white; 
-            padding: 2rem; 
+            padding: 2rem 1rem; 
             text-align: center; 
             position: relative; 
             box-shadow: 0 4px 0 rgba(0,0,0,0.1);
             border-bottom: 4px solid #d63031;
+            z-index: 10;
         }
         
-        /* Titolo che "rimbalza" al passaggio del mouse */
         header h1 {
             text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: inline-block;
             cursor: default;
-        }
-        header h1:hover {
-            transform: scale(1.1) rotate(-3deg);
+            margin: 10px 0 0 0;
+            font-size: 3rem; 
+            letter-spacing: 1px;
+            line-height: 1.1;
         }
 
-        .lang-switch { position: absolute; top: 20px; right: 20px; }
+        /* Selettore lingua */
+        .lang-switch { 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            display: flex;
+            gap: 5px;
+        }
+
         .lang-btn { 
             background: #fff; 
             border: 2px solid #000; 
             color: #000; 
-            padding: 5px 10px; 
+            padding: 8px 12px; 
             cursor: pointer; 
             border-radius: 8px; 
             font-weight: bold;
             font-family: 'Fredoka', sans-serif;
             box-shadow: 2px 2px 0px #000;
             transition: 0.1s; 
+            font-size: 0.9rem;
         }
-        .lang-btn:hover { background: #ffeaa7; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #000; }
-        .lang-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #000; }
+        .lang-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #000; background-color: #ffeaa7; }
         
-        .container { max-width: 900px; margin: 40px auto; padding: 20px; flex: 1; }
-        h1 { margin: 0; font-size: 3rem; letter-spacing: 1px; }
+        .container { 
+            width: 100%;
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 30px 20px; 
+            flex: 1; 
+        }
         
         h2 { 
             background-color: #ffeaa7;
             display: inline-block;
-            padding: 5px 15px;
+            padding: 8px 20px;
             border-radius: 20px;
             border: 3px solid #000;
             box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
             color: #2d3436; 
             transform: rotate(-1deg);
+            margin-bottom: 25px;
+            font-size: 1.4rem;
         }
         
-        /* --- GRIGLIA MODIFICATA (2 COLONNE) --- */
-        /* (Layout invariato come richiesto, solo stile) */
+        /* GRIGLIA */
         .games-grid {
             display: grid;
             grid-template-columns: 1fr; 
@@ -89,81 +105,67 @@
             .games-grid {
                 grid-template-columns: 1fr 1fr; 
             }
+            /* Hover effects solo su PC per evitare problemi touch */
+            header h1:hover { transform: scale(1.1) rotate(-3deg); }
+            .lang-btn:hover { background: #ffeaa7; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #000; }
+            .project-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 12px 12px 0px rgba(0,0,0,0.3); }
+            .project-card:hover .card-image { animation: bounce 0.5s infinite alternate; }
+            .btn-play:hover { background-color: #55efc4; transform: translateY(-2px); box-shadow: 0 7px 0 #000; }
         }
 
-        /* --- CARTE STILE POP --- */
+        /* CARTE */
         .project-card { 
             background-color: #fff; 
-            border: 3px solid #000; /* Bordo nero spesso */
+            border: 3px solid #000; 
             border-radius: 16px; 
             overflow: hidden; 
-            /* Ombra solida stile cartoon */
-            box-shadow: 8px 8px 0px rgba(0,0,0,0.2); 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.2); 
             display: flex; 
             flex-direction: column; 
         }
         
-        .project-card:hover { 
-            transform: translateY(-8px) scale(1.02); 
-            box-shadow: 12px 12px 0px rgba(0,0,0,0.3); 
-        }
-        
         .card-image { 
-            height: 180px; 
-            background-color: #74b9ff; /* Celeste vivace */
+            height: 160px; 
+            background-color: #74b9ff; 
             background-image: linear-gradient(45deg, #74b9ff 25%, #0984e3 25%, #0984e3 50%, #74b9ff 50%, #74b9ff 75%, #0984e3 75%, #0984e3 100%);
             background-size: 20px 20px;
             opacity: 0.9;
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 4.5rem; 
+            font-size: 4rem; 
             border-bottom: 3px solid #000;
         }
         
-        /* Animazione emoji al passaggio del mouse sulla card */
-        .project-card:hover .card-image {
-            animation: bounce 0.5s infinite alternate;
-        }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-5px); } }
         
-        .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-content h3 { margin-top: 0; color: #2d3436; font-size: 1.6rem; font-weight: 600; }
-        .card-content p { color: #636e72; line-height: 1.6; flex-grow: 1; font-size: 1.1rem; }
+        .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-content h3 { margin-top: 0; color: #2d3436; font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; }
+        .card-content p { color: #636e72; line-height: 1.5; flex-grow: 1; font-size: 1rem; margin-bottom: 15px; }
         
-        /* --- BOTTONE 3D ARCADE --- */
+        /* BOTTONE */
         .btn-play { 
             display: block; 
-            background-color: #00b894; /* Verde brillante */
+            background-color: #00b894; 
             color: white; 
             padding: 15px; 
             text-align: center; 
             text-decoration: none; 
             border-radius: 12px; 
             font-weight: bold; 
-            font-size: 1.2rem;
-            margin-top: 20px; 
+            font-size: 1.1rem;
             border: 2px solid #000;
-            box-shadow: 0 5px 0 #000; /* Effetto 3D */
+            box-shadow: 0 5px 0 #000; 
             transition: all 0.1s; 
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         
-        .btn-play:hover { 
-            background-color: #55efc4; 
-            transform: translateY(-2px);
-            box-shadow: 0 7px 0 #000;
-        }
-        
-        /* Effetto click */
         .btn-play:active { 
             transform: translateY(5px); 
             box-shadow: 0 0 0 #000; 
+            background-color: #00cec9;
         }
-        
-        .btn-play.disabled { background-color: #b2bec3; box-shadow: none; transform: none; border-color: #636e72; pointer-events: none; }
         
         footer { 
             background-color: #2d3436; 
@@ -173,6 +175,40 @@
             margin-top: auto; 
             border-top: 4px solid #000;
             font-size: 0.9rem;
+        }
+
+        /* --- OTTIMIZZAZIONI SPECIFICHE MOBILE --- */
+        @media (max-width: 600px) {
+            header {
+                padding: 1.5rem 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .lang-switch {
+                position: static; /* Smette di essere assoluto */
+                margin-bottom: 15px; /* Spazio prima del titolo */
+                width: 100%;
+                justify-content: center;
+            }
+
+            header h1 {
+                font-size: 2.2rem; /* Titolo più piccolo */
+                margin-top: 0;
+            }
+
+            .container {
+                padding: 20px 15px; /* Meno padding laterale */
+            }
+
+            .project-card {
+                margin-bottom: 5px; /* Spazio extra */
+            }
+
+            .btn-play {
+                padding: 18px; /* Touch target più grande */
+            }
         }
     </style>
 </head>
@@ -184,8 +220,8 @@
         <button class="lang-btn" onclick="setLanguage('en')">EN 🇬🇧</button>
         <button class="lang-btn" onclick="setLanguage('sk')">SK sk</button>
     </div>
-    <h1 data-i18n="mainTitle">🕹️ Sala Giochi Online</h1>
-    <p data-i18n="subTitle">La tua collezione di giochi browser-based</p>
+    <h1 data-i18n="mainTitle">🕹️ Sala Giochi</h1>
+    <p data-i18n="subTitle">La tua collezione portatile</p>
 </header>
 
 <div class="container">
@@ -198,7 +234,7 @@
                 <div class="card-content">
                     <h3 data-i18n="game1Title">T-Rex Run</h3>
                     <p data-i18n="game1Desc">Il classico gioco del dinosauro.</p>
-                    <a href="trex.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <a href="trex.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
@@ -207,7 +243,7 @@
                 <div class="card-content">
                     <h3 data-i18n="game2Title">Space Shooter</h3>
                     <p data-i18n="game2Desc">Difendi la galassia.</p>
-                    <a href="spaceshooter.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <a href="spaceshooter.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
@@ -215,17 +251,17 @@
                 <div class="card-image">🧠</div>
                 <div class="card-content">
                     <h3 data-i18n="game3Title">Memory</h3>
-                    <p data-i18n="game3Desc">Metti alla prova la tua memoria.</p>
-                    <a href="memory.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <p data-i18n="game3Desc">Metti alla prova la memoria.</p>
+                    <a href="memory.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
             <div class="project-card">
                 <div class="card-image">🕵️‍♂️</div>
                 <div class="card-content">
-                    <h3 data-i18n="game4Title">Avventura Grafica</h3>
+                    <h3 data-i18n="game4Title">Avventura</h3>
                     <p data-i18n="game4Desc">Un mistero da risolvere.</p>
-                    <a href="avventura.html" class="btn-play" data-i18n="playBtn">🎮 Gioca Ora</a>
+                    <a href="avventura.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
