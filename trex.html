@@ -37,7 +37,8 @@
         .screen-bezel {
             background-color: #555; /* Cornice scura schermo */
             border-radius: 10px 10px 40px 10px;
-            margin: 10px 10px 0 10px;
+            /* MODIFICA QUI: Ridotto il margine superiore da 10px a 2px per alzare tutto */
+            margin: 2px 10px 0 10px; 
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
             flex: 1; /* Prende tutto lo spazio disponibile in altezza */
             display: flex; 
@@ -144,15 +145,15 @@
             letter-spacing: 2px; opacity: 0.6;
         }
 
-        /* Per schermi desktop (rimuove lo stile mobile forzato se vuoi vederlo normale su PC, 
-           ma qui manteniamo il look console) */
+        /* Per schermi desktop */
         @media (min-width: 850px) {
             .game-container {
-                max-width: 450px; /* Limita larghezza su PC per sembrare un telefono/Gameboy */
+                max-width: 450px; 
                 height: 800px;
                 border: 2px solid #333;
                 border-radius: 20px;
-                margin-top: 20px;
+                /* MODIFICA QUI: Rimosso il margin-top: 20px */
+                margin-top: 0; 
             }
         }
     </style>
