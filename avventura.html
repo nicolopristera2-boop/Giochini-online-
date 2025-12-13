@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rogue Pixel - Fixed Graphics</title>
+    <title>Rogue Pixel - International</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -42,6 +42,14 @@
 
         input { font-family: 'Press Start 2P'; padding: 15px; font-size: 1rem; background: #222; color: #fff; border: 2px solid #fff; text-align: center; margin-bottom: 20px; outline: none; }
         .btn-start { font-family: 'Press Start 2P'; padding: 15px 30px; background: #e74c3c; color: #fff; border: 4px solid #fff; cursor: pointer; border-radius: 4px; }
+
+        /* LANGUAGE SWITCHER STYLE */
+        .lang-switcher { margin-top: 40px; display: flex; gap: 10px; }
+        .lang-btn { 
+            background: #222; border: 2px solid #555; color: #888; 
+            padding: 8px 12px; font-family: 'Press Start 2P'; cursor: pointer; font-size: 10px; 
+        }
+        .lang-btn.active { border-color: #e74c3c; color: white; }
 
         /* HUD */
         #hud-layer {
@@ -111,28 +119,34 @@
                 <div class="hearts" id="life-text">❤❤❤</div>
                 <div class="hud-text" id="score-text">PTS: 0</div>
             </div>
-            <a href="index.html" class="back-btn" style="align-self: flex-end;">EXIT</a>
+            <a href="index.html" class="back-btn" data-i18n="ui_exit" style="align-self: flex-end;">EXIT</a>
         </div>
 
         <div id="gameOverScreen">
-            <h1 style="color:red; font-size:3rem; text-shadow:4px 4px 0 #000;">GAME OVER</h1>
+            <h1 style="color:red; font-size:3rem; text-shadow:4px 4px 0 #000;" data-i18n="go_title">GAME OVER</h1>
             <p id="finalStats" style="margin:20px 0; font-size:1.2rem; color:white; text-shadow:2px 2px 0 #000;"></p>
-            <button class="btn-start" onclick="restartGame()">RIPROVA</button>
+            <button class="btn-start" onclick="restartGame()" data-i18n="go_retry">RIPROVA</button>
         </div>
 
         <div id="screenSelection" class="ui-screen">
-            <h2>ROGUE PIXEL<br>ENDLESS</h2>
+            <h2 data-i18n="title_main">ROGUE PIXEL<br>ENDLESS</h2>
             <div class="char-grid">
                 <div class="char-btn" onclick="selectChar('👦')">👦</div>
                 <div class="char-btn" onclick="selectChar('👧')">👧</div>
             </div>
-            <p style="color:#aaa; font-size:0.7rem; margin-top:20px;">Livelli infiniti</p>
+            <p style="color:#aaa; font-size:0.7rem; margin-top:20px;" data-i18n="subtitle">Livelli infiniti</p>
+            
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="setLanguage('it')">IT</button>
+                <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn" onclick="setLanguage('sk')">SK</button>
+            </div>
         </div>
         
         <div id="screenName" class="ui-screen hidden">
-            <h2>CHI SEI?</h2>
+            <h2 data-i18n="title_who">CHI SEI?</h2>
             <input type="text" id="playerNameInput" placeholder="EREO" maxlength="8">
-            <button class="btn-start" onclick="startGame()">ENTRA</button>
+            <button class="btn-start" onclick="startGame()" data-i18n="btn_enter">ENTRA</button>
         </div>
 
         <div id="dialogBox"></div>
@@ -156,6 +170,108 @@
 </div>
 
 <script>
+    // --- 0. SISTEMA DI TRADUZIONE ---
+    const translations = {
+        it: {
+            title_main: "ROGUE PIXEL<br>ENDLESS",
+            subtitle: "Livelli infiniti",
+            title_who: "CHI SEI?",
+            input_placeholder: "EROE",
+            btn_enter: "ENTRA",
+            ui_exit: "ESCI",
+            go_title: "GAME OVER",
+            go_retry: "RIPROVA",
+            hud_lvl: "LIV",
+            hud_pts: "PTS",
+            stat_lvl: "Livello",
+            stat_pts: "Punti",
+            msg_floor: "PIANO",
+            msg_dark: "(OSCURO)",
+            msg_ouch: "AHIA! Danno subito!",
+            msg_potion: "Pozione! +1 Cuore",
+            msg_boots: "Stivali presi! (Acido OK)",
+            msg_flash: "Torcia presa! (Luce)",
+            msg_goggles: "Visore preso! (Laser)",
+            msg_key: "CHIAVE TROVATA!",
+            msg_gold: "Monete d'oro!",
+            msg_win: "Livello Completato!",
+            msg_lock: "Chiusa. Trova la chiave."
+        },
+        en: {
+            title_main: "ROGUE PIXEL<br>ENDLESS",
+            subtitle: "Infinite Levels",
+            title_who: "WHO ARE YOU?",
+            input_placeholder: "HERO",
+            btn_enter: "ENTER",
+            ui_exit: "EXIT",
+            go_title: "GAME OVER",
+            go_retry: "RETRY",
+            hud_lvl: "LVL",
+            hud_pts: "PTS",
+            stat_lvl: "Level",
+            stat_pts: "Score",
+            msg_floor: "FLOOR",
+            msg_dark: "(DARK)",
+            msg_ouch: "OUCH! Damage taken!",
+            msg_potion: "Potion! +1 Heart",
+            msg_boots: "Boots taken! (Acid OK)",
+            msg_flash: "Flashlight taken! (Light)",
+            msg_goggles: "Goggles taken! (Lasers)",
+            msg_key: "KEY FOUND!",
+            msg_gold: "Gold coins!",
+            msg_win: "Level Complete!",
+            msg_lock: "Locked. Find the key."
+        },
+        sk: {
+            title_main: "ROGUE PIXEL<br>NEKONEČNÝ",
+            subtitle: "Nekonečné úrovne",
+            title_who: "KTO SI?",
+            input_placeholder: "HRDINA",
+            btn_enter: "VSTÚPIŤ",
+            ui_exit: "KONIEC",
+            go_title: "KONIEC HRY",
+            go_retry: "SKÚSIŤ ZNOVA",
+            hud_lvl: "ÚRO",
+            hud_pts: "BODY",
+            stat_lvl: "Úroveň",
+            stat_pts: "Body",
+            msg_floor: "POSCHODIE",
+            msg_dark: "(TMY)",
+            msg_ouch: "AU! Zásah!",
+            msg_potion: "Elixír! +1 Srdce",
+            msg_boots: "Topánky! (Kyselina OK)",
+            msg_flash: "Baterka! (Svetlo)",
+            msg_goggles: "Okuliare! (Lasery)",
+            msg_key: "KĽÚČ NÁJDENÝ!",
+            msg_gold: "Zlaté mince!",
+            msg_win: "Úroveň dokončená!",
+            msg_lock: "Zamknuté. Nájdi kľúč."
+        }
+    };
+
+    let curLang = 'it'; // Lingua di default
+
+    function setLanguage(lang) {
+        curLang = lang;
+        // Aggiorna elementi DOM statici
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(translations[lang][key]) el.innerHTML = translations[lang][key];
+        });
+        // Aggiorna placeholder input
+        document.getElementById('playerNameInput').placeholder = translations[lang].input_placeholder;
+        
+        // Aggiorna stile bottoni
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText.toLowerCase() === lang) btn.classList.add('active');
+        });
+
+        // Aggiorna testi dinamici se il gioco è in pausa o menu
+        if(levelText) updateHUD();
+    }
+    // --- FINE LOGICA I18N ---
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const dialogBox = document.getElementById('dialogBox');
@@ -183,10 +299,11 @@
 
     let currentRoom = { name: "", bgType: "", objects: [], darkness: false };
 
-    // --- GENERATORE DI LIVELLI (CORRETTO PER L'USCITA) ---
+    // --- GENERATORE DI LIVELLI ---
     function generateLevel(level) {
         state.hasKey = false;
-        levelText.innerText = "LVL " + level;
+        // TRADUZIONE DINAMICA: Uso il dizionario invece della stringa fissa
+        levelText.innerText = translations[curLang].hud_lvl + " " + level;
         
         const themes = ["wood", "stone", "tile", "tech", "wood_old"];
         let themeIndex = (Math.floor((level-1)/2)) % themes.length; 
@@ -196,7 +313,8 @@
         let isDark = Math.random() < darkChance;
 
         currentRoom = {
-            name: "PIANO " + level + (isDark ? " (OSCURO)" : ""),
+            // TRADUZIONE DINAMICA DEL NOME STANZA
+            name: translations[curLang].msg_floor + " " + level + (isDark ? " " + translations[curLang].msg_dark : ""),
             bgType: theme,
             objects: [],
             darkness: isDark
@@ -328,7 +446,7 @@
     function takeDamage() {
         state.hp--;
         player.invulnerable = 60; 
-        showDialog("AHIA! Danno subito!");
+        showDialog(translations[curLang].msg_ouch);
         ctx.fillStyle = "rgba(255,0,0,0.5)"; ctx.fillRect(0,0,800,600);
         player.x = 100; player.y = 300; 
         if(state.hp <= 0) gameOver();
@@ -336,7 +454,9 @@
 
     function gameOver() {
         isPlaying = false;
-        document.getElementById('finalStats').innerText = `Livello: ${state.level} - Punti: ${state.score}`;
+        // TRADUZIONE STATISTICHE FINALI
+        const t = translations[curLang];
+        document.getElementById('finalStats').innerText = `${t.stat_lvl}: ${state.level} - ${t.stat_pts}: ${state.score}`;
         gameOverScreen.style.display = "flex";
     }
 
@@ -350,12 +470,13 @@
     }
 
     function handleInteraction(obj) {
+        const t = translations[curLang]; // Shortcut traduzione
         if(obj.pickup) {
             obj.pickedUp = true;
-            if(obj.type === "potion") { state.hp = Math.min(3, state.hp+1); showDialog("Pozione! +1 Cuore"); }
-            if(obj.type === "flashlight") { state.hasFlashlight = true; showDialog("Torcia presa!"); }
-            if(obj.type === "boots") { state.hasBoots = true; showDialog("Stivali presi!"); }
-            if(obj.type === "goggles") { state.hasGoggles = true; showDialog("Visore preso!"); }
+            if(obj.type === "potion") { state.hp = Math.min(3, state.hp+1); showDialog(t.msg_potion); }
+            if(obj.type === "flashlight") { state.hasFlashlight = true; showDialog(t.msg_flash); }
+            if(obj.type === "boots") { state.hasBoots = true; showDialog(t.msg_boots); }
+            if(obj.type === "goggles") { state.hasGoggles = true; showDialog(t.msg_goggles); }
             addScore(50); return;
         }
         if(obj.type.includes("chest")) {
@@ -364,17 +485,17 @@
             if(obj.contains === "key") {
                 state.hasKey = true;
                 addScore(100);
-                showDialog("CHIAVE TROVATA!");
-            } else { addScore(20); showDialog("Monete d'oro!"); }
+                showDialog(t.msg_key);
+            } else { addScore(20); showDialog(t.msg_gold); }
             return;
         }
         if(obj.type === "door") {
             if(state.hasKey) {
-                showDialog("Livello Completato!");
+                showDialog(t.msg_win);
                 addScore(200);
                 state.level++;
                 setTimeout(() => generateLevel(state.level), 1000);
-            } else { showDialog("Chiusa. Trova la chiave."); }
+            } else { showDialog(t.msg_lock); }
         }
     }
 
@@ -383,7 +504,10 @@
     function updateHUD() {
         let hearts = "❤".repeat(state.hp) + "♡".repeat(3-state.hp);
         lifeText.innerText = hearts;
-        scoreText.innerText = "PTS: " + state.score;
+        // TRADUZIONE HUD LIVE
+        levelText.innerText = translations[curLang].hud_lvl + " " + state.level;
+        scoreText.innerText = translations[curLang].hud_pts + ": " + state.score;
+        
         // Icona chiave nell'hud
         if(state.hasKey) { ctx.font="30px Arial"; ctx.fillText("🔑", 750, 50); }
     }
@@ -394,7 +518,7 @@
         dialogTimer = setTimeout(()=>dialogBox.style.display='none', 2000);
     }
 
-    // --- DISEGNO OGGETTI (FIX GRAFICA) ---
+    // --- DISEGNO OGGETTI ---
     function draw() {
         drawFloor(currentRoom.bgType);
         currentRoom.objects.forEach(obj => { if(!obj.solid && obj.type !== "door") drawObject(obj); }); // Layer sotto
@@ -536,17 +660,6 @@
     }
     bindTouch('btnUp', 'ArrowUp'); bindTouch('btnDown', 'ArrowDown'); bindTouch('btnLeft', 'ArrowLeft'); bindTouch('btnRight', 'ArrowRight'); bindTouch('btnAction', 'Space');
 
-    function update() {
-        if (!isPlaying) return;
-        gameTime++;
-        if(player.invulnerable > 0) player.invulnerable--;
-        let nx = player.x, ny = player.y;
-        if (keys.ArrowUp) ny -= player.speed; if (keys.ArrowDown) ny += player.speed;
-        if (keys.ArrowLeft) { nx -= player.speed; player.facing = -1; } if (keys.ArrowRight) { nx += player.speed; player.facing = 1; }
-        if (!checkCollision(nx, player.y)) player.x = nx;
-        if (!checkCollision(player.x, ny)) player.y = ny;
-        checkHazards();
-    }
     function loop() { update(); draw(); requestAnimationFrame(loop); }
     function selectChar(s) { player.sprite = s; document.getElementById('screenSelection').classList.add('hidden'); document.getElementById('screenName').classList.remove('hidden'); }
     function startGame() { 
