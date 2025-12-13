@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Platformer</title>
+    <title>Super Mario Simple</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -11,121 +11,97 @@
 
         body { 
             margin: 0; padding: 0; 
-            background-color: #222; /* Sfondo pagina GRIGIO SCURO (non nero) */
+            background-color: #202020; /* Grigio scuro per la pagina */
             font-family: 'Press Start 2P', cursive;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; overflow: hidden; color: white;
         }
 
-        /* --- LAYOUT PC --- */
+        /* --- STILE DEL GIOCO (PC) --- */
         canvas { 
-            /* SFONDO BLU FORZATO VIA CSS: Se vedi blu, il canvas c'è! */
+            /* FORZIAMO IL CIELO AZZURRO DAL CSS */
             background-color: #5c94fc; 
             width: 800px;
             height: 600px;
             max-width: 100%;
             max-height: 100%;
             image-rendering: pixelated;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            border: 4px solid #fff;
+            border: 4px solid #fff; /* Bordo bianco per vedere dove finisce il gioco */
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            display: block;
         }
 
-        .console-case, .controls-area, .ui-overlay { display: none; }
-
+        /* HUD PC */
         #pc-hud {
-            position: absolute;
-            top: 20px; left: 50%; transform: translateX(-50%);
             width: 800px; max-width: 90%;
             display: flex; justify-content: space-between;
-            pointer-events: none;
+            margin-bottom: 10px;
             text-shadow: 2px 2px 0 #000;
             font-size: 16px;
-            z-index: 10;
             color: #fff;
         }
 
-        /* --- LAYOUT MOBILE --- */
+        /* Nascondi controlli mobile su PC */
+        .mobile-controls { display: none; }
+
+        /* --- STILE MOBILE --- */
         @media (max-width: 768px) {
             #pc-hud { display: none; }
+            
+            body { background-color: #f7f7f7; justify-content: flex-start; }
 
-            .console-case {
-                display: flex !important;
+            .game-container {
                 width: 100%; height: 100dvh;
-                background-color: #f7f7f7;
-                flex-direction: column;
-                max-width: 100%;
+                display: flex; flex-direction: column;
             }
 
-            canvas {
-                width: 100%; height: 100%;
-                box-shadow: none;
-                border: 4px solid #222;
-                background-color: #5c94fc; /* Anche qui blu */
-            }
-
-            .screen-bezel {
-                background-color: #555;
-                border-radius: 10px 10px 40px 10px;
-                margin: 10px 10px 0 10px;
-                padding: 15px;
-                flex: 1; 
-                display: flex; justify-content: center; align-items: center;
-                position: relative;
+            .screen-area {
+                background: #555;
+                padding: 20px;
+                border-radius: 0 0 40px 0;
                 box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
             }
 
-            .ui-overlay {
-                display: flex;
-                position: absolute; top: 20px; left: 20px; right: 20px;
-                justify-content: space-between;
-                pointer-events: none;
-                text-shadow: 2px 2px 0 #000;
-                font-size: 10px;
-                z-index: 5;
+            canvas {
+                width: 100%; height: auto; aspect-ratio: 4/3;
+                border: 4px solid #222;
+                background-color: #5c94fc;
             }
 
-            .controls-area {
-                display: flex;
-                height: 200px; padding: 10px 20px;
+            .mobile-controls {
+                display: flex; flex: 1;
                 justify-content: space-between; align-items: center;
-                background-color: #f7f7f7;
+                padding: 20px;
             }
 
             .d-pad { position: relative; width: 120px; height: 120px; }
-            .btn { position: absolute; background: #222; border-radius: 4px; box-shadow: 0 4px 0 #111; }
-            .btn:active { transform: translate(0, 4px); box-shadow: none; background: #444; }
-            
-            #up { top:0; left:40px; width:40px; height:40px; }
-            #down { bottom:0; left:40px; width:40px; height:40px; }
-            #left { top:40px; left:0; width:40px; height:40px; }
-            #right { top:40px; right:0; width:40px; height:40px; }
+            .btn { position: absolute; background: #222; width: 40px; height: 40px; border-radius: 4px; }
+            .btn:active { background: #555; }
+            #up { top:0; left:40px; }
+            #down { bottom:0; left:40px; }
+            #left { top:40px; left:0; }
+            #right { top:40px; right:0; }
 
-            .action-btns { transform: rotate(-15deg); display: flex; gap: 15px; margin-right: 10px; }
-            .round-btn {
-                width: 55px; height: 55px; border-radius: 50%; background: #d32f2f;
-                box-shadow: 2px 4px 0 #8b0000; border: none; color: rgba(0,0,0,0.3); font-weight: bold; font-size: 20px;
-            }
-            .round-btn:active { transform: translate(2px, 4px); box-shadow: none; }
+            .action-btns { display: flex; gap: 20px; transform: rotate(-15deg); }
+            .round-btn { width: 60px; height: 60px; border-radius: 50%; background: #d32f2f; border: none; color:rgba(0,0,0,0.2); font-weight:bold; font-size:20px; box-shadow: 2px 3px 0 #800; }
+            .round-btn:active { transform: translateY(3px); box-shadow: none; }
         }
     </style>
 </head>
 <body>
 
 <div id="pc-hud">
-    <div id="pc-lives">MARIO x 3</div>
-    <div id="pc-info" style="font-size: 10px; color:#aaa; margin-top:5px;">FRECCE: Muovi | SPAZIO: Salta | SHIFT: Corri</div>
-    <div id="pc-coins">🟡 0</div>
+    <div>MARIO x 3</div>
+    <div style="font-size: 10px; color:#ddd; padding-top:5px;">FRECCE + SPAZIO</div>
+    <div id="score">MONETE: 0</div>
 </div>
 
-<div class="console-case">
-    <div class="screen-bezel">
+<div class="game-container">
+    <div class="screen-area">
         <canvas id="gameCanvas" width="320" height="240"></canvas>
-        <div class="ui-overlay">
-            <div id="lives-display">Mx3</div>
-            <div id="coins-display">🟡0</div>
-        </div>
     </div>
-    <div class="controls-area">
+
+    <div class="mobile-controls">
         <div class="d-pad">
             <div class="btn" id="up"></div>
             <div class="btn" id="down"></div>
@@ -133,178 +109,184 @@
             <div class="btn" id="right"></div>
         </div>
         <div class="action-btns">
-            <button class="round-btn" id="btnB">B</button> 
-            <button class="round-btn" id="btnA">A</button> 
+            <button class="round-btn" id="btnB">B</button>
+            <button class="round-btn" id="btnA">A</button>
         </div>
     </div>
 </div>
 
 <script>
-window.onload = function() {
-    // Gestione Errori
-    try {
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-        // --- IMMAGINI (Base64 Semplificate) ---
-        const gfx = {
-            ground: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WJsBmMzFJsB2AzFZhA2A7HhPxr+JAYAAH1SDxF4f5WwAAAAAElFTkSuQmCC",
-            box: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBmLDf3QxQjEkBqB7kFj12DAxGDSQGADZsw8R99sMeAAAAABJRU5ErkJggg==",
-            brick: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WIsADuSDxF1cQ3BAAAAAElFTkSuQmCC",
-            hero: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWklEQVQ4T2NkQAO/GTABRhL1YANGNvwHwf9oYsyA8THFRMvBqAEjIyOMj4yPLoguB5vCgM0AbApB5mAzAJtCkDlYDcAmT7Q5GAM2w/8z/E80wOhuJMkckgAAa242Eb864U4AAAAASUVORK5CYII=",
-            enemy: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEnjNwMDwH4oJMQAbG6sB2IyFqUe2GZsB2AzFZhA2A7HhPxr+JAYg+5A0w/CbkYGBgZGROANIBwAAo1QWEdul7TkAAAAASUVORK5CYII="
-        };
-
-        const sprites = {};
-        for(let key in gfx) {
-            let img = new Image();
-            img.src = gfx[key];
-            sprites[key] = img;
+    // --- VARIABILI ---
+    const TILE = 16;
+    let player = { x: 50, y: 100, w: 16, h: 16, vx: 0, vy: 0, grounded: false, color: 'red' };
+    let coins = 0;
+    let cameraX = 0;
+    let keys = { left: false, right: false, up: false };
+    
+    // Mappa semplice (1 = terra, 2 = box moneta, 3 = mattone)
+    let map = [];
+    for(let y=0; y<15; y++) {
+        let row = [];
+        for(let x=0; x<100; x++) {
+            if(y >= 13) row.push(1); // Pavimento
+            else if(x===0 || x===99) row.push(1); // Muri
+            else if(y===9 && x>10 && x<15) row.push(2); // Box
+            else if(y===9 && x===16) row.push(3); // Mattone
+            else row.push(0); // Aria
         }
-
-        // --- CONFIGURAZIONE ---
-        const TILE_SIZE = 16;
-        const GRAVITY = 0.25;
-        const JUMP_FORCE = -5.8;
-        
-        let player = { x: 50, y: 100, w: 14, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, lives: 3, coins: 0 };
-        let camera = { x: 0 };
-        const keys = { left: false, right: false, up: false, run: false };
-        
-        let levelMap = [];
-        let particles = [];
-
-        // Crea livello
-        function createLevel() {
-            levelMap = [];
-            for(let y=0; y<15; y++) {
-                let row = [];
-                for(let x=0; x<200; x++) {
-                    let tile = '.';
-                    if(y >= 13) tile = (x>40 && x<45) ? '.' : '#';
-                    else if(x===0 || x===199) tile = '#';
-                    else {
-                        if(y===9 && x>10 && Math.random()>0.9) tile = '?';
-                        else if(y===9 && x>10 && Math.random()>0.85) tile = 'B';
-                        else if(y===12 && x>15 && Math.random()>0.97) tile = '^';
-                    }
-                    row.push(tile);
-                }
-                levelMap.push(row);
-            }
-        }
-        createLevel();
-
-        // Fisica
-        function update() {
-            if(keys.left) { player.vx -= 0.5; player.facing = -1; }
-            if(keys.right) { player.vx += 0.5; player.facing = 1; }
-            player.vx *= 0.85;
-            
-            player.vy += GRAVITY;
-            if(keys.up && player.grounded) { player.vy = JUMP_FORCE; player.grounded = false; }
-
-            player.x += player.vx;
-            handleCollisions(true);
-            player.y += player.vy;
-            player.grounded = false;
-            handleCollisions(false);
-
-            // Morte
-            if(player.y > 500) { player.x = 50; player.y = 100; player.vy=0; }
-
-            // Camera
-            let target = player.x - canvas.width/2;
-            camera.x += (target - camera.x) * 0.1;
-            if(camera.x < 0) camera.x = 0;
-        }
-
-        function handleCollisions(h) {
-            let tx = Math.floor((player.x + player.w/2)/TILE_SIZE);
-            let ty = Math.floor((player.y + player.h/2)/TILE_SIZE);
-            // Controllo semplificato per debug: tocca terra
-            if(!h && player.y + player.h >= 13 * TILE_SIZE) {
-                // Controllo buchi
-                if(levelMap[13][Math.floor(player.x/TILE_SIZE)] === '#') {
-                    player.y = 13*TILE_SIZE - player.h;
-                    player.vy = 0;
-                    player.grounded = true;
-                }
-            }
-            // Controllo blocchi (semplificato)
-            // Per questa versione debug, la collisione è base
-        }
-
-        // --- DISEGNO ---
-        function draw() {
-            // Sfondo
-            ctx.fillStyle = "#5c94fc";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.save();
-            ctx.translate(-Math.floor(camera.x), 0);
-
-            // Disegna Mappa
-            for(let y=0; y<15; y++) {
-                let startX = Math.floor(camera.x/TILE_SIZE);
-                for(let x=startX; x<startX+60; x++) {
-                    if(x >= 200) break;
-                    let t = levelMap[y][x];
-                    let px = x*TILE_SIZE, py = y*TILE_SIZE;
-                    
-                    if(t==='#') drawSprite(sprites.ground, px, py, "#8B4513");
-                    else if(t==='?') drawSprite(sprites.box, px, py, "gold");
-                    else if(t==='B') drawSprite(sprites.brick, px, py, "brown");
-                    else if(t==='^') drawSprite(sprites.enemy, px, py, "black");
-                }
-            }
-
-            // Disegna Player
-            ctx.save();
-            ctx.translate(Math.floor(player.x)+7, Math.floor(player.y)+7);
-            ctx.scale(player.facing, 1);
-            drawSprite(sprites.hero, -7, -7, "red");
-            ctx.restore();
-
-            ctx.restore();
-            requestAnimationFrame(loop);
-        }
-
-        // Funzione helper per disegnare anche se immagine non caricata
-        function drawSprite(img, x, y, fallbackColor) {
-            if(img && img.complete && img.naturalHeight !== 0) {
-                ctx.drawImage(img, x, y, 16, 16);
-            } else {
-                ctx.fillStyle = fallbackColor;
-                ctx.fillRect(x, y, 16, 16);
-            }
-        }
-
-        function loop() {
-            update();
-            draw();
-        }
-
-        // Controlli
-        window.addEventListener('keydown', e => {
-            if(e.code==='ArrowLeft') keys.left=true;
-            if(e.code==='ArrowRight') keys.right=true;
-            if(e.code==='Space') keys.up=true;
-        });
-        window.addEventListener('keyup', e => {
-            if(e.code==='ArrowLeft') keys.left=false;
-            if(e.code==='ArrowRight') keys.right=false;
-            if(e.code==='Space') keys.up=false;
-        });
-
-        // Avvio
-        loop();
-
-    } catch (err) {
-        alert("ERRORE NEL CODICE: " + err.message);
-        console.error(err);
+        map.push(row);
     }
-};
+
+    // --- LOOP DI GIOCO ---
+    function update() {
+        // Movimento Orizzontale
+        if(keys.left) player.vx -= 0.5;
+        if(keys.right) player.vx += 0.5;
+        player.vx *= 0.8; // Attrito
+
+        // Gravità
+        player.vy += 0.3; 
+        
+        // Salto
+        if(keys.up && player.grounded) {
+            player.vy = -6;
+            player.grounded = false;
+        }
+
+        // Applica velocità
+        player.x += player.vx;
+        checkCollision(true); // Controllo X
+        player.y += player.vy;
+        player.grounded = false;
+        checkCollision(false); // Controllo Y
+
+        // Morte caduta
+        if(player.y > 300) { player.x = 50; player.y = 100; player.vy = 0; }
+
+        // Camera
+        cameraX = player.x - 100;
+        if(cameraX < 0) cameraX = 0;
+    }
+
+    function checkCollision(isX) {
+        // Indici della griglia
+        let left = Math.floor(player.x / TILE);
+        let right = Math.floor((player.x + player.w - 0.1) / TILE);
+        let top = Math.floor(player.y / TILE);
+        let bottom = Math.floor((player.y + player.h - 0.1) / TILE);
+
+        // Controlla i 4 angoli
+        let tl = getTile(left, top);
+        let tr = getTile(right, top);
+        let bl = getTile(left, bottom);
+        let br = getTile(right, bottom);
+
+        if(isX) {
+            if (player.vx > 0) { // Destra
+                if (tr || br) { player.x = (right * TILE) - player.w; player.vx = 0; }
+            } else if (player.vx < 0) { // Sinistra
+                if (tl || bl) { player.x = (left + 1) * TILE; player.vx = 0; }
+            }
+        } else {
+            if (player.vy > 0) { // Caduta
+                if (bl || br) { 
+                    player.y = (bottom * TILE) - player.h; 
+                    player.vy = 0; 
+                    player.grounded = true; 
+                }
+            } else if (player.vy < 0) { // Salto
+                if (tl || tr) { 
+                    player.y = (top + 1) * TILE; 
+                    player.vy = 0; 
+                    if(tr === 2 || tl === 2) { // Colpisci Box
+                         coins++; 
+                         document.getElementById('score').innerText = "MONETE: " + coins;
+                         // Cambia tile a usata (opzionale)
+                    }
+                }
+            }
+        }
+    }
+
+    function getTile(x, y) {
+        if(y < 0 || y >= 15 || x < 0 || x >= 100) return 0;
+        return map[y][x];
+    }
+
+    function draw() {
+        // Pulisci e disegna cielo
+        ctx.fillStyle = "#5c94fc";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.translate(-Math.floor(cameraX), 0);
+
+        // Disegna Mappa
+        for(let y=0; y<15; y++) {
+            // Disegna solo le tile visibili
+            let startX = Math.floor(cameraX / TILE);
+            for(let x=startX; x<startX+25; x++) {
+                let t = getTile(x, y);
+                if(t === 1) { // Terra
+                    ctx.fillStyle = "#8B4513"; // Marrone
+                    ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+                    ctx.fillStyle = "#228B22"; // Erba sopra
+                    ctx.fillRect(x*TILE, y*TILE, TILE, 4);
+                } else if(t === 2) { // Box Moneta
+                    ctx.fillStyle = "gold";
+                    ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+                    ctx.strokeRect(x*TILE, y*TILE, TILE, TILE);
+                    ctx.fillStyle = "black"; ctx.font="10px Arial"; ctx.fillText("?", x*TILE+4, y*TILE+12);
+                } else if(t === 3) { // Mattone
+                    ctx.fillStyle = "#A0522D";
+                    ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+                    ctx.strokeRect(x*TILE, y*TILE, TILE, TILE);
+                }
+            }
+        }
+
+        // Disegna Player
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+        
+        // Occhi (per capire direzione)
+        ctx.fillStyle = "white";
+        if(keys.left) ctx.fillRect(player.x+2, player.y+4, 4, 4);
+        else ctx.fillRect(player.x+10, player.y+4, 4, 4);
+
+        ctx.restore();
+
+        requestAnimationFrame(update);
+        requestAnimationFrame(draw);
+    }
+
+    // --- CONTROLLI ---
+    window.addEventListener('keydown', e => {
+        if(e.code === 'ArrowLeft') keys.left = true;
+        if(e.code === 'ArrowRight') keys.right = true;
+        if(e.code === 'Space') keys.up = true;
+    });
+    window.addEventListener('keyup', e => {
+        if(e.code === 'ArrowLeft') keys.left = false;
+        if(e.code === 'ArrowRight') keys.right = false;
+        if(e.code === 'Space') keys.up = false;
+    });
+    
+    // Controlli Touch
+    const bindTouch = (id, key) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); if(key==='up') keys.up=true; else if(key==='left') keys.left=true; else if(key==='right') keys.right=true; });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); if(key==='up') keys.up=false; else if(key==='left') keys.left=false; else if(key==='right') keys.right=false; });
+    };
+    bindTouch('btnA', 'up'); bindTouch('left', 'left'); bindTouch('right', 'right'); bindTouch('up', 'up');
+
+    // Avvio
+    draw();
+
 </script>
 </body>
 </html>
