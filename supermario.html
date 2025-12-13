@@ -11,28 +11,27 @@
 
         body { 
             margin: 0; padding: 0; 
-            background-color: #111; 
+            background-color: #222; /* Sfondo pagina GRIGIO SCURO (non nero) */
             font-family: 'Press Start 2P', cursive;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; overflow: hidden; color: white;
         }
 
-        /* --- LAYOUT PC (Default) --- */
+        /* --- LAYOUT PC --- */
         canvas { 
-            /* Su PC mostriamo il gioco grande e centrato */
+            /* SFONDO BLU FORZATO VIA CSS: Se vedi blu, il canvas c'è! */
+            background-color: #5c94fc; 
             width: 800px;
             height: 600px;
             max-width: 100%;
             max-height: 100%;
-            image-rendering: pixelated; /* Mantiene i pixel nitidi */
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            border: 2px solid #333;
+            image-rendering: pixelated;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 4px solid #fff;
         }
 
-        /* Nascondiamo di base gli elementi del GameBoy */
         .console-case, .controls-area, .ui-overlay { display: none; }
 
-        /* HUD semplificato per PC (sovrapposto) */
         #pc-hud {
             position: absolute;
             top: 20px; left: 50%; transform: translateX(-50%);
@@ -45,12 +44,10 @@
             color: #fff;
         }
 
-        /* --- LAYOUT MOBILE (Game Boy Style) --- */
+        /* --- LAYOUT MOBILE --- */
         @media (max-width: 768px) {
-            /* Nascondiamo l'HUD PC */
             #pc-hud { display: none; }
 
-            /* Mostriamo il case del Game Boy */
             .console-case {
                 display: flex !important;
                 width: 100%; height: 100dvh;
@@ -59,12 +56,11 @@
                 max-width: 100%;
             }
 
-            /* Il canvas torna piccolo dentro lo schermo */
             canvas {
                 width: 100%; height: 100%;
                 box-shadow: none;
                 border: 4px solid #222;
-                background-color: #000;
+                background-color: #5c94fc; /* Anche qui blu */
             }
 
             .screen-bezel {
@@ -124,13 +120,11 @@
 <div class="console-case">
     <div class="screen-bezel">
         <canvas id="gameCanvas" width="320" height="240"></canvas>
-        
         <div class="ui-overlay">
             <div id="lives-display">Mx3</div>
             <div id="coins-display">🟡0</div>
         </div>
     </div>
-
     <div class="controls-area">
         <div class="d-pad">
             <div class="btn" id="up"></div>
@@ -146,342 +140,171 @@
 </div>
 
 <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+window.onload = function() {
+    // Gestione Errori
+    try {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-    // --- ASSETS GRAFICI (Base64 Pixel Art) ---
-    const gfx = {
-        ground: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WJsBmMzFJsB2AzFZhA2A7HhPxr+JAYAAH1SDxF4f5WwAAAAAElFTkSuQmCC",
-        box: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBmLDf3QxQjEkBqB7kFj12DAxGDSQGADZsw8R99sMeAAAAABJRU5ErkJggg==",
-        boxEmpty: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAANUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBgAlQA8ReeK7gwAAAABJRU5ErkJggg==",
-        brick: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WIsADuSDxF1cQ3BAAAAAElFTkSuQmCC",
-        heroIdle: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWklEQVQ4T2NkQAO/GTABRhL1YANGNvwHwf9oYsyA8THFRMvBqAEjIyOMj4yPLoguB5vCgM0AbApB5mAzAJtCkDlYDcAmT7Q5GAM2w/8z/E80wOhuJMkckgAAa242Eb864U4AAAAASUVORK5CYII=",
-        enemy: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEnjNwMDwH4oJMQAbG6sB2IyFqUe2GZsB2AzFZhA2A7HhPxr+JAYg+5A0w/CbkYGBgZGROANIBwAAo1QWEdul7TkAAAAASUVORK5CYII=",
-        pipe: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAK0lEQVQ4T2NkQAP/Gf6jYyQBxqOQkcFvRgY0sBg1gGE0gGE0gGE0gIE0AAAj0Q8Rztus4wAAAABJRU5ErkJggg=="
-    };
+        // --- IMMAGINI (Base64 Semplificate) ---
+        const gfx = {
+            ground: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WJsBmMzFJsB2AzFZhA2A7HhPxr+JAYAAH1SDxF4f5WwAAAAAElFTkSuQmCC",
+            box: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBmLDf3QxQjEkBqB7kFj12DAxGDSQGADZsw8R99sMeAAAAABJRU5ErkJggg==",
+            brick: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WIsADuSDxF1cQ3BAAAAAElFTkSuQmCC",
+            hero: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWklEQVQ4T2NkQAO/GTABRhL1YANGNvwHwf9oYsyA8THFRMvBqAEjIyOMj4yPLoguB5vCgM0AbApB5mAzAJtCkDlYDcAmT7Q5GAM2w/8z/E80wOhuJMkckgAAa242Eb864U4AAAAASUVORK5CYII=",
+            enemy: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEnjNwMDwH4oJMQAbG6sB2IyFqUe2GZsB2AzFZhA2A7HhPxr+JAYg+5A0w/CbkYGBgZGROANIBwAAo1QWEdul7TkAAAAASUVORK5CYII="
+        };
 
-    const sprites = {};
-    let assetsLoaded = 0;
-    const totalAssets = Object.keys(gfx).length;
-
-    for(let key in gfx) {
-        let img = new Image();
-        img.src = gfx[key];
-        img.onload = () => { assetsLoaded++; };
-        sprites[key] = img;
-    }
-
-    // --- VARIABILI DI GIOCO ---
-    const TILE_SIZE = 16;
-    const GRAVITY = 0.25;
-    const JUMP_FORCE = -5.8;
-    
-    let gameState = "START"; 
-    
-    let player = {
-        x: 50, y: 100, w: 14, h: 14,
-        vx: 0, vy: 0,
-        grounded: false,
-        facing: 1,
-        lives: 3,
-        coins: 0
-    };
-
-    let camera = { x: 0, y: 0 };
-    const keys = { left: false, right: false, up: false, down: false, run: false };
-
-    let currentLevel = 1;
-    let levelMap = [];
-    let particles = [];
-
-    // --- CARICAMENTO LIVELLO ---
-    function loadLevel(level) {
-        player.vx = 0; player.vy = 0;
-        player.x = 50; player.y = 100;
-        particles = [];
-        
-        // Mappa più lunga ad ogni livello
-        let mapWidth = 100 + (level * 20);
-        levelMap = [];
-        
-        for(let y=0; y<15; y++) {
-            let row = [];
-            for(let x=0; x<mapWidth; x++) {
-                let tile = '.';
-                // Pavimento
-                if(y >= 13) {
-                    if(x > 40 && x < 50) tile = '.'; // Precipizio
-                    else tile = '#';
-                }
-                // Muri invisibili
-                else if(x === 0 || x === mapWidth - 1) tile = '#';
-                // Generazione casuale
-                else {
-                    let r = Math.random();
-                    if(y === 9 && r > 0.95 && x > 10 && x < mapWidth-10) tile = '?';
-                    else if(y === 9 && r > 0.90 && x > 10) tile = 'B';
-                    else if(y === 5 && r > 0.98 && x > 20) tile = '?';
-                    else if(y === 12 && r > 0.97 && x > 15) tile = '^';
-                    else if(y === 11 && x > 60 && x < 63) tile = 'P';
-                    else if(x === mapWidth - 5 && y === 12) tile = '!';
-                }
-                row.push(tile);
-            }
-            levelMap.push(row);
-        }
-    }
-
-    // --- FISICA ---
-    function updatePhysics() {
-        if(gameState !== "PLAY") return;
-
-        if (keys.left) { player.vx -= 0.5; player.facing = -1; }
-        if (keys.right) { player.vx += 0.5; player.facing = 1; }
-        
-        player.vx *= 0.85;
-        let maxSpd = keys.run ? 3.5 : 2.0;
-        if (player.vx > maxSpd) player.vx = maxSpd;
-        if (player.vx < -maxSpd) player.vx = -maxSpd;
-
-        player.vy += GRAVITY;
-        
-        if (keys.up && player.grounded) {
-            player.vy = JUMP_FORCE;
-            player.grounded = false;
+        const sprites = {};
+        for(let key in gfx) {
+            let img = new Image();
+            img.src = gfx[key];
+            sprites[key] = img;
         }
 
-        player.x += player.vx;
-        handleCollisions(true);
-
-        player.y += player.vy;
-        player.grounded = false;
-        handleCollisions(false);
-
-        if(player.y > canvas.height * 2) killPlayer();
-
-        // Camera Follow
-        let targetCamX = player.x - canvas.width / 2;
-        targetCamX = Math.max(0, Math.min(targetCamX, (levelMap[0].length * TILE_SIZE) - canvas.width));
-        camera.x += (targetCamX - camera.x) * 0.1;
-    }
-
-    function handleCollisions(horizontal) {
-        let left = Math.floor(player.x / TILE_SIZE);
-        let right = Math.floor((player.x + player.w - 0.01) / TILE_SIZE);
-        let top = Math.floor(player.y / TILE_SIZE);
-        let bottom = Math.floor((player.y + player.h - 0.01) / TILE_SIZE);
-
-        checkTile(left, top, horizontal);
-        checkTile(right, top, horizontal);
-        checkTile(left, bottom, horizontal);
-        checkTile(right, bottom, horizontal);
-    }
-
-    function checkTile(tx, ty, horizontal) {
-        if (ty < 0 || ty >= 15 || tx < 0 || tx >= levelMap[0].length) return;
+        // --- CONFIGURAZIONE ---
+        const TILE_SIZE = 16;
+        const GRAVITY = 0.25;
+        const JUMP_FORCE = -5.8;
         
-        let t = levelMap[ty][tx];
-        if (['#', '?', 'B', 'U', 'P'].includes(t)) {
-            if (horizontal) {
-                if (player.vx > 0) player.x = tx * TILE_SIZE - player.w;
-                else if (player.vx < 0) player.x = (tx + 1) * TILE_SIZE;
-                player.vx = 0;
-            } else {
-                if (player.vy > 0) {
-                    player.y = ty * TILE_SIZE - player.h;
-                    player.grounded = true;
-                    player.vy = 0;
-                } else if (player.vy < 0) {
-                    player.y = (ty + 1) * TILE_SIZE;
-                    player.vy = 0;
-                    if(t === '?') {
-                        levelMap[ty][tx] = 'U';
-                        collectCoin(tx, ty);
-                    } else if (t === 'B') {
-                         createParticles(tx*TILE_SIZE, ty*TILE_SIZE, "#a0522d");
+        let player = { x: 50, y: 100, w: 14, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, lives: 3, coins: 0 };
+        let camera = { x: 0 };
+        const keys = { left: false, right: false, up: false, run: false };
+        
+        let levelMap = [];
+        let particles = [];
+
+        // Crea livello
+        function createLevel() {
+            levelMap = [];
+            for(let y=0; y<15; y++) {
+                let row = [];
+                for(let x=0; x<200; x++) {
+                    let tile = '.';
+                    if(y >= 13) tile = (x>40 && x<45) ? '.' : '#';
+                    else if(x===0 || x===199) tile = '#';
+                    else {
+                        if(y===9 && x>10 && Math.random()>0.9) tile = '?';
+                        else if(y===9 && x>10 && Math.random()>0.85) tile = 'B';
+                        else if(y===12 && x>15 && Math.random()>0.97) tile = '^';
                     }
+                    row.push(tile);
                 }
+                levelMap.push(row);
             }
         }
-        else if (t === '^') {
-            killPlayer();
-        }
-        else if (t === '!') {
-            currentLevel++;
-            loadLevel(currentLevel);
-        }
-    }
+        createLevel();
 
-    function collectCoin(tx, ty) {
-        player.coins++;
-        updateHUD();
-        createParticles(tx*TILE_SIZE, (ty-1)*TILE_SIZE, "gold");
-    }
+        // Fisica
+        function update() {
+            if(keys.left) { player.vx -= 0.5; player.facing = -1; }
+            if(keys.right) { player.vx += 0.5; player.facing = 1; }
+            player.vx *= 0.85;
+            
+            player.vy += GRAVITY;
+            if(keys.up && player.grounded) { player.vy = JUMP_FORCE; player.grounded = false; }
 
-    function killPlayer() {
-        player.lives--;
-        updateHUD();
-        if(player.lives <= 0) {
-            alert("GAME OVER!");
-            player.lives = 3; player.coins = 0; currentLevel = 1;
-            updateHUD();
-        }
-        loadLevel(currentLevel);
-    }
+            player.x += player.vx;
+            handleCollisions(true);
+            player.y += player.vy;
+            player.grounded = false;
+            handleCollisions(false);
 
-    function updateHUD() {
-        document.getElementById('lives-display').innerText = "Mx" + player.lives;
-        document.getElementById('coins-display').innerText = "🟡" + player.coins;
-        const pcLives = document.getElementById('pc-lives');
-        const pcCoins = document.getElementById('pc-coins');
-        if(pcLives) pcLives.innerText = "MARIO x " + player.lives;
-        if(pcCoins) pcCoins.innerText = "🟡 " + player.coins;
-    }
+            // Morte
+            if(player.y > 500) { player.x = 50; player.y = 100; player.vy=0; }
 
-    function createParticles(x, y, col) {
-        for(let i=0; i<5; i++) {
-            particles.push({
-                x: x + 8, y: y + 8,
-                vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
-                life: 15, col: col
-            });
-        }
-    }
-
-    // --- DISEGNO ---
-    function draw() {
-        // 1. PULIZIA E SFONDO (Fix schermo nero)
-        ctx.fillStyle = "#000"; // Sfondo base nero
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Se le immagini non sono pronte
-        if(assetsLoaded < totalAssets) {
-            ctx.fillStyle = "white"; 
-            ctx.textAlign = "center";
-            ctx.fillText("LOADING...", canvas.width/2, canvas.height/2);
-            requestAnimationFrame(loop);
-            return;
+            // Camera
+            let target = player.x - canvas.width/2;
+            camera.x += (target - camera.x) * 0.1;
+            if(camera.x < 0) camera.x = 0;
         }
 
-        // 2. SCHERMATA START
-        if(gameState === "START") {
-            ctx.fillStyle = "#222"; // Sfondo Menu
+        function handleCollisions(h) {
+            let tx = Math.floor((player.x + player.w/2)/TILE_SIZE);
+            let ty = Math.floor((player.y + player.h/2)/TILE_SIZE);
+            // Controllo semplificato per debug: tocca terra
+            if(!h && player.y + player.h >= 13 * TILE_SIZE) {
+                // Controllo buchi
+                if(levelMap[13][Math.floor(player.x/TILE_SIZE)] === '#') {
+                    player.y = 13*TILE_SIZE - player.h;
+                    player.vy = 0;
+                    player.grounded = true;
+                }
+            }
+            // Controllo blocchi (semplificato)
+            // Per questa versione debug, la collisione è base
+        }
+
+        // --- DISEGNO ---
+        function draw() {
+            // Sfondo
+            ctx.fillStyle = "#5c94fc";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = "white"; ctx.textAlign = "center";
-            ctx.font = "20px 'Press Start 2P'";
-            ctx.fillText("SUPER MARIO", canvas.width/2, 80);
-            
-            ctx.font = "10px 'Press Start 2P'";
-            ctx.fillStyle = "#FFcc00";
-            ctx.fillText("PREMI 'A' O SPACE", canvas.width/2, 140);
-            
-            // Disegna Mario nel menu
-            if(sprites.heroIdle) ctx.drawImage(sprites.heroIdle, canvas.width/2 - 8, 100, 16, 16);
-            return;
+
+            ctx.save();
+            ctx.translate(-Math.floor(camera.x), 0);
+
+            // Disegna Mappa
+            for(let y=0; y<15; y++) {
+                let startX = Math.floor(camera.x/TILE_SIZE);
+                for(let x=startX; x<startX+60; x++) {
+                    if(x >= 200) break;
+                    let t = levelMap[y][x];
+                    let px = x*TILE_SIZE, py = y*TILE_SIZE;
+                    
+                    if(t==='#') drawSprite(sprites.ground, px, py, "#8B4513");
+                    else if(t==='?') drawSprite(sprites.box, px, py, "gold");
+                    else if(t==='B') drawSprite(sprites.brick, px, py, "brown");
+                    else if(t==='^') drawSprite(sprites.enemy, px, py, "black");
+                }
+            }
+
+            // Disegna Player
+            ctx.save();
+            ctx.translate(Math.floor(player.x)+7, Math.floor(player.y)+7);
+            ctx.scale(player.facing, 1);
+            drawSprite(sprites.hero, -7, -7, "red");
+            ctx.restore();
+
+            ctx.restore();
+            requestAnimationFrame(loop);
         }
 
-        // 3. GIOCO
-        // Cielo Azzurro
-        ctx.fillStyle = "#5c94fc";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.save();
-        ctx.translate(-Math.floor(camera.x), 0);
-
-        // Mappa
-        for(let y=0; y<15; y++) {
-            let startX = Math.floor(camera.x / TILE_SIZE);
-            let endX = startX + (canvas.width / TILE_SIZE) + 1;
-            
-            for(let x=startX; x<endX; x++) {
-                if(x >= levelMap[0].length) break;
-
-                let t = levelMap[y][x];
-                let px = x * TILE_SIZE;
-                let py = y * TILE_SIZE;
-
-                if(t === '#') ctx.drawImage(sprites.ground, px, py, TILE_SIZE, TILE_SIZE);
-                else if(t === '?') ctx.drawImage(sprites.box, px, py, TILE_SIZE, TILE_SIZE);
-                else if(t === 'U') ctx.drawImage(sprites.boxEmpty, px, py, TILE_SIZE, TILE_SIZE);
-                else if(t === 'B') ctx.drawImage(sprites.brick, px, py, TILE_SIZE, TILE_SIZE);
-                else if(t === '^') ctx.drawImage(sprites.enemy, px, py, TILE_SIZE, TILE_SIZE);
-                else if(t === 'P') ctx.drawImage(sprites.pipe, px, py, TILE_SIZE, TILE_SIZE);
-                else if(t === '!') {
-                    ctx.fillStyle = "#fff"; ctx.fillRect(px, py, 2, 16);
-                    ctx.fillStyle = "green"; ctx.fillRect(px+2, py, 10, 8);
-                }
+        // Funzione helper per disegnare anche se immagine non caricata
+        function drawSprite(img, x, y, fallbackColor) {
+            if(img && img.complete && img.naturalHeight !== 0) {
+                ctx.drawImage(img, x, y, 16, 16);
+            } else {
+                ctx.fillStyle = fallbackColor;
+                ctx.fillRect(x, y, 16, 16);
             }
         }
 
-        // Player
-        ctx.save();
-        ctx.translate(Math.floor(player.x) + (player.w/2), Math.floor(player.y) + (player.h/2));
-        ctx.scale(player.facing, 1);
-        ctx.drawImage(sprites.heroIdle, -8, -8, 16, 16);
-        ctx.restore();
+        function loop() {
+            update();
+            draw();
+        }
 
-        // Particelle
-        particles.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.life--;
-            ctx.fillStyle = p.col; ctx.fillRect(p.x, p.y, 3, 3);
-            if(p.life <= 0) particles.splice(i, 1);
+        // Controlli
+        window.addEventListener('keydown', e => {
+            if(e.code==='ArrowLeft') keys.left=true;
+            if(e.code==='ArrowRight') keys.right=true;
+            if(e.code==='Space') keys.up=true;
+        });
+        window.addEventListener('keyup', e => {
+            if(e.code==='ArrowLeft') keys.left=false;
+            if(e.code==='ArrowRight') keys.right=false;
+            if(e.code==='Space') keys.up=false;
         });
 
-        ctx.restore();
+        // Avvio
+        loop();
+
+    } catch (err) {
+        alert("ERRORE NEL CODICE: " + err.message);
+        console.error(err);
     }
-
-    // --- CONTROLLI ---
-    function bindKey(id, key) {
-        const el = document.getElementById(id);
-        if(!el) return;
-        const press = (e) => { e.preventDefault(); handleInput(key, true); };
-        const release = (e) => { e.preventDefault(); handleInput(key, false); };
-        el.addEventListener('mousedown', press); el.addEventListener('mouseup', release);
-        el.addEventListener('touchstart', press); el.addEventListener('touchend', release);
-    }
-
-    bindKey('left', 'left'); bindKey('right', 'right');
-    bindKey('up', 'up'); bindKey('down', 'down');
-    bindKey('btnA', 'jump'); bindKey('btnB', 'run');
-
-    window.addEventListener('keydown', (e) => {
-        if(e.code==='ArrowLeft') handleInput('left', true);
-        if(e.code==='ArrowRight') handleInput('right', true);
-        if(e.code==='Space' || e.code==='KeyZ') handleInput('jump', true);
-        if(e.code==='ShiftLeft' || e.code==='KeyX') handleInput('run', true);
-        if(e.code==='ArrowUp') handleInput('up', true);
-    });
-    
-    window.addEventListener('keyup', (e) => {
-        if(e.code==='ArrowLeft') handleInput('left', false);
-        if(e.code==='ArrowRight') handleInput('right', false);
-        if(e.code==='Space' || e.code==='KeyZ') handleInput('jump', false);
-        if(e.code==='ShiftLeft' || e.code==='KeyX') handleInput('run', false);
-        if(e.code==='ArrowUp') handleInput('up', false);
-    });
-
-    function handleInput(action, pressed) {
-        if(gameState === "START" && pressed && (action === 'jump' || action === 'run')) {
-            gameState = "PLAY";
-            loadLevel(1);
-            return;
-        }
-        if(action === 'left') keys.left = pressed;
-        if(action === 'right') keys.right = pressed;
-        if(action === 'up' || action === 'jump') keys.up = pressed;
-        if(action === 'down') keys.down = pressed;
-        if(action === 'run') keys.run = pressed;
-    }
-
-    function loop() {
-        updatePhysics();
-        draw();
-        requestAnimationFrame(loop);
-    }
-
-    loop();
-
+};
 </script>
 </body>
 </html>
