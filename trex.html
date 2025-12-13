@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>T-Rex Run - Mobile Edition</title>
+    <title>T-Rex Run - Responsive Edition</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦖</text></svg>">
     
     <style>
-        /* --- STILE GENERALE E LAYOUT GAMEBOY --- */
+        /* --- STILE BASE (MOBILE / GAME BOY) --- */
         * { box-sizing: border-box; }
 
         body { 
             font-family: 'Segoe UI', sans-serif; 
             margin: 0; padding: 0;
-            background-color: #111; /* Sfondo scuro esterno */
+            background-color: #111; /* Sfondo scuro esterno mobile */
             color: #333; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; 
@@ -23,7 +23,7 @@
             overscroll-behavior-y: none; 
         }
 
-        /* Contenitore Principale (La console) */
+        /* Contenitore Principale (La console su mobile) */
         .game-container {
             width: 100%; 
             height: 100dvh; 
@@ -31,16 +31,16 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         /* --- PARTE SUPERIORE: SCHERMO --- */
         .screen-bezel {
             background-color: #555; /* Cornice scura schermo */
             border-radius: 10px 10px 40px 10px;
-            /* MODIFICA QUI: Ridotto il margine superiore da 10px a 2px per alzare tutto */
             margin: 2px 10px 0 10px; 
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
-            flex: 1; /* Prende tutto lo spazio disponibile in altezza */
+            flex: 1; 
             display: flex; 
             flex-direction: column;
             justify-content: center; 
@@ -49,7 +49,7 @@
             position: relative;
         }
 
-        /* Statistiche dentro lo schermo */
+        /* Statistiche */
         .stats {
             display: flex;
             justify-content: space-between;
@@ -58,21 +58,20 @@
             margin-bottom: 10px;
             font-weight: bold;
             font-size: 1rem;
-            color: #fff; /* Testo bianco su cornice scura */
+            color: #fff; 
             text-shadow: 1px 1px 0 #000;
             z-index: 10;
         }
 
         /* Il Canvas del Gioco */
         #gameCanvas {
-            background-color: #f7f7f7; /* Sfondo chiaro del gioco */
+            background-color: #f7f7f7; 
             border: 4px solid #333;
             border-radius: 4px;
-            /* Trucco per mantenere le proporzioni ma adattarsi */
             width: 100%;
             max-width: 600px;
             height: auto;
-            aspect-ratio: 3/1; /* Mantiene il ratio 600x200 */
+            aspect-ratio: 3/1; 
             image-rendering: pixelated;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
         }
@@ -95,12 +94,12 @@
             border-radius: 4px;
         }
 
-        /* --- PARTE INFERIORE: CONTROLLI --- */
+        /* --- PARTE INFERIORE: CONTROLLI (Visibili solo su Mobile) --- */
         #mobileControls {
             display: flex; 
             width: 100%;
             height: auto; 
-            min-height: 220px; /* Spazio per i tasti */
+            min-height: 220px; 
             justify-content: space-between; 
             align-items: center;
             padding: 10px 30px; 
@@ -110,11 +109,11 @@
             flex-shrink: 0;
         }
 
-        /* D-PAD (Croce direzionale) */
+        /* D-PAD e Bottoni */
         .d-pad { position: relative; width: 120px; height: 120px; }
         .d-btn {
             position: absolute; background: #222; border: none; width: 40px; height: 40px;
-            box-shadow: 0 4px 0 #000; -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 0 #000; -webkit-tap-highlight-color: transparent; cursor: pointer;
         }
         .d-btn:active { transform: translate(0, 4px); box-shadow: none; background: #444; }
         
@@ -124,17 +123,12 @@
         #btnRight { top: 40px; right: 0; border-radius: 0 5px 5px 0; }
         .d-center { position: absolute; top: 40px; left: 40px; width: 40px; height: 40px; background: #222; }
 
-        /* Tasti A e B */
-        .action-area { 
-            transform: rotate(-15deg); 
-            display: flex; gap: 15px; 
-            margin-bottom: 20px; 
-        }
+        .action-area { transform: rotate(-15deg); display: flex; gap: 15px; margin-bottom: 20px; }
         .a-btn {
             width: 55px; height: 55px; border-radius: 50%; border: none;
             background: #8f1c3f; color: rgba(0,0,0,0.3); 
             font-family: sans-serif; font-weight: bold; font-size: 1.2rem;
-            box-shadow: 2px 4px 0 #4a0f25;
+            box-shadow: 2px 4px 0 #4a0f25; cursor: pointer;
         }
         .a-btn:active { transform: translate(2px, 4px); box-shadow: none; }
 
@@ -145,15 +139,70 @@
             letter-spacing: 2px; opacity: 0.6;
         }
 
-        /* Per schermi desktop */
-        @media (min-width: 850px) {
+        /* --- MEDIA QUERY: DESKTOP & TABLET LANDSCAPE --- */
+        /* Se lo schermo è più largo di 1024px, passa alla modalità Desktop "Clean" */
+        @media (min-width: 1024px) {
+            
+            body {
+                background-color: #f0f0f0; /* Sfondo chiaro standard */
+            }
+
+            /* Rimuove l'aspetto "Console di plastica" */
             .game-container {
-                max-width: 450px; 
-                height: 800px;
-                border: 2px solid #333;
-                border-radius: 20px;
-                /* MODIFICA QUI: Rimosso il margin-top: 20px */
-                margin-top: 0; 
+                height: auto;
+                background-color: transparent;
+                max-width: 900px; /* Più largo su desktop */
+                margin: 0 auto;
+            }
+
+            /* Rimuove la cornice scura dello schermo */
+            .screen-bezel {
+                background-color: transparent;
+                box-shadow: none;
+                border-radius: 0;
+                margin: 50px auto;
+                padding: 0;
+                overflow: visible;
+            }
+
+            /* Canvas più grande e pulito */
+            #gameCanvas {
+                max-width: 100%;
+                border: 1px solid #ccc; /* Bordo sottile */
+                box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                background-color: #fff;
+            }
+
+            /* Nasconde i controlli Gameboy */
+            #mobileControls {
+                display: none !important;
+            }
+
+            /* Adatta il testo */
+            .stats {
+                color: #535353; /* Testo scuro su sfondo chiaro */
+                text-shadow: none;
+                font-size: 1.2rem;
+                margin-bottom: 20px;
+            }
+
+            .instructions {
+                color: #666;
+                font-size: 1.1rem;
+                margin-top: 20px;
+            }
+
+            /* Tasto indietro posizionato meglio */
+            .btn-back {
+                top: -40px;
+                left: 0;
+                color: #555;
+                border-color: #ccc;
+                padding: 5px 15px;
+                background: #fff;
+            }
+            .btn-back:hover {
+                background: #eee;
             }
         }
     </style>
@@ -162,7 +211,7 @@
 
 <div class="game-container">
     <div class="screen-bezel">
-        <a href="index.html" class="btn-back">RESET / HOME</a>
+        <a href="index.html" class="btn-back">⬅ HOME</a>
         
         <div class="stats">
             <span id="scoreText">Punti: 0</span>
@@ -171,7 +220,7 @@
 
         <canvas id="gameCanvas" width="600" height="200"></canvas>
         
-        <p class="instructions" data-i18n="startMsg">Premi A o ⬆ per saltare</p>
+        <p class="instructions" id="instructionText">Premi A o tocca per saltare</p>
     </div>
 
     <div id="mobileControls">
@@ -200,6 +249,12 @@
     const ctx = canvas.getContext("2d");
     const scoreText = document.getElementById("scoreText");
     const highScoreText = document.getElementById("highScoreText");
+    const instructionText = document.getElementById("instructionText");
+
+    // Rileva se siamo su desktop per cambiare il testo delle istruzioni
+    if (window.innerWidth >= 1024) {
+        instructionText.innerText = (typeof t !== 'undefined' ? t('startMsgDesktop') : "Premi SPAZIO o ⬆ per saltare");
+    }
 
     let score = 0;
     let highScore = localStorage.getItem('trexHighScore') || 0;
@@ -209,7 +264,7 @@
 
     highScoreText.innerText = "Record: " + highScore;
 
-    // --- OGGETTI DEL GIOCO (Invariati) ---
+    // --- OGGETTI DEL GIOCO ---
     const dino = {
         x: 50, y: 150, width: 40, height: 40, dy: 0,
         jumpPower: -11, gravity: 0.6, grounded: true, emoji: "🦖",
@@ -302,10 +357,18 @@
         isGameOver = true;
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "white"; ctx.font = "bold 40px Segoe UI"; ctx.textAlign = "center";
+        
+        // Testo Game Over
         ctx.fillText((typeof t !== 'undefined' ? t('gameOver') : "GAME OVER"), canvas.width / 2, canvas.height / 2);
+        
         ctx.font = "20px Segoe UI";
-        ctx.fillText((typeof t !== 'undefined' ? t('restartMsg') : "Premi A per riprovare"), canvas.width / 2, canvas.height / 2 + 40);
+        // Messaggio differenziato desktop/mobile
+        let msg = (typeof t !== 'undefined' ? t('restartMsg') : "Premi A o tocca per riprovare");
+        if(window.innerWidth >= 1024) msg = "Premi SPAZIO per riprovare";
+        
+        ctx.fillText(msg, canvas.width / 2, canvas.height / 2 + 40);
         ctx.textAlign = "left"; 
+
         if (score > highScore) {
             highScore = score; localStorage.setItem('trexHighScore', highScore);
             highScoreText.innerText = "Record: " + highScore;
@@ -325,31 +388,32 @@
         clouds.update(); dino.update(); obstacles.update();
     }
 
-    // --- INPUT GESTIONE (Tastiera + Touch Buttons) ---
+    // --- INPUT GESTIONE ---
     function doJump() {
         if (!isGameOver) dino.jump();
         else start();
     }
 
-    // Tastiera
+    // Tastiera (funziona sempre)
     window.addEventListener("keydown", e => {
-        if (e.code === "Space" || e.code === "ArrowUp") doJump();
+        if (e.code === "Space" || e.code === "ArrowUp") {
+            e.preventDefault(); // Evita scroll pagina con spazio
+            doJump();
+        }
     });
 
-    // Touch su Canvas (legacy)
+    // Touch generico sul canvas (utile se si usa il mouse su desktop o tap su mobile fuori dai tasti)
     canvas.addEventListener("touchstart", function(e) { e.preventDefault(); doJump(); });
     canvas.addEventListener("mousedown", function() { doJump(); });
 
-    // --- NUOVI CONTROLLI GAMEBOY ---
+    // Controlli Gameboy (solo mobile)
     function bindButton(id) {
         const btn = document.getElementById(id);
         if(!btn) return;
-        // Supporto sia mouse che touch per testare su pc e mobile
         btn.addEventListener("touchstart", (e) => { e.preventDefault(); doJump(); });
         btn.addEventListener("mousedown", (e) => { e.preventDefault(); doJump(); });
     }
 
-    // Colleghiamo il tasto "UP" della croce e il tasto "A" al salto
     bindButton("btnUp");
     bindButton("btnAction");
 
