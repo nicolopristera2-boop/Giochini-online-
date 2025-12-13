@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Mario 8-Bit</title>
+    <title>Super Mario HD - Parallax & Particles</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -11,36 +11,36 @@
 
         body { 
             margin: 0; padding: 0; 
-            background-color: #101010; 
+            background-color: #1a1a1a; 
             font-family: 'Press Start 2P', cursive;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; overflow: hidden; color: white;
         }
 
-        /* --- STILE PC --- */
+        /* --- CANVAS CON BORDO RAFFINATO --- */
         canvas { 
-            background-color: #5c94fc; /* BLU MARIO */
+            background-color: #6b8cff; /* Cielo base */
             width: 800px; height: 600px;
             max-width: 100%; max-height: 100%;
-            image-rendering: pixelated; /* PIXEL NITIDI */
-            box-shadow: 0 0 40px rgba(0,0,0,0.6);
-            border: 4px solid #fff;
+            /* Togliamo image-rendering pixelated per permettere sfumature vettoriali */
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border-radius: 4px;
         }
 
         #hud {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             width: 800px; max-width: 90%;
             display: flex; justify-content: space-between;
-            text-shadow: 2px 2px 0 #000; font-size: 16px; color: #fff; pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); font-size: 16px; color: #fff; pointer-events: none;
             z-index: 10;
         }
 
-        /* --- STILE MOBILE (Game Boy) --- */
+        /* --- STILE MOBILE (Game Boy Aggiornato) --- */
         .mobile-controls { display: none; }
 
         @media (max-width: 768px) {
             #hud { width: 90%; font-size: 10px; top: 10px; }
-            body { background-color: #ddd; justify-content: flex-start; }
+            body { background-color: #222; justify-content: flex-start; }
             
             .game-boy-case {
                 width: 100%; height: 100dvh;
@@ -49,29 +49,32 @@
             }
 
             .screen-wrapper {
-                background: #777;
-                padding: 15px 15px 0 15px;
-                border-radius: 0 0 30px 30px;
-                box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2);
+                background: #111;
+                padding: 10px 10px 0 10px;
+                border-radius: 0 0 20px 20px;
+                box-shadow: inset 0 -5px 10px rgba(0,0,0,0.5);
+                display: flex; justify-content: center;
             }
 
             canvas {
                 width: 100%; height: auto; aspect-ratio: 4/3;
-                border: 4px solid #222; background-color: #5c94fc;
+                border: 2px solid #333; 
+                border-radius: 2px;
                 box-shadow: none;
             }
 
             .mobile-controls {
                 display: flex; flex: 1; justify-content: space-between; align-items: center; padding: 20px;
+                background: #e0e0e0;
             }
 
-            .d-pad { position: relative; width: 120px; height: 120px; }
-            .btn-dir { position: absolute; background: #333; width: 40px; height: 40px; border-radius: 4px; box-shadow: 0 4px 0 #111; }
-            .btn-dir:active { transform: translateY(4px); box-shadow: none; }
-            #up { top:0; left:40px; } #down { bottom:0; left:40px; } #left { top:40px; left:0; } #right { top:40px; right:0; }
+            .d-pad { position: relative; width: 140px; height: 140px; }
+            .btn-dir { position: absolute; background: #333; width: 45px; height: 45px; border-radius: 6px; box-shadow: 0 4px 0 #111; transition: transform 0.1s; }
+            .btn-dir:active, .btn-dir.pressed { transform: translateY(4px); box-shadow: none; background: #555; }
+            #up { top:0; left:47px; } #down { bottom:0; left:47px; } #left { top:47px; left:0; } #right { top:47px; right:0; }
 
-            .action-area { display: flex; gap: 15px; transform: rotate(-15deg); margin-right: 20px; }
-            .btn-act { width: 55px; height: 55px; border-radius: 50%; background: #d00; border: none; box-shadow: 2px 4px 0 #800; color: rgba(0,0,0,0.3); font-weight: bold; font-size: 18px; }
+            .action-area { display: flex; gap: 20px; transform: rotate(-10deg); margin-right: 20px; }
+            .btn-act { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(to bottom, #ff4d4d, #cc0000); border: 2px solid #900; box-shadow: 2px 4px 0 #600; color: rgba(255,255,255,0.8); font-weight: bold; font-size: 18px; text-shadow: 1px 1px 0 #900; }
             .btn-act:active { transform: translateY(4px); box-shadow: none; }
         }
     </style>
@@ -79,10 +82,10 @@
 <body>
 
 <div id="hud">
-    <div>MARIO<br>000000</div>
+    <div>MARIO HD<br>000000</div>
     <div>COINS<br>🟡 <span id="coin-count">0</span></div>
     <div>WORLD<br>1-1</div>
-    <div>TIME<br>∞</div>
+    <div>FPS<br><span id="fps">60</span></div>
 </div>
 
 <div class="game-boy-case">
@@ -107,159 +110,202 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- GENERATORE DI GRAFICA PIXEL ART ---
-    // Invece di caricare file, creiamo le immagini via codice!
+    // --- ASSETS GENERATOR 2.0 (Vector Style) ---
     const sprites = {};
     const TILE = 16;
 
-    function createSprite(color, type) {
+    // Funzione helper per disegnare rettangoli arrotondati o sfumati
+    function createHDAsset(type) {
         const c = document.createElement('canvas');
         c.width = TILE; c.height = TILE;
         const x = c.getContext('2d');
         
         if (type === 'ground') {
-            x.fillStyle = "#C84C0C"; // Ruggine
-            x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#000"; // Dettagli neri
-            x.fillRect(0, 0, 16, 2); // Linea sopra
-            x.fillRect(8, 2, 2, 6); // Dettaglio mattone
-            x.fillRect(0, 8, 2, 6);
-        } else if (type === 'brick') {
-            x.fillStyle = "#B83800"; // Rosso mattone
-            x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#000"; 
-            x.fillRect(0, 0, 16, 1); x.fillRect(0, 8, 16, 1); // Linee orizzontali
-            x.fillRect(8, 0, 1, 8); x.fillRect(0, 8, 1, 8); // Linee verticali
-        } else if (type === 'box') {
-            x.fillStyle = "#F89800"; // Oro
-            x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#000";
-            x.fillRect(0,0,16,1); x.fillRect(0,0,1,16); x.fillRect(15,0,1,16); x.fillRect(0,15,16,1);
-            x.fillRect(2,2,1,1); x.fillRect(13,2,1,1); x.fillRect(2,13,1,1); x.fillRect(13,13,1,1); // Bulloni
-            x.fillStyle = "#884000";
-            x.font = "bold 12px monospace";
-            x.fillText("?", 4, 12);
-        } else if (type === 'pipe_tl') { x.fillStyle = "#00A800"; x.fillRect(0,0,16,16); x.lineWidth=2; x.strokeRect(0,0,16,16); }
-        else if (type === 'pipe_tr') { x.fillStyle = "#00A800"; x.fillRect(0,0,16,16); x.lineWidth=2; x.strokeRect(0,0,16,16); }
-        else if (type === 'pipe_bl') { x.fillStyle = "#00A800"; x.fillRect(2,0,14,16); x.lineWidth=2; x.strokeRect(2,0,14,16); }
-        else if (type === 'pipe_br') { x.fillStyle = "#00A800"; x.fillRect(0,0,14,16); x.lineWidth=2; x.strokeRect(0,0,14,16); }
-        else if (type === 'mario') {
-            x.fillStyle = "#F00"; // Vestito Rosso
-            x.fillRect(4, 8, 8, 8); 
-            x.fillStyle = "#884000"; // Faccia/Scarpe
-            x.fillRect(4, 2, 9, 6); x.fillRect(2, 12, 4, 4); x.fillRect(11, 12, 4, 4);
-        } else if (type === 'goomba') {
-            x.fillStyle = "#884000"; // Marrone fungo
-            x.beginPath(); x.arc(8, 8, 7, 0, Math.PI*2); x.fill();
-            x.fillStyle = "black"; x.fillRect(4,12,3,4); x.fillRect(10,12,3,4); // Piedi
-        } else if (type === 'cloud') {
-            x.fillStyle = "#FFF"; x.beginPath(); x.arc(8,8,8,0,Math.PI*2); x.fill();
-        } else if (type === 'bush') {
-            x.fillStyle = "#00E000"; x.beginPath(); x.arc(8,8,8,0,Math.PI*2); x.fill();
+            // Terra
+            x.fillStyle = "#8B4513"; x.fillRect(0, 0, 16, 16);
+            // Erba sopra
+            x.fillStyle = "#228B22"; x.fillRect(0, 0, 16, 4);
+            x.fillStyle = "#32CD32"; x.fillRect(0, 0, 16, 1); // Highlight erba
+            // Sassi nella terra
+            x.fillStyle = "rgba(0,0,0,0.3)";
+            x.fillRect(3, 8, 2, 2); x.fillRect(10, 12, 3, 2); x.fillRect(12, 6, 1, 1);
+        } 
+        else if (type === 'brick') {
+            // Base
+            x.fillStyle = "#B22222"; x.fillRect(0, 0, 16, 16);
+            // Effetto 3D (Bevel)
+            x.fillStyle = "rgba(255,255,255,0.3)"; x.fillRect(0,0,16,1); x.fillRect(0,0,1,16); // Luce
+            x.fillStyle = "rgba(0,0,0,0.4)"; x.fillRect(15,0,1,16); x.fillRect(0,15,16,1); // Ombra
+            // Malta
+            x.fillStyle = "#000"; x.fillRect(0, 7, 16, 2); x.fillRect(7, 0, 2, 8); x.fillRect(7, 9, 2, 7);
+        } 
+        else if (type === 'box') {
+            // Oro Sfumato
+            let grad = x.createLinearGradient(0,0,16,16);
+            grad.addColorStop(0, "#FFD700"); grad.addColorStop(1, "#B8860B");
+            x.fillStyle = grad; x.fillRect(0, 0, 16, 16);
+            // Bulloni
+            x.fillStyle = "#8B4513";
+            x.fillRect(1,1,2,2); x.fillRect(13,1,2,2); x.fillRect(1,13,2,2); x.fillRect(13,13,2,2);
+            // Punto interrogativo statico
+            x.fillStyle = "#FFF"; x.font = "bold 14px monospace"; x.fillText("?", 4, 13);
         }
-        
+        else if (type.includes('pipe')) {
+            // Gradiente Cilindrico
+            let grad = x.createLinearGradient(0,0,16,0);
+            grad.addColorStop(0, "#006400");
+            grad.addColorStop(0.2, "#32CD32"); // Shine
+            grad.addColorStop(1, "#006400");
+            x.fillStyle = grad;
+            
+            if(type === 'pipe_tl') { x.fillRect(0,0,16,16); x.fillStyle="#004400"; x.fillRect(0,14,16,2); } // Bordo sotto testa
+            if(type === 'pipe_tr') { x.fillRect(0,0,16,16); x.fillStyle="#004400"; x.fillRect(0,14,16,2); }
+            if(type === 'pipe_bl') { x.fillRect(2,0,14,16); } // Corpo tubo rientrato
+            if(type === 'pipe_br') { x.fillRect(0,0,14,16); }
+        }
+
         return c;
     }
 
-    // Creiamo gli asset in memoria
-    sprites.ground = createSprite(null, 'ground');
-    sprites.brick = createSprite(null, 'brick');
-    sprites.box = createSprite(null, 'box');
-    sprites.pipe_tl = createSprite(null, 'pipe_tl');
-    sprites.pipe_tr = createSprite(null, 'pipe_tr');
-    sprites.pipe_bl = createSprite(null, 'pipe_bl');
-    sprites.pipe_br = createSprite(null, 'pipe_br');
-    sprites.mario = createSprite(null, 'mario');
-    sprites.enemy = createSprite(null, 'goomba');
-    sprites.cloud = createSprite(null, 'cloud');
-    sprites.bush = createSprite(null, 'bush');
+    sprites.ground = createHDAsset('ground');
+    sprites.brick = createHDAsset('brick');
+    sprites.box = createHDAsset('box');
+    sprites.pipe_tl = createHDAsset('pipe_tl');
+    sprites.pipe_tr = createHDAsset('pipe_tr');
+    sprites.pipe_bl = createHDAsset('pipe_bl');
+    sprites.pipe_br = createHDAsset('pipe_br');
+    
+    // Nuvole e Cespugli li disegniamo proceduralmente nel draw loop per scalarli meglio
+
+    // --- PARTICLE SYSTEM ---
+    class Particle {
+        constructor(x, y, color, speed, life) {
+            this.x = x; this.y = y;
+            this.color = color;
+            this.vx = (Math.random() - 0.5) * speed;
+            this.vy = (Math.random() - 1) * speed;
+            this.life = life;
+            this.maxLife = life;
+            this.size = Math.random() * 3 + 1;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.life--;
+            this.vy += 0.1; // Gravità particelle
+        }
+        draw(ctx) {
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.life / this.maxLife;
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+    let particles = [];
+    
+    function spawnDust(x, y) {
+        for(let i=0; i<5; i++) particles.push(new Particle(x, y, '#ddd', 2, 20));
+    }
+    function spawnSparkle(x, y) {
+        for(let i=0; i<8; i++) particles.push(new Particle(x, y, '#FFD700', 4, 30));
+    }
+    function spawnDebris(x, y) {
+        for(let i=0; i<6; i++) particles.push(new Particle(x, y, '#B22222', 3, 25));
+    }
+
 
     // --- GAME ENGINE ---
-    let player = { x: 50, y: 100, w: 14, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, coins: 0 };
+    let player = { x: 50, y: 100, w: 12, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, coins: 0, animFrame: 0 };
     let cameraX = 0;
     let keys = { left: false, right: false, up: false, run: false };
     
-    // Mappa generata proceduralmente
+    // Mappa
     let map = [];
-    let decor = []; // Nuvole e cespugli
+    let backgroundMountains = [];
 
     function initMap() {
-        // Genera 200 colonne
         for(let x=0; x<200; x++) {
             let col = new Array(15).fill(0);
             
-            // Pavimento (ultime 2 righe)
+            // Pavimento vario
             col[13] = 1; col[14] = 1; 
+            if(x > 69 && x < 72) { col[13] = 0; col[14] = 0; } // Buco
 
-            // Buchi nel pavimento
-            if(x > 69 && x < 72) { col[13] = 0; col[14] = 0; }
-
-            // Blocchi e Tubi
+            // Piattaforme
             if(x > 10 && x < 200) {
                 let r = Math.random();
-                if(r > 0.92 && col[13] === 1) col[9] = (Math.random()>0.5 ? 2 : 3); // Box o Mattone
+                if(r > 0.92 && col[13] === 1) col[9] = (Math.random()>0.5 ? 2 : 3);
                 
-                // Tubi (Altezza variabile)
-                if(x % 40 === 0 && x > 20) {
-                    col[12] = 4; col[11] = 4; // Tubo base
-                    col[10] = 5; // Tubo cima
+                // Tubi
+                if(x % 45 === 0 && x > 20) {
+                    let h = Math.floor(Math.random()*2)+2;
+                    for(let i=0; i<h; i++) {
+                        col[12-i] = 4; // Base
+                    }
+                    col[12-h] = 5; // Cima
                 }
 
-                // Nemici
-                if(x > 20 && r > 0.98 && col[13] === 1) {
-                    col[12] = 8; // Goomba a terra
-                }
+                // Nemici (Goomba)
+                if(x > 20 && r > 0.97 && col[13] === 1) col[12] = 8;
             }
             map.push(col);
-
-            // Genera Decorazioni Sfondo (Nuvole/Cespugli)
-            if(Math.random() > 0.90) decor.push({x: x*TILE, y: (Math.random()*100)+20, type: 'cloud'});
-            if(Math.random() > 0.92) decor.push({x: x*TILE, y: 12*TILE, type: 'bush'});
         }
-        // Muri inizio/fine
-        map[0][12] = 3; map[199][12] = 3; 
+        
+        // Genera montagne sfondo (Parallax)
+        for(let i=0; i<20; i++) {
+            backgroundMountains.push({
+                x: i * 150 + Math.random()*50,
+                h: 50 + Math.random()*100,
+                c: Math.random() > 0.5 ? '#3cb371' : '#2e8b57' // Sfumature di verde
+            });
+        }
     }
     initMap();
 
-    // Loop Fisica
     function update() {
-        // Input
-        if(keys.left) { player.vx -= 0.5; player.facing = -1; }
-        if(keys.right) { player.vx += 0.5; player.facing = 1; }
+        // Input Fisica
+        if(keys.left) { player.vx -= 0.5; player.facing = -1; player.animFrame+=0.2; }
+        if(keys.right) { player.vx += 0.5; player.facing = 1; player.animFrame+=0.2; }
         
-        // Attrito
+        if(keys.run && player.grounded && (keys.left || keys.right) && Math.random()>0.8) {
+             spawnDust(player.x + 6, player.y + 14); // Polvere quando corre
+        }
+
         player.vx *= 0.85;
         let maxSpeed = keys.run ? 3.5 : 2.0;
         if(player.vx > maxSpeed) player.vx = maxSpeed;
         if(player.vx < -maxSpeed) player.vx = -maxSpeed;
 
-        // Gravità
-        player.vy += 0.25;
+        player.vy += 0.25; // Gravità
 
-        // Salto
         if(keys.up && player.grounded) {
             player.vy = -6.5;
             player.grounded = false;
+            spawnDust(player.x + 6, player.y + 14); // Polvere salto
         }
 
-        // Applicazione X
+        // Movimento X
         player.x += player.vx;
         checkCollision(true);
 
-        // Applicazione Y
+        // Movimento Y
         player.y += player.vy;
         player.grounded = false;
         checkCollision(false);
 
-        // Morte caduta
-        if(player.y > 250) {
-            player.x = 50; player.y = 100; player.vy = 0; // Respawn
-        }
+        // Respawn
+        if(player.y > 250) { player.x = 50; player.y = 100; player.vy = 0; }
 
-        // Camera Follow
+        // Camera Smooth
         let targetCam = player.x - 120;
         if(targetCam < 0) targetCam = 0;
         cameraX += (targetCam - cameraX) * 0.1;
+
+        // Update Particles
+        particles.forEach((p, index) => {
+            p.update();
+            if(p.life <= 0) particles.splice(index, 1);
+        });
     }
 
     function checkCollision(isX) {
@@ -273,7 +319,6 @@
                 if(x < 0 || x >= 200 || y < 0 || y >= 15) continue;
                 
                 let tile = map[x][y];
-                // 1=Terra, 2=Box, 3=Mattone, 4=TuboBase, 5=TuboAlto
                 if(tile >= 1 && tile <= 7) { 
                     if(isX) {
                         if(player.vx > 0) player.x = x * TILE - player.w - 0.1;
@@ -282,16 +327,20 @@
                     } else {
                         if(player.vy > 0) {
                             player.y = y * TILE - player.h - 0.1;
+                            if(!player.grounded && player.vy > 1) spawnDust(player.x+6, player.y+14); // Impatto atterraggio
                             player.vy = 0;
                             player.grounded = true;
                         } else if(player.vy < 0) {
                             player.y = (y + 1) * TILE + 0.1;
                             player.vy = 0;
-                            // Colpisci box
-                            if(tile === 2) {
-                                map[x][y] = 3; // Diventa mattone
+                            if(tile === 2) { // Box
+                                map[x][y] = 3; 
                                 player.coins++;
                                 document.getElementById('coin-count').innerText = player.coins;
+                                spawnSparkle(x*TILE + 8, y*TILE + 8);
+                            }
+                            if(tile === 3) { // Break Brick
+                                spawnDebris(x*TILE + 8, y*TILE + 8);
                             }
                         }
                     }
@@ -300,33 +349,37 @@
         }
     }
 
+    // --- RENDERER AVANZATO ---
     function draw() {
-        // 1. Cielo Azzurro
-        ctx.fillStyle = "#5c94fc";
+        // 1. Cielo Gradiente
+        let skyGrad = ctx.createLinearGradient(0, 0, 0, 240);
+        skyGrad.addColorStop(0, "#4facfe");
+        skyGrad.addColorStop(1, "#00f2fe");
+        ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // 2. PARALLAX BACKGROUND (Montagne)
+        ctx.save();
+        ctx.translate(-cameraX * 0.3, 0); // Si muovono al 30% della velocità
+        backgroundMountains.forEach(m => {
+            if(m.x - cameraX*0.3 > -200 && m.x - cameraX*0.3 < 400) {
+                ctx.fillStyle = m.c;
+                ctx.beginPath();
+                ctx.moveTo(m.x, 240);
+                ctx.lineTo(m.x + 100, 240 - m.h);
+                ctx.lineTo(m.x + 200, 240);
+                ctx.fill();
+            }
+        });
+        ctx.restore();
+
+        // 3. World
         ctx.save();
         ctx.translate(-Math.floor(cameraX), 0);
 
-        // 2. Disegna Sfondo (Nuvole/Cespugli)
-        decor.forEach(d => {
-            if(d.x > cameraX - 50 && d.x < cameraX + 350) {
-                if(d.type === 'cloud') {
-                    ctx.drawImage(sprites.cloud, d.x, d.y);
-                    ctx.drawImage(sprites.cloud, d.x+10, d.y);
-                    ctx.drawImage(sprites.cloud, d.x+20, d.y);
-                }
-                if(d.type === 'bush') {
-                    ctx.drawImage(sprites.bush, d.x, d.y);
-                    ctx.drawImage(sprites.bush, d.x+10, d.y);
-                    ctx.drawImage(sprites.bush, d.x+20, d.y);
-                }
-            }
-        });
-
-        // 3. Disegna Mappa (Tile)
+        // Disegna Tile
         let startCol = Math.floor(cameraX / TILE);
-        let endCol = startCol + 22; // Disegna solo colonne visibili
+        let endCol = startCol + 22;
 
         for(let x = startCol; x <= endCol; x++) {
             if(x < 0 || x >= 200) continue;
@@ -345,18 +398,68 @@
                     ctx.drawImage(sprites.pipe_tl, x*TILE, y*TILE); 
                     ctx.drawImage(sprites.pipe_tr, (x+1)*TILE, y*TILE); 
                 }
-                else if(t === 8) ctx.drawImage(sprites.enemy, x*TILE, y*TILE);
+                else if(t === 8) {
+                    // DISEGNA NEMICO (Goomba migliorato)
+                    let gx = x*TILE + 8; let gy = y*TILE + 8;
+                    ctx.fillStyle = "#8B4500";
+                    ctx.beginPath(); ctx.arc(gx, gy, 7, 0, Math.PI*2); ctx.fill(); // Testa
+                    ctx.fillStyle = "#fff"; ctx.fillRect(gx-4, gy-3, 3, 3); ctx.fillRect(gx+1, gy-3, 3, 3); // Occhi
+                    ctx.fillStyle = "#000"; ctx.fillRect(gx-3, gy-2, 1, 2); ctx.fillRect(gx+2, gy-2, 1, 2); // Pupille
+                    ctx.fillStyle = "#000"; ctx.fillRect(gx-5, gy+5, 4, 3); ctx.fillRect(gx+1, gy+5, 4, 3); // Piedi
+                }
             }
         }
 
-        // 4. Disegna Mario
+        // 4. DISEGNA MARIO (Vettoriale e Animato)
+        let mx = player.x + player.w/2; 
+        let my = player.y + player.h/2;
+        
+        // Calcolo Bobbing (molleggio quando cammina)
+        let bobY = 0;
+        if(Math.abs(player.vx) > 0.1 && player.grounded) {
+            bobY = Math.sin(player.animFrame) * 1.5;
+        }
+
+        ctx.translate(mx, my + bobY);
+        ctx.scale(player.facing, 1); // Gira Mario
+
+        // Corpo
+        ctx.fillStyle = "#0000AA"; // Blu scuro tuta
+        ctx.fillRect(-5, 0, 10, 6); 
+        // Camicia
+        ctx.fillStyle = "#EE0000"; // Rosso
+        ctx.fillRect(-6, -2, 12, 4);
+        // Testa
+        ctx.fillStyle = "#FFCC99"; // Pelle
+        ctx.fillRect(-5, -10, 10, 9);
+        // Cappello
+        ctx.fillStyle = "#EE0000";
+        ctx.fillRect(-6, -12, 12, 4);
+        ctx.fillRect(0, -12, 8, 4); // Visiera
+        // Dettagli faccia
+        ctx.fillStyle = "#000"; // Baffi/Occhio
+        ctx.fillRect(2, -8, 2, 2); // Occhio
+        ctx.fillRect(3, -5, 4, 1); // Baffi
+        // Bottone Tuta
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(-3, 1, 2, 2);
+
+        ctx.restore(); // Ripristina trasformazione per background/mario
+
+        // 5. Particelle
         ctx.save();
-        ctx.translate(Math.floor(player.x) + 7, Math.floor(player.y) + 7);
-        ctx.scale(player.facing, 1); 
-        ctx.drawImage(sprites.mario, -8, -8);
+        ctx.translate(-Math.floor(cameraX), 0);
+        particles.forEach(p => p.draw(ctx));
         ctx.restore();
 
-        ctx.restore();
+        // 6. Effetti Luce (Vignette)
+        // Disegniamo un gradiente radiale trasparente sopra tutto per dare profondità
+        let grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 100, canvas.width/2, canvas.height/2, 400);
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(1, "rgba(0,0,20,0.4)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+
         requestAnimationFrame(loop);
     }
 
@@ -381,12 +484,21 @@
 
     const addTouch = (id, k) => {
         let el = document.getElementById(id);
-        el.addEventListener('touchstart', e => { e.preventDefault(); keys[k] = true; });
-        el.addEventListener('touchend', e => { e.preventDefault(); keys[k] = false; });
+        el.addEventListener('touchstart', e => { e.preventDefault(); keys[k] = true; el.classList.add('pressed'); });
+        el.addEventListener('touchend', e => { e.preventDefault(); keys[k] = false; el.classList.remove('pressed'); });
     };
     addTouch('left', 'left'); addTouch('right', 'right');
     addTouch('btnA', 'up'); addTouch('btnB', 'run'); addTouch('up', 'up');
 
+    // Calcolo FPS semplice
+    let lastTime = performance.now();
+    let frameCount = 0;
+    setInterval(() => {
+        document.getElementById('fps').innerText = frameCount;
+        frameCount = 0;
+    }, 1000);
+    function countFps() { frameCount++; requestAnimationFrame(countFps); }
+    countFps();
     loop();
 
 </script>
