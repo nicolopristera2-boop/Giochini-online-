@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Super Mario Fix - Enemies & Story</title>
+    <title>The Last Journey</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -17,11 +17,12 @@
             height: 100vh; overflow: hidden; color: white;
         }
 
+        /* --- CANVAS CON EFFETTO GLOW --- */
         canvas { 
             background-color: #6b8cff;
             width: 800px; height: 600px;
             max-width: 100%; max-height: 100%;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
             border-radius: 4px;
         }
 
@@ -29,39 +30,64 @@
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             width: 800px; max-width: 90%;
             display: flex; justify-content: space-between;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); font-size: 16px; color: #fff; pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8); font-size: 14px; color: #fff; pointer-events: none;
             z-index: 10;
         }
 
-        /* Schermata Iniziale Overlay */
+        /* --- SCHERMATA STORIA (EMOTIONAL) --- */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(10, 10, 20, 0.95);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 20; text-align: center; padding: 20px;
+            z-index: 20; text-align: center; padding: 30px;
         }
         .hidden { display: none !important; }
-        h1 { color: #ff4d4d; text-shadow: 4px 4px 0 #000; margin-bottom: 20px; font-size: 40px; }
-        p { line-height: 1.8; color: #ddd; font-size: 14px; max-width: 600px; margin-bottom: 30px; }
-        .blink { animation: blinker 1s linear infinite; color: #FFD700; font-size: 18px; margin-top: 20px;}
-        @keyframes blinker { 50% { opacity: 0; } }
+        
+        h1 { color: #ffadad; text-shadow: 0 0 10px #d00; margin-bottom: 20px; font-size: 30px; line-height: 1.5; }
+        p { line-height: 2; color: #e0e0e0; font-size: 12px; max-width: 650px; margin-bottom: 40px; font-family: sans-serif; letter-spacing: 1px; }
+        
+        .blink { animation: blinker 2s linear infinite; color: #fff; font-size: 14px; margin-top: 20px; opacity: 0.8;}
+        @keyframes blinker { 50% { opacity: 0.2; } }
 
-        /* Controlli Mobile */
+        /* --- MOBILE CONTROLS --- */
         .mobile-controls { display: none; }
+
         @media (max-width: 768px) {
             #hud { width: 90%; font-size: 10px; top: 10px; }
             body { background-color: #222; justify-content: flex-start; }
-            h1 { font-size: 24px; }
-            .game-boy-case { width: 100%; height: 100dvh; display: flex; flex-direction: column; background: #f2f2f2; }
-            .screen-wrapper { background: #111; padding: 10px; display: flex; justify-content: center; }
-            canvas { width: 100%; height: auto; aspect-ratio: 4/3; border: 2px solid #333; }
-            .mobile-controls { display: flex; flex: 1; justify-content: space-between; align-items: center; padding: 20px; background: #e0e0e0; }
+            h1 { font-size: 20px; }
+            
+            .game-boy-case {
+                width: 100%; height: 100dvh;
+                display: flex; flex-direction: column;
+                background: #f2f2f2;
+            }
+
+            .screen-wrapper {
+                background: #111;
+                padding: 10px;
+                display: flex; justify-content: center;
+                border-bottom: 4px solid #aaa;
+            }
+
+            canvas {
+                width: 100%; height: auto; aspect-ratio: 4/3;
+                border: 2px solid #333; 
+                box-shadow: none;
+            }
+
+            .mobile-controls {
+                display: flex; flex: 1; justify-content: space-between; align-items: center; padding: 20px;
+                background: #e0e0e0;
+            }
+
             .d-pad { position: relative; width: 140px; height: 140px; }
             .btn-dir { position: absolute; background: #333; width: 45px; height: 45px; border-radius: 6px; box-shadow: 0 4px 0 #111; }
             .btn-dir:active { transform: translateY(4px); box-shadow: none; background: #555; }
             #up { top:0; left:47px; } #down { bottom:0; left:47px; } #left { top:47px; left:0; } #right { top:47px; right:0; }
+
             .action-area { display: flex; gap: 20px; transform: rotate(-10deg); margin-right: 20px; }
-            .btn-act { width: 60px; height: 60px; border-radius: 50%; background: #d00; border: 2px solid #900; box-shadow: 2px 4px 0 #600; color: white; font-weight: bold; }
+            .btn-act { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(to bottom, #ff5e5e, #d00); border: 2px solid #900; box-shadow: 2px 4px 0 #600; color: white; font-weight: bold; }
             .btn-act:active { transform: translateY(4px); box-shadow: none; }
         }
     </style>
@@ -69,19 +95,22 @@
 <body>
 
 <div id="start-screen">
-    <h1>SUPER MARIO<br>JS EDITION</h1>
+    <h1>L'ULTIMO VIAGGIO</h1>
     <p>
-        Il regno dei funghi è in pericolo! Il malvagio Browser ha rubato tutto il codice sorgente.<br><br>
-        Devi attraversare la valle glitchata, saltare sopra il Grande Burrone e sconfiggere i Goomba corrotti per salvare la Principessa Script.<br><br>
-        Attento: I tubi sono bloccati dalla ruggine!
+        I medici dicono che ti resta poco tempo.<br>
+        Il mondo sta sbiadendo, ma c'è un ricordo che brilla ancora.<br><br>
+        Lei ti aspetta dove vi siete incontrati la prima volta.<br>
+        Non per salvarti, ma per salutarti.<br><br>
+        Corri, Leo. Supera le ombre del passato.<br>
+        Raggiungila prima che il sole tramonti per sempre.
     </p>
-    <div class="blink">PREMI SPAZIO O TOCCA PER INIZIARE</div>
+    <div class="blink">[ PREMI SPAZIO PER INIZIARE ]</div>
 </div>
 
 <div id="hud">
-    <div>MARIO<br>000000</div>
-    <div>COINS<br>🟡 <span id="coin-count">0</span></div>
-    <div>WORLD<br>1-1</div>
+    <div>LEO<br>♥ 1</div>
+    <div>RICORDI<br>✨ <span id="coin-count">0</span></div>
+    <div>DISTANZA<br><span id="dist">0</span>m</div>
 </div>
 
 <div class="game-boy-case">
@@ -96,8 +125,8 @@
             <div class="btn-dir" id="right"></div>
         </div>
         <div class="action-area">
-            <button class="btn-act" id="btnB">Run</button>
-            <button class="btn-act" id="btnA">Jump</button>
+            <button class="btn-act" id="btnB">Corre</button>
+            <button class="btn-act" id="btnA">Salta</button>
         </div>
     </div>
 </div>
@@ -107,10 +136,9 @@
     const ctx = canvas.getContext('2d');
     const startScreen = document.getElementById('start-screen');
 
-    // --- GAME STATES ---
-    let gameState = 'START'; // START, PLAYING, GAMEOVER
+    let gameState = 'START';
 
-    // --- ASSETS GENERATOR ---
+    // --- 1. ASSETS GENERATOR (GRAFICA HD) ---
     const sprites = {};
     const TILE = 16;
 
@@ -120,25 +148,35 @@
         const x = c.getContext('2d');
         
         if (type === 'ground') {
-            x.fillStyle = "#8B4513"; x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#228B22"; x.fillRect(0, 0, 16, 4);
-            x.fillStyle = "#32CD32"; x.fillRect(0, 0, 16, 1);
-            x.fillStyle = "rgba(0,0,0,0.3)"; x.fillRect(3, 8, 2, 2); x.fillRect(10, 12, 3, 2);
-        } else if (type === 'brick') {
-            x.fillStyle = "#B22222"; x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#000"; x.fillRect(0, 7, 16, 2); x.fillRect(7, 0, 2, 8); x.fillRect(7, 9, 2, 7);
-        } else if (type === 'box') {
-            x.fillStyle = "#FFD700"; x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#8B4513"; x.fillRect(1,1,2,2); x.fillRect(13,1,2,2); x.fillRect(1,13,2,2); x.fillRect(13,13,2,2);
-            x.fillStyle = "#FFF"; x.font = "bold 14px monospace"; x.fillText("?", 4, 13);
-        } else if (type.includes('pipe')) {
-            let grad = x.createLinearGradient(0,0,16,0);
-            grad.addColorStop(0, "#006400"); grad.addColorStop(0.2, "#32CD32"); grad.addColorStop(1, "#006400");
-            x.fillStyle = grad;
-            if(type === 'pipe_tl') { x.fillRect(0,0,16,16); x.fillStyle="#004400"; x.fillRect(0,14,16,2); }
-            if(type === 'pipe_tr') { x.fillRect(0,0,16,16); x.fillStyle="#004400"; x.fillRect(0,14,16,2); }
-            if(type === 'pipe_bl') { x.fillRect(2,0,14,16); }
-            if(type === 'pipe_br') { x.fillRect(0,0,14,16); }
+            // Terra dettagliata
+            x.fillStyle = "#5d4037"; x.fillRect(0, 0, 16, 16);
+            x.fillStyle = "#388e3c"; x.fillRect(0, 0, 16, 3); // Erba scura
+            x.fillStyle = "#66bb6a"; x.fillRect(0, 0, 16, 1); // Erba chiara
+            x.fillStyle = "rgba(0,0,0,0.2)"; x.fillRect(2,6,2,2); x.fillRect(10,10,2,2);
+        } 
+        else if (type === 'brick') {
+            // Mattone con rilievo
+            x.fillStyle = "#a1887f"; x.fillRect(0, 0, 16, 16);
+            x.fillStyle = "#fff"; x.globalAlpha=0.2; x.fillRect(0,0,16,1); x.fillRect(0,0,1,16);
+            x.globalAlpha=1; x.fillStyle = "#3e2723"; 
+            x.fillRect(0,7,16,1); x.fillRect(7,0,1,8); x.fillRect(7,8,1,8);
+        } 
+        else if (type === 'box') {
+            // Blocco Ricordo (Oro)
+            let g = x.createRadialGradient(8,8,2,8,8,8);
+            g.addColorStop(0, "#ffd54f"); g.addColorStop(1, "#ff6f00");
+            x.fillStyle = g; x.fillRect(0, 0, 16, 16);
+            x.fillStyle = "#fff"; x.font = "bold 12px serif"; x.fillText("?", 5, 12);
+        } 
+        else if (type.includes('pipe')) {
+            // Tubi con gradiente (Verde metallico)
+            let g = x.createLinearGradient(0,0,16,0);
+            g.addColorStop(0, "#1b5e20"); g.addColorStop(0.3, "#4caf50"); g.addColorStop(1, "#1b5e20");
+            x.fillStyle = g;
+            if(type.includes('tl')) { x.fillRect(0,0,16,16); x.fillStyle="rgba(0,0,0,0.3)"; x.fillRect(0,14,16,2); }
+            else if(type.includes('tr')) { x.fillRect(0,0,16,16); x.fillStyle="rgba(0,0,0,0.3)"; x.fillRect(0,14,16,2); }
+            else if(type.includes('bl')) x.fillRect(2,0,14,16);
+            else if(type.includes('br')) x.fillRect(0,0,14,16);
         }
         return c;
     }
@@ -151,188 +189,169 @@
     sprites.pipe_bl = createHDAsset('pipe_bl');
     sprites.pipe_br = createHDAsset('pipe_br');
 
-    // --- ENTITIES & CLASSES ---
-    
-    // Nemico (Goomba)
-    class Goomba {
+    // --- 2. PARTICLE SYSTEM (EFFETTI GRAFICI) ---
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y; this.color = color;
+            this.vx = (Math.random()-0.5)*2; this.vy = (Math.random()-1)*2;
+            this.life = 30;
+        }
+        update() { this.x+=this.vx; this.y+=this.vy; this.life--; this.vy+=0.1; }
+        draw(ctx) {
+            ctx.fillStyle = this.color; ctx.globalAlpha = this.life/30;
+            ctx.fillRect(this.x, this.y, 2, 2); ctx.globalAlpha = 1;
+        }
+    }
+    let particles = [];
+    function spawnDust(x,y) { for(let i=0;i<4;i++) particles.push(new Particle(x,y,'#ccc')); }
+    function spawnSparkle(x,y) { for(let i=0;i<6;i++) particles.push(new Particle(x,y,'#ffd700')); }
+
+
+    // --- 3. ENTITIES (LOGICA SMART) ---
+    class Enemy {
         constructor(x, y) {
             this.x = x; this.y = y; this.w = 16; this.h = 16;
-            this.vx = -0.5; this.vy = 0;
-            this.dead = false;
+            this.vx = -0.4; this.vy = 0; this.dead = false;
         }
         update(map) {
             if(this.dead) return;
+            this.vy += 0.25; this.x += this.vx;
             
-            // Movimento semplice AI
-            this.vy += 0.25; // Gravità
-            this.x += this.vx;
-            
-            // Collisione orizzontale Muri
-            let tileX = this.vx > 0 ? Math.floor((this.x + this.w)/TILE) : Math.floor(this.x/TILE);
-            let tileY = Math.floor(this.y/TILE);
-            if(map[tileX] && map[tileX][tileY] > 0) {
-                this.vx *= -1; // Inverti direzione
-            }
+            // Wall Collision
+            let tx = this.vx > 0 ? Math.floor((this.x+this.w)/TILE) : Math.floor(this.x/TILE);
+            let ty = Math.floor(this.y/TILE);
+            if(map[tx] && map[tx][ty] > 0) this.vx *= -1;
 
-            // Movimento Y
             this.y += this.vy;
-            let groundX = Math.floor((this.x + 8)/TILE);
-            let groundY = Math.floor((this.y + this.h)/TILE);
-            
-            if(map[groundX] && map[groundX][groundY] > 0) {
-                this.y = groundY * TILE - this.h;
-                this.vy = 0;
+            let gx = Math.floor((this.x+8)/TILE);
+            let gy = Math.floor((this.y+this.h)/TILE);
+            if(map[gx] && map[gx][gy] > 0) {
+                this.y = gy*TILE - this.h; this.vy = 0;
             }
-
-            // Cade nel vuoto
             if(this.y > 300) this.dead = true;
         }
         draw(ctx) {
             if(this.dead) return;
-            ctx.fillStyle = "#8B4500";
-            ctx.beginPath(); ctx.arc(this.x + 8, this.y + 8, 7, 0, Math.PI*2); ctx.fill();
-            // Faccia incazzata
-            ctx.fillStyle = "#fff"; ctx.fillRect(this.x+2, this.y+4, 4, 3); ctx.fillRect(this.x+10, this.y+4, 4, 3);
-            ctx.fillStyle = "#000"; ctx.fillRect(this.x+4, this.y+5, 1, 2); ctx.fillRect(this.x+12, this.y+5, 1, 2);
-            // Piedi animati
-            let footOffset = Math.sin(Date.now()/100) * 2;
-            ctx.fillStyle = "black"; 
-            ctx.fillRect(this.x+2 + footOffset, this.y+13, 5, 3); 
-            ctx.fillRect(this.x+9 - footOffset, this.y+13, 5, 3);
+            // Disegna nemico stile "Ombra" (più adatto alla trama)
+            ctx.fillStyle = "#3e2723";
+            ctx.beginPath(); ctx.arc(this.x+8, this.y+8, 7, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#fff"; ctx.fillRect(this.x+3, this.y+5, 2, 4); ctx.fillRect(this.x+11, this.y+5, 2, 4); // Occhi tristi
         }
     }
 
     let enemies = [];
-    let player = { x: 50, y: 100, w: 12, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, coins: 0 };
+    let player = { x: 50, y: 100, w: 12, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, coins: 0, anim: 0 };
     let cameraX = 0;
     let map = [];
-    let keys = { left: false, right: false, up: false, run: false };
+    let bgMountains = [];
 
-    // --- LEVEL GENERATION (FIXED) ---
+    // --- 4. MAP GENERATION (FIXED & PLAYABLE) ---
     function initGame() {
-        player.x = 50; player.y = 100; player.vx = 0; player.vy = 0;
-        cameraX = 0;
-        enemies = [];
-        map = [];
+        player.x = 50; player.y = 100; player.vx = 0; player.vy = 0; player.coins = 0;
+        cameraX = 0; enemies = []; map = []; particles = [];
         
+        // Genera Montagne Sfondo
+        bgMountains = [];
+        for(let i=0; i<20; i++) bgMountains.push({x: i*120, h: 40+Math.random()*80, c: `rgba(40,50,70,${Math.random()*0.5+0.2})`});
+
+        // Genera Livello
         for(let x=0; x<220; x++) {
             let col = new Array(15).fill(0);
-            
-            // Pavimento (con buchi)
-            col[13] = 1; col[14] = 1; 
-            
-            // IL GRANDE BURRONE (x: 70-75)
-            if(x >= 70 && x <= 75) { 
+            col[13] = 1; col[14] = 1; // Pavimento base
+
+            // IL GRANDE BURRONE (Fixed)
+            if(x >= 70 && x <= 76) {
                 col[13] = 0; col[14] = 0; 
-                // FIX: Aggiunti blocchi galleggianti sopra il burrone
-                if(x === 71 || x === 73 || x === 74) col[9] = 3; 
+                if(x===71 || x===73 || x===75) col[9] = 3; // Blocchi galleggianti
             }
 
-            // Piattaforme e Ostacoli
             if(x > 10 && x < 210) {
-                // Blocchi casuali
-                if(Math.random() > 0.90 && col[13] === 1) col[9] = (Math.random()>0.5 ? 2 : 3);
+                if(Math.random() > 0.92 && col[13]===1) col[9] = (Math.random()>0.5 ? 2 : 3);
                 
-                // Tubi (Solidi)
-                if(x % 50 === 0 && x > 20) {
-                    col[12] = 4; col[11] = 4; col[10] = 5; // Tubo alto 3 blocchi
+                // Tubi Solidi
+                if(x % 40 === 0 && x > 20) {
+                    col[12]=4; col[11]=4; col[10]=5;
                 }
 
-                // Generazione Nemici (NON PIÙ COME TILE, MA OGGETTI)
-                if(x > 30 && x < 200 && x % 25 === 0 && col[13]===1) {
-                    enemies.push(new Goomba(x*TILE, 10*TILE));
+                // Nemici
+                if(x > 30 && x % 20 === 0 && Math.random()>0.3 && col[13]===1) {
+                    enemies.push(new Enemy(x*TILE, 10*TILE));
                 }
             }
-            // Fine livello (Muro)
-            if(x > 215) { col[12]=3; col[11]=3; col[10]=3; }
-            
+            // Muro finale
+            if(x >= 215) { col[12]=3; col[11]=3; col[10]=3; }
             map.push(col);
         }
     }
 
-    // --- GAME LOOP ---
+    // --- 5. GAME LOOP ---
+    let keys = {left:false, right:false, up:false};
+
     function update() {
         if(gameState !== 'PLAYING') return;
 
-        // Player Physics
-        if(keys.left) { player.vx -= 0.5; player.facing = -1; }
-        if(keys.right) { player.vx += 0.5; player.facing = 1; }
+        // Player Move
+        if(keys.left) { player.vx -= 0.5; player.facing = -1; player.anim+=0.2; }
+        if(keys.right) { player.vx += 0.5; player.facing = 1; player.anim+=0.2; }
+        
+        // Particles (Dust)
+        if(player.grounded && Math.abs(player.vx)>1 && Math.random()>0.8) spawnDust(player.x+6, player.y+14);
+
         player.vx *= 0.85;
         player.vy += 0.25;
 
         if(keys.up && player.grounded) {
-            player.vy = -6.8; // Salto leggermente più alto per il burrone
-            player.grounded = false;
+            player.vy = -6.6; player.grounded = false;
+            spawnDust(player.x+6, player.y+14);
         }
 
-        player.x += player.vx;
-        checkCollision(true);
-        player.y += player.vy;
-        player.grounded = false;
-        checkCollision(false);
+        player.x += player.vx; checkCollision(true);
+        player.y += player.vy; player.grounded = false; checkCollision(false);
 
-        // Morte nel Burrone
         if(player.y > 250) gameOver();
 
-        // Update Camera
         let targetCam = player.x - 120;
         if(targetCam < 0) targetCam = 0;
         cameraX += (targetCam - cameraX) * 0.1;
+        document.getElementById('dist').innerText = Math.floor(player.x/10);
 
-        // UPDATE NEMICI & COLLISIONE CON MARIO
+        // Enemies Interaction
         enemies.forEach(e => {
             e.update(map);
-            
             if(!e.dead) {
-                // Controllo collisione rettangolare semplice
-                if (player.x < e.x + e.w &&
-                    player.x + player.w > e.x &&
-                    player.y < e.y + e.h &&
-                    player.y + player.h > e.y) {
-                    
-                    // Se Mario sta cadendo e colpisce dall'alto
-                    if (player.vy > 0 && player.y + player.h - player.vy <= e.y + e.h * 0.5) {
-                        e.dead = true; // Uccidi nemico
-                        player.vy = -3; // Rimbalzo
-                        player.coins += 10;
+                if (player.x < e.x + e.w && player.x + player.w > e.x &&
+                    player.y < e.y + e.h && player.y + player.h > e.y) {
+                    if(player.vy > 0 && player.y < e.y + e.h/2) {
+                        e.dead = true; player.vy = -3; // Kill
+                        spawnSparkle(e.x+8, e.y+8);
                     } else {
-                        // Colpito di lato o da sotto -> Morte Mario
-                        gameOver();
+                        gameOver(); // Die
                     }
                 }
             }
         });
+
+        particles.forEach((p,i) => { p.update(); if(p.life<=0) particles.splice(i,1); });
     }
 
     function checkCollision(isX) {
-        let startX = Math.floor(player.x / TILE);
-        let endX = Math.floor((player.x + player.w) / TILE);
-        let startY = Math.floor(player.y / TILE);
-        let endY = Math.floor((player.y + player.h) / TILE);
+        let sx = Math.floor(player.x/TILE), ex = Math.floor((player.x+player.w)/TILE);
+        let sy = Math.floor(player.y/TILE), ey = Math.floor((player.y+player.h)/TILE);
 
-        for(let y = startY; y <= endY; y++) {
-            for(let x = startX; x <= endX; x++) {
-                if(x < 0 || x >= map.length || y < 0 || y >= 15) continue;
-                
-                let tile = map[x][y];
-                // 1=Terra, 2=Box, 3=Brick, 4/5=Tubo (ORA TUTTI SOLIDI)
-                if(tile >= 1 && tile <= 7) { 
+        for(let y=sy; y<=ey; y++) {
+            for(let x=sx; x<=ex; x++) {
+                if(x<0 || x>=map.length) continue;
+                let t = map[x][y];
+                if(t >= 1 && t <= 7) {
                     if(isX) {
-                        if(player.vx > 0) player.x = x * TILE - player.w - 0.1;
-                        else if(player.vx < 0) player.x = (x + 1) * TILE + 0.1;
-                        player.vx = 0;
+                        if(player.vx>0) player.x = x*TILE - player.w - 0.01;
+                        else if(player.vx<0) player.x = (x+1)*TILE + 0.01;
+                        player.vx=0;
                     } else {
-                        if(player.vy > 0) {
-                            player.y = y * TILE - player.h - 0.1;
-                            player.vy = 0;
-                            player.grounded = true;
-                        } else if(player.vy < 0) {
-                            player.y = (y + 1) * TILE + 0.1;
-                            player.vy = 0;
-                            if(tile === 2) { 
-                                map[x][y] = 3; player.coins++; 
-                                document.getElementById('coin-count').innerText = player.coins;
-                            }
+                        if(player.vy>0) { player.y = y*TILE - player.h - 0.01; player.grounded=true; player.vy=0; }
+                        else if(player.vy<0) { 
+                            player.y = (y+1)*TILE + 0.01; player.vy=0; 
+                            if(t===2) { map[x][y]=3; player.coins++; document.getElementById('coin-count').innerText=player.coins; spawnSparkle(x*TILE+8,y*TILE+8); }
                         }
                     }
                 }
@@ -341,91 +360,93 @@
     }
 
     function gameOver() {
-        alert("GAME OVER! Hai perso una vita.");
-        initGame(); // Ricomincia
+        alert("Il viaggio finisce qui... Ma puoi riprovarci.");
+        initGame();
     }
 
     function draw() {
-        // Cielo
-        let skyGrad = ctx.createLinearGradient(0, 0, 0, 240);
-        skyGrad.addColorStop(0, "#4facfe"); skyGrad.addColorStop(1, "#00f2fe");
-        ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Cielo Tramonto (Emotional)
+        let grad = ctx.createLinearGradient(0,0,0,240);
+        grad.addColorStop(0, "#2c3e50"); grad.addColorStop(1, "#fd746c");
+        ctx.fillStyle = grad; ctx.fillRect(0,0,800,600);
 
         ctx.save();
+        
+        // Parallax Mountains
+        ctx.translate(-cameraX*0.2, 0);
+        bgMountains.forEach(m => {
+            ctx.fillStyle = m.c; ctx.beginPath();
+            ctx.moveTo(m.x, 240); ctx.lineTo(m.x+50, 240-m.h); ctx.lineTo(m.x+100, 240); ctx.fill();
+        });
+        
+        ctx.restore(); ctx.save();
         ctx.translate(-Math.floor(cameraX), 0);
 
-        // Disegna Mappa
-        let startCol = Math.floor(cameraX / TILE);
-        let endCol = startCol + 22;
-
-        for(let x = startCol; x <= endCol; x++) {
-            if(x < 0 || x >= map.length) continue;
-            for(let y = 0; y < 15; y++) {
+        // Map
+        let sc = Math.floor(cameraX/TILE);
+        for(let x=sc; x<sc+22; x++) {
+            if(x<0||x>=map.length) continue;
+            for(let y=0; y<15; y++) {
                 let t = map[x][y];
-                if(t === 1) ctx.drawImage(sprites.ground, x*TILE, y*TILE);
-                else if(t === 2) ctx.drawImage(sprites.box, x*TILE, y*TILE);
-                else if(t === 3) ctx.drawImage(sprites.brick, x*TILE, y*TILE);
-                else if(t === 4) { ctx.drawImage(sprites.pipe_bl, x*TILE, y*TILE); ctx.drawImage(sprites.pipe_br, (x+1)*TILE, y*TILE); }
-                else if(t === 5) { ctx.drawImage(sprites.pipe_tl, x*TILE, y*TILE); ctx.drawImage(sprites.pipe_tr, (x+1)*TILE, y*TILE); }
+                if(t===1) ctx.drawImage(sprites.ground, x*TILE, y*TILE);
+                else if(t===2) ctx.drawImage(sprites.box, x*TILE, y*TILE);
+                else if(t===3) ctx.drawImage(sprites.brick, x*TILE, y*TILE);
+                else if(t===4) { ctx.drawImage(sprites.pipe_bl, x*TILE, y*TILE); ctx.drawImage(sprites.pipe_br, (x+1)*TILE, y*TILE); }
+                else if(t===5) { ctx.drawImage(sprites.pipe_tl, x*TILE, y*TILE); ctx.drawImage(sprites.pipe_tr, (x+1)*TILE, y*TILE); }
             }
         }
 
-        // Disegna Nemici
+        // Enemies
         enemies.forEach(e => e.draw(ctx));
 
-        // Disegna Mario
-        ctx.translate(player.x + player.w/2, player.y + player.h/2);
+        // Player (Vector Style with Bobbing)
+        let mx = player.x+player.w/2, my = player.y+player.h/2;
+        let bob = (player.grounded && Math.abs(player.vx)>0.1) ? Math.sin(player.anim)*1.5 : 0;
+        
+        ctx.translate(mx, my+bob);
         ctx.scale(player.facing, 1);
         
-        // Sprite Mario Semplice
-        ctx.fillStyle = "red"; ctx.fillRect(-6, -6, 12, 6); // Cappello
-        ctx.fillStyle = "blue"; ctx.fillRect(-5, 0, 10, 8); // Tuta
-        ctx.fillStyle = "#FFCC99"; ctx.fillRect(-5, -5, 8, 5); // Faccia
+        // Leo (Il ragazzo)
+        ctx.fillStyle = "#304ffe"; ctx.fillRect(-4, 2, 8, 5); // Pantaloni Jeans
+        ctx.fillStyle = "#ff5252"; ctx.fillRect(-5, -3, 10, 5); // Felpa Rossa (Cuore)
+        ctx.fillStyle = "#ffccbc"; ctx.fillRect(-4, -9, 8, 6); // Viso pallido
+        ctx.fillStyle = "#4e342e"; ctx.fillRect(-5, -11, 10, 4); // Capelli scuri
         
         ctx.restore();
+        
+        // Particles
+        ctx.save(); ctx.translate(-Math.floor(cameraX),0);
+        particles.forEach(p => p.draw(ctx));
+        ctx.restore();
+
+        // Vignette (Atmosfera)
+        let v = ctx.createRadialGradient(400,300,200,400,300,450);
+        v.addColorStop(0, "transparent"); v.addColorStop(1, "rgba(0,0,20,0.5)");
+        ctx.fillStyle = v; ctx.fillRect(0,0,800,600);
+
         requestAnimationFrame(loop);
     }
+    function loop() { update(); draw(); }
 
-    function loop() {
-        update();
-        draw();
-    }
-
-    // --- INPUT ---
-    function startGameInput() {
-        if(gameState === 'START') {
-            gameState = 'PLAYING';
-            startScreen.classList.add('hidden');
-            initGame();
-        }
-    }
-
+    // --- CONTROLS ---
+    function startGame() { if(gameState==='START') { gameState='PLAYING'; startScreen.classList.add('hidden'); initGame(); loop(); } }
+    
     window.addEventListener('keydown', e => {
-        if(gameState === 'START' && e.code === 'Space') startGameInput();
-        if(e.code === 'ArrowLeft') keys.left = true;
-        if(e.code === 'ArrowRight') keys.right = true;
-        if(e.code === 'Space' || e.code === 'KeyZ') keys.up = true;
+        if(gameState==='START' && e.code==='Space') startGame();
+        if(e.code==='ArrowLeft') keys.left=true; if(e.code==='ArrowRight') keys.right=true;
+        if(e.code==='Space' || e.code==='KeyZ') keys.up=true;
     });
     window.addEventListener('keyup', e => {
-        if(e.code === 'ArrowLeft') keys.left = false;
-        if(e.code === 'ArrowRight') keys.right = false;
-        if(e.code === 'Space' || e.code === 'KeyZ') keys.up = false;
+        if(e.code==='ArrowLeft') keys.left=false; if(e.code==='ArrowRight') keys.right=false;
+        if(e.code==='Space' || e.code==='KeyZ') keys.up=false;
     });
-    
-    // Touch Start
-    startScreen.addEventListener('touchstart', startGameInput);
-    
-    // Controlli touch game
-    const addTouch = (id, k) => {
-        let el = document.getElementById(id);
-        el.addEventListener('touchstart', e => { e.preventDefault(); keys[k] = true; });
-        el.addEventListener('touchend', e => { e.preventDefault(); keys[k] = false; });
+    startScreen.addEventListener('touchstart', startGame);
+    const addTouch = (id,k) => {
+        let el=document.getElementById(id);
+        el.addEventListener('touchstart',e=>{e.preventDefault();keys[k]=true});
+        el.addEventListener('touchend',e=>{e.preventDefault();keys[k]=false});
     };
-    addTouch('left', 'left'); addTouch('right', 'right');
-    addTouch('btnA', 'up'); addTouch('up', 'up');
-
-    // Avvio
-    loop();
+    addTouch('left','left'); addTouch('right','right'); addTouch('btnA','up'); addTouch('up','up');
 
 </script>
 </body>
