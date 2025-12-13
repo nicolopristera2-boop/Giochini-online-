@@ -19,20 +19,20 @@
 
         /* --- LAYOUT PC (Default) --- */
         canvas { 
-            background-color: #5c94fc; /* Mario Sky Blue */
-            image-rendering: pixelated;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            /* Su PC il canvas è grande */
+            /* Su PC mostriamo il gioco grande e centrato */
             width: 800px;
             height: 600px;
             max-width: 100%;
             max-height: 100%;
+            image-rendering: pixelated; /* Mantiene i pixel nitidi */
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border: 2px solid #333;
         }
 
-        /* Nascondiamo i controlli touch su PC */
+        /* Nascondiamo di base gli elementi del GameBoy */
         .console-case, .controls-area, .ui-overlay { display: none; }
 
-        /* HUD semplificato per PC sovrapposto al canvas */
+        /* HUD semplificato per PC (sovrapposto) */
         #pc-hud {
             position: absolute;
             top: 20px; left: 50%; transform: translateX(-50%);
@@ -42,6 +42,7 @@
             text-shadow: 2px 2px 0 #000;
             font-size: 16px;
             z-index: 10;
+            color: #fff;
         }
 
         /* --- LAYOUT MOBILE (Game Boy Style) --- */
@@ -49,7 +50,7 @@
             /* Nascondiamo l'HUD PC */
             #pc-hud { display: none; }
 
-            /* Mostriamo la struttura Game Boy */
+            /* Mostriamo il case del Game Boy */
             .console-case {
                 display: flex !important;
                 width: 100%; height: 100dvh;
@@ -58,11 +59,12 @@
                 max-width: 100%;
             }
 
-            /* Resetta lo stile del canvas per adattarlo allo schermo GameBoy */
+            /* Il canvas torna piccolo dentro lo schermo */
             canvas {
                 width: 100%; height: 100%;
                 box-shadow: none;
                 border: 4px solid #222;
+                background-color: #000;
             }
 
             .screen-bezel {
@@ -70,13 +72,12 @@
                 border-radius: 10px 10px 40px 10px;
                 margin: 10px 10px 0 10px;
                 padding: 15px;
-                flex: 1; /* Prende lo spazio disponibile */
+                flex: 1; 
                 display: flex; justify-content: center; align-items: center;
                 position: relative;
                 box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
             }
 
-            /* HUD dentro lo schermo del GB */
             .ui-overlay {
                 display: flex;
                 position: absolute; top: 20px; left: 20px; right: 20px;
@@ -87,7 +88,6 @@
                 z-index: 5;
             }
 
-            /* Controlli */
             .controls-area {
                 display: flex;
                 height: 200px; padding: 10px 20px;
@@ -117,7 +117,7 @@
 
 <div id="pc-hud">
     <div id="pc-lives">MARIO x 3</div>
-    <div id="pc-world">WORLD 1-1</div>
+    <div id="pc-info" style="font-size: 10px; color:#aaa; margin-top:5px;">FRECCE: Muovi | SPAZIO: Salta | SHIFT: Corri</div>
     <div id="pc-coins">🟡 0</div>
 </div>
 
@@ -133,7 +133,8 @@
 
     <div class="controls-area">
         <div class="d-pad">
-            <div class="btn" id="up"></div> <div class="btn" id="down"></div>
+            <div class="btn" id="up"></div>
+            <div class="btn" id="down"></div>
             <div class="btn" id="left"></div>
             <div class="btn" id="right"></div>
         </div>
@@ -149,21 +150,13 @@
     const ctx = canvas.getContext('2d');
 
     // --- ASSETS GRAFICI (Base64 Pixel Art) ---
-    // Queste stringhe contengono le immagini codificate
     const gfx = {
-        // Un blocco marrone simil-mario
         ground: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WJsBmMzFJsB2AzFZhA2A7HhPxr+JAYAAH1SDxF4f5WwAAAAAElFTkSuQmCC",
-        // Blocco con punto interrogativo
         box: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBmLDf3QxQjEkBqB7kFj12DAxGDSQGADZsw8R99sMeAAAAABJRU5ErkJggg==",
-        // Blocco usato (vuoto)
         boxEmpty: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAANUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBgAlQA8ReeK7gwAAAABJRU5ErkJggg==",
-        // Mattone
         brick: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WIsADuSDxF1cQ3BAAAAAElFTkSuQmCC",
-        // Eroe (Semplice sprite rosso)
         heroIdle: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWklEQVQ4T2NkQAO/GTABRhL1YANGNvwHwf9oYsyA8THFRMvBqAEjIyOMj4yPLoguB5vCgM0AbApB5mAzAJtCkDlYDcAmT7Q5GAM2w/8z/E80wOhuJMkckgAAa242Eb864U4AAAAASUVORK5CYII=",
-        // Nemico (Goomba style)
         enemy: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEnjNwMDwH4oJMQAbG6sB2IyFqUe2GZsB2AzFZhA2A7HhPxr+JAYg+5A0w/CbkYGBgZGROANIBwAAo1QWEdul7TkAAAAASUVORK5CYII=",
-        // Tubo (pezzo unico semplificato)
         pipe: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAK0lEQVQ4T2NkQAP/Gf6jYyQBxqOQkcFvRgY0sBg1gGE0gGE0gGE0gIE0AAAj0Q8Rztus4wAAAABJRU5ErkJggg=="
     };
 
@@ -171,7 +164,6 @@
     let assetsLoaded = 0;
     const totalAssets = Object.keys(gfx).length;
 
-    // Caricatore Immagini
     for(let key in gfx) {
         let img = new Image();
         img.src = gfx[key];
@@ -179,7 +171,7 @@
         sprites[key] = img;
     }
 
-    // --- COSTANTI & STATO ---
+    // --- VARIABILI DI GIOCO ---
     const TILE_SIZE = 16;
     const GRAVITY = 0.25;
     const JUMP_FORCE = -5.8;
@@ -187,13 +179,12 @@
     let gameState = "START"; 
     
     let player = {
-        x: 50, y: 100, w: 14, h: 14, // Hitbox leggermente più piccola della tile
+        x: 50, y: 100, w: 14, h: 14,
         vx: 0, vy: 0,
         grounded: false,
         facing: 1,
         lives: 3,
-        coins: 0,
-        frame: 0 // Per animazioni
+        coins: 0
     };
 
     let camera = { x: 0, y: 0 };
@@ -203,40 +194,36 @@
     let levelMap = [];
     let particles = [];
 
-    // --- GENERATORE LIVELLI ---
+    // --- CARICAMENTO LIVELLO ---
     function loadLevel(level) {
         player.vx = 0; player.vy = 0;
         player.x = 50; player.y = 100;
         particles = [];
         
+        // Mappa più lunga ad ogni livello
         let mapWidth = 100 + (level * 20);
         levelMap = [];
         
-        // Generazione stile Mario
         for(let y=0; y<15; y++) {
             let row = [];
             for(let x=0; x<mapWidth; x++) {
-                // Default: aria
                 let tile = '.';
-
                 // Pavimento
                 if(y >= 13) {
-                    if(x > 40 && x < 50) tile = '.'; // Buco
+                    if(x > 40 && x < 50) tile = '.'; // Precipizio
                     else tile = '#';
                 }
-                // Muro invisibile fine livello
-                else if(x === mapWidth - 1) tile = '#';
-                else if(x === 0) tile = '#';
-                
-                // Piattaforme e oggetti casuali
+                // Muri invisibili
+                else if(x === 0 || x === mapWidth - 1) tile = '#';
+                // Generazione casuale
                 else {
                     let r = Math.random();
-                    if(y === 9 && r > 0.95 && x > 10 && x < mapWidth-10) tile = '?'; // Box
-                    else if(y === 9 && r > 0.90 && x > 10) tile = 'B'; // Mattoni
-                    else if(y === 5 && r > 0.98 && x > 20) tile = '?'; // Box alto
-                    else if(y === 12 && r > 0.97 && x > 15) tile = '^'; // Nemico
-                    else if(y === 11 && x > 60 && x < 63) tile = 'P'; // Tubo (semplice blocco verde)
-                    else if(x === mapWidth - 5 && y === 12) tile = '!'; // Fine
+                    if(y === 9 && r > 0.95 && x > 10 && x < mapWidth-10) tile = '?';
+                    else if(y === 9 && r > 0.90 && x > 10) tile = 'B';
+                    else if(y === 5 && r > 0.98 && x > 20) tile = '?';
+                    else if(y === 12 && r > 0.97 && x > 15) tile = '^';
+                    else if(y === 11 && x > 60 && x < 63) tile = 'P';
+                    else if(x === mapWidth - 5 && y === 12) tile = '!';
                 }
                 row.push(tile);
             }
@@ -248,36 +235,31 @@
     function updatePhysics() {
         if(gameState !== "PLAY") return;
 
-        // Movimento
         if (keys.left) { player.vx -= 0.5; player.facing = -1; }
         if (keys.right) { player.vx += 0.5; player.facing = 1; }
         
-        player.vx *= 0.85; // Attrito
+        player.vx *= 0.85;
         let maxSpd = keys.run ? 3.5 : 2.0;
         if (player.vx > maxSpd) player.vx = maxSpd;
         if (player.vx < -maxSpd) player.vx = -maxSpd;
 
         player.vy += GRAVITY;
         
-        // Salto
         if (keys.up && player.grounded) {
             player.vy = JUMP_FORCE;
             player.grounded = false;
         }
 
-        // Collisioni X
         player.x += player.vx;
         handleCollisions(true);
 
-        // Collisioni Y
         player.y += player.vy;
         player.grounded = false;
         handleCollisions(false);
 
-        // Morte caduta
         if(player.y > canvas.height * 2) killPlayer();
 
-        // Camera
+        // Camera Follow
         let targetCamX = player.x - canvas.width / 2;
         targetCamX = Math.max(0, Math.min(targetCamX, (levelMap[0].length * TILE_SIZE) - canvas.width));
         camera.x += (targetCamX - camera.x) * 0.1;
@@ -299,7 +281,6 @@
         if (ty < 0 || ty >= 15 || tx < 0 || tx >= levelMap[0].length) return;
         
         let t = levelMap[ty][tx];
-        // Blocchi solidi
         if (['#', '?', 'B', 'U', 'P'].includes(t)) {
             if (horizontal) {
                 if (player.vx > 0) player.x = tx * TILE_SIZE - player.w;
@@ -313,12 +294,10 @@
                 } else if (player.vy < 0) {
                     player.y = (ty + 1) * TILE_SIZE;
                     player.vy = 0;
-                    // Colpisci blocco
                     if(t === '?') {
-                        levelMap[ty][tx] = 'U'; // Diventa usato
+                        levelMap[ty][tx] = 'U';
                         collectCoin(tx, ty);
                     } else if (t === 'B') {
-                        // Rompi mattone (effetto particelle)
                          createParticles(tx*TILE_SIZE, ty*TILE_SIZE, "#a0522d");
                     }
                 }
@@ -343,7 +322,7 @@
         player.lives--;
         updateHUD();
         if(player.lives <= 0) {
-            alert("GAME OVER! Ricominci.");
+            alert("GAME OVER!");
             player.lives = 3; player.coins = 0; currentLevel = 1;
             updateHUD();
         }
@@ -351,38 +330,66 @@
     }
 
     function updateHUD() {
-        // Aggiorna Mobile HUD
         document.getElementById('lives-display').innerText = "Mx" + player.lives;
         document.getElementById('coins-display').innerText = "🟡" + player.coins;
-        // Aggiorna PC HUD
-        document.getElementById('pc-lives').innerText = "MARIO x " + player.lives;
-        document.getElementById('pc-coins').innerText = "🟡 " + player.coins;
-        document.getElementById('pc-world').innerText = "WORLD 1-" + currentLevel;
+        const pcLives = document.getElementById('pc-lives');
+        const pcCoins = document.getElementById('pc-coins');
+        if(pcLives) pcLives.innerText = "MARIO x " + player.lives;
+        if(pcCoins) pcCoins.innerText = "🟡 " + player.coins;
+    }
+
+    function createParticles(x, y, col) {
+        for(let i=0; i<5; i++) {
+            particles.push({
+                x: x + 8, y: y + 8,
+                vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
+                life: 15, col: col
+            });
+        }
     }
 
     // --- DISEGNO ---
     function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+        // 1. PULIZIA E SFONDO (Fix schermo nero)
+        ctx.fillStyle = "#000"; // Sfondo base nero
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Se le immagini non sono pronte
         if(assetsLoaded < totalAssets) {
-            ctx.fillStyle = "white"; ctx.fillText("LOADING...", 100, 100);
+            ctx.fillStyle = "white"; 
+            ctx.textAlign = "center";
+            ctx.fillText("LOADING...", canvas.width/2, canvas.height/2);
             requestAnimationFrame(loop);
             return;
         }
 
+        // 2. SCHERMATA START
         if(gameState === "START") {
+            ctx.fillStyle = "#222"; // Sfondo Menu
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
             ctx.fillStyle = "white"; ctx.textAlign = "center";
             ctx.font = "20px 'Press Start 2P'";
-            ctx.fillText("SUPER PLATFORM", canvas.width/2, 100);
+            ctx.fillText("SUPER MARIO", canvas.width/2, 80);
+            
             ctx.font = "10px 'Press Start 2P'";
-            ctx.fillText("PREMI 'A' O SPACE PER INIZIARE", canvas.width/2, 150);
+            ctx.fillStyle = "#FFcc00";
+            ctx.fillText("PREMI 'A' O SPACE", canvas.width/2, 140);
+            
+            // Disegna Mario nel menu
+            if(sprites.heroIdle) ctx.drawImage(sprites.heroIdle, canvas.width/2 - 8, 100, 16, 16);
             return;
         }
+
+        // 3. GIOCO
+        // Cielo Azzurro
+        ctx.fillStyle = "#5c94fc";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.save();
         ctx.translate(-Math.floor(camera.x), 0);
 
-        // Disegna Mappa
+        // Mappa
         for(let y=0; y<15; y++) {
             let startX = Math.floor(camera.x / TILE_SIZE);
             let endX = startX + (canvas.width / TILE_SIZE) + 1;
@@ -401,14 +408,13 @@
                 else if(t === '^') ctx.drawImage(sprites.enemy, px, py, TILE_SIZE, TILE_SIZE);
                 else if(t === 'P') ctx.drawImage(sprites.pipe, px, py, TILE_SIZE, TILE_SIZE);
                 else if(t === '!') {
-                    ctx.fillStyle = "#fff"; ctx.fillRect(px, py, 2, 16); // Asta
-                    ctx.fillStyle = "green"; ctx.fillRect(px+2, py, 10, 8); // Bandiera
+                    ctx.fillStyle = "#fff"; ctx.fillRect(px, py, 2, 16);
+                    ctx.fillStyle = "green"; ctx.fillRect(px+2, py, 10, 8);
                 }
             }
         }
 
-        // Disegna Player
-        // Semplice effetto flip se guarda a sinistra
+        // Player
         ctx.save();
         ctx.translate(Math.floor(player.x) + (player.w/2), Math.floor(player.y) + (player.h/2));
         ctx.scale(player.facing, 1);
@@ -423,16 +429,6 @@
         });
 
         ctx.restore();
-    }
-
-    function createParticles(x, y, col) {
-        for(let i=0; i<5; i++) {
-            particles.push({
-                x: x + 8, y: y + 8,
-                vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
-                life: 15, col: col
-            });
-        }
     }
 
     // --- CONTROLLI ---
@@ -455,7 +451,6 @@
         if(e.code==='Space' || e.code==='KeyZ') handleInput('jump', true);
         if(e.code==='ShiftLeft' || e.code==='KeyX') handleInput('run', true);
         if(e.code==='ArrowUp') handleInput('up', true);
-        if(e.code==='ArrowDown') handleInput('down', true);
     });
     
     window.addEventListener('keyup', (e) => {
@@ -464,7 +459,6 @@
         if(e.code==='Space' || e.code==='KeyZ') handleInput('jump', false);
         if(e.code==='ShiftLeft' || e.code==='KeyX') handleInput('run', false);
         if(e.code==='ArrowUp') handleInput('up', false);
-        if(e.code==='ArrowDown') handleInput('down', false);
     });
 
     function handleInput(action, pressed) {
@@ -473,7 +467,6 @@
             loadLevel(1);
             return;
         }
-
         if(action === 'left') keys.left = pressed;
         if(action === 'right') keys.right = pressed;
         if(action === 'up' || action === 'jump') keys.up = pressed;
