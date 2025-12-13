@@ -49,6 +49,30 @@
         .blink { animation: blinker 2s linear infinite; color: #fff; font-size: 14px; margin-top: 20px; opacity: 0.8;}
         @keyframes blinker { 50% { opacity: 0.2; } }
 
+        /* --- LANGUAGE SWITCHER --- */
+        .lang-switcher {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 30;
+        }
+        .lang-btn {
+            background: transparent;
+            border: 2px solid #555;
+            color: #888;
+            padding: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            border-color: #ffadad;
+            color: #fff;
+            text-shadow: 0 0 5px #ffadad;
+        }
+        .lang-btn:hover { border-color: #fff; }
+
         /* --- MOBILE CONTROLS --- */
         .mobile-controls { display: none; }
 
@@ -87,7 +111,7 @@
             #up { top:0; left:47px; } #down { bottom:0; left:47px; } #left { top:47px; left:0; } #right { top:47px; right:0; }
 
             .action-area { display: flex; gap: 20px; transform: rotate(-10deg); margin-right: 20px; }
-            .btn-act { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(to bottom, #ff5e5e, #d00); border: 2px solid #900; box-shadow: 2px 4px 0 #600; color: white; font-weight: bold; }
+            .btn-act { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(to bottom, #ff5e5e, #d00); border: 2px solid #900; box-shadow: 2px 4px 0 #600; color: white; font-weight: bold; font-size: 10px; }
             .btn-act:active { transform: translateY(4px); box-shadow: none; }
         }
     </style>
@@ -95,17 +119,28 @@
 <body>
 
 <div id="start-screen">
-    <h1>L'ULTIMO VIAGGIO</h1>
-    <p>
-        vivi salta corri.<br>
+    <h1 data-i18n="title">L'ULTIMO VIAGGIO</h1>
+    <p data-i18n="story">
+        I medici dicono che ti resta poco tempo.<br>
+        Il mondo sta sbiadendo, ma c'è un ricordo che brilla ancora.<br><br>
+        Lei ti aspetta dove vi siete incontrati la prima volta.<br>
+        Non per salvarti, ma per salutarti.<br><br>
+        Corri, Leo. Supera le ombre del passato.<br>
+        Raggiungila prima che il sole tramonti per sempre.
     </p>
-    <div class="blink">[ PREMI SPAZIO PER INIZIARE ]</div>
+    <div class="blink" data-i18n="start_btn">[ PREMI SPAZIO PER INIZIARE ]</div>
+
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLanguage('it')">IT</button>
+        <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="setLanguage('sk')">SK</button>
+    </div>
 </div>
 
 <div id="hud">
-    <div>LEO<br>♥ 1</div>
-    <div>RICORDI<br>✨ <span id="coin-count">0</span></div>
-    <div>DISTANZA<br><span id="dist">0</span>m</div>
+    <div><span data-i18n="hud_leo">LEO</span><br>♥ 1</div>
+    <div><span data-i18n="hud_memories">RICORDI</span><br>✨ <span id="coin-count">0</span></div>
+    <div><span data-i18n="hud_dist">DISTANZA</span><br><span id="dist">0</span>m</div>
 </div>
 
 <div class="game-boy-case">
@@ -120,13 +155,72 @@
             <div class="btn-dir" id="right"></div>
         </div>
         <div class="action-area">
-            <button class="btn-act" id="btnB">Corre</button>
-            <button class="btn-act" id="btnA">Salta</button>
+            <button class="btn-act" id="btnB" data-i18n="btn_run">Corre</button>
+            <button class="btn-act" id="btnA" data-i18n="btn_jump">Salta</button>
         </div>
     </div>
 </div>
 
 <script>
+    // --- 0. SISTEMA DI TRADUZIONE ---
+    const translations = {
+        it: {
+            title: "L'ULTIMO VIAGGIO",
+            story: "I medici dicono che ti resta poco tempo.<br>Il mondo sta sbiadendo, ma c'è un ricordo che brilla ancora.<br><br>Lei ti aspetta dove vi siete incontrati la prima volta.<br>Non per salvarti, ma per salutarti.<br><br>Corri, Leo. Supera le ombre del passato.<br>Raggiungila prima che il sole tramonti per sempre.",
+            start_btn: "[ PREMI SPAZIO PER INIZIARE ]",
+            hud_leo: "LEO",
+            hud_memories: "RICORDI",
+            hud_dist: "DISTANZA",
+            btn_run: "CORRE",
+            btn_jump: "SALTA",
+            game_over: "Il viaggio finisce qui... Ma puoi riprovarci."
+        },
+        en: {
+            title: "THE LAST JOURNEY",
+            story: "Doctors say you have little time left.<br>The world is fading, but one memory still shines.<br><br>She is waiting where you first met.<br>Not to save you, but to say goodbye.<br><br>Run, Leo. Outrun the shadows of the past.<br>Reach her before the sun sets forever.",
+            start_btn: "[ PRESS SPACE TO START ]",
+            hud_leo: "LEO",
+            hud_memories: "MEMORIES",
+            hud_dist: "DISTANCE",
+            btn_run: "RUN",
+            btn_jump: "JUMP",
+            game_over: "The journey ends here... But you can try again."
+        },
+        sk: {
+            title: "POSLEDNÁ CESTA",
+            story: "Lekári hovoria, že ti ostáva málo času.<br>Svet bledne, ale jedna spomienka stále žiari.<br><br>Čaká ťa tam, kde ste sa prvýkrát stretli.<br>Nie aby ťa zachránila, ale aby sa rozlúčila.<br><br>Bež, Leo. Prekonaj tiene minulosti.<br>Nájdi ju skôr, než slnko navždy zapadne.",
+            start_btn: "[ STLAČ MEDZERNÍK PRE ŠTART ]",
+            hud_leo: "LEO",
+            hud_memories: "SPOMIENKY",
+            hud_dist: "VZDIALENOSŤ",
+            btn_run: "BEŽAŤ",
+            btn_jump: "SKOK",
+            game_over: "Cesta tu končí... Ale môžeš to skúsiť znova."
+        }
+    };
+
+    let currentLang = 'it';
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        // Aggiorna testi nel DOM
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            if (translations[lang][key]) {
+                // Usa innerHTML per permettere i <br> nella storia
+                element.innerHTML = translations[lang][key];
+            }
+        });
+
+        // Aggiorna stile bottoni lingua
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText.toLowerCase() === lang) btn.classList.add('active');
+        });
+    }
+
+    // --- FINE MODIFICHE TRADUZIONE ---
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const startScreen = document.getElementById('start-screen');
@@ -143,28 +237,24 @@
         const x = c.getContext('2d');
         
         if (type === 'ground') {
-            // Terra dettagliata
             x.fillStyle = "#5d4037"; x.fillRect(0, 0, 16, 16);
-            x.fillStyle = "#388e3c"; x.fillRect(0, 0, 16, 3); // Erba scura
-            x.fillStyle = "#66bb6a"; x.fillRect(0, 0, 16, 1); // Erba chiara
+            x.fillStyle = "#388e3c"; x.fillRect(0, 0, 16, 3);
+            x.fillStyle = "#66bb6a"; x.fillRect(0, 0, 16, 1);
             x.fillStyle = "rgba(0,0,0,0.2)"; x.fillRect(2,6,2,2); x.fillRect(10,10,2,2);
         } 
         else if (type === 'brick') {
-            // Mattone con rilievo
             x.fillStyle = "#a1887f"; x.fillRect(0, 0, 16, 16);
             x.fillStyle = "#fff"; x.globalAlpha=0.2; x.fillRect(0,0,16,1); x.fillRect(0,0,1,16);
             x.globalAlpha=1; x.fillStyle = "#3e2723"; 
             x.fillRect(0,7,16,1); x.fillRect(7,0,1,8); x.fillRect(7,8,1,8);
         } 
         else if (type === 'box') {
-            // Blocco Ricordo (Oro)
             let g = x.createRadialGradient(8,8,2,8,8,8);
             g.addColorStop(0, "#ffd54f"); g.addColorStop(1, "#ff6f00");
             x.fillStyle = g; x.fillRect(0, 0, 16, 16);
             x.fillStyle = "#fff"; x.font = "bold 12px serif"; x.fillText("?", 5, 12);
         } 
         else if (type.includes('pipe')) {
-            // Tubi con gradiente (Verde metallico)
             let g = x.createLinearGradient(0,0,16,0);
             g.addColorStop(0, "#1b5e20"); g.addColorStop(0.3, "#4caf50"); g.addColorStop(1, "#1b5e20");
             x.fillStyle = g;
@@ -184,7 +274,7 @@
     sprites.pipe_bl = createHDAsset('pipe_bl');
     sprites.pipe_br = createHDAsset('pipe_br');
 
-    // --- 2. PARTICLE SYSTEM (EFFETTI GRAFICI) ---
+    // --- 2. PARTICLE SYSTEM ---
     class Particle {
         constructor(x, y, color) {
             this.x = x; this.y = y; this.color = color;
@@ -202,7 +292,7 @@
     function spawnSparkle(x,y) { for(let i=0;i<6;i++) particles.push(new Particle(x,y,'#ffd700')); }
 
 
-    // --- 3. ENTITIES (LOGICA SMART) ---
+    // --- 3. ENTITIES ---
     class Enemy {
         constructor(x, y) {
             this.x = x; this.y = y; this.w = 16; this.h = 16;
@@ -212,7 +302,6 @@
             if(this.dead) return;
             this.vy += 0.25; this.x += this.vx;
             
-            // Wall Collision
             let tx = this.vx > 0 ? Math.floor((this.x+this.w)/TILE) : Math.floor(this.x/TILE);
             let ty = Math.floor(this.y/TILE);
             if(map[tx] && map[tx][ty] > 0) this.vx *= -1;
@@ -227,10 +316,9 @@
         }
         draw(ctx) {
             if(this.dead) return;
-            // Disegna nemico stile "Ombra" (più adatto alla trama)
             ctx.fillStyle = "#3e2723";
             ctx.beginPath(); ctx.arc(this.x+8, this.y+8, 7, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = "#fff"; ctx.fillRect(this.x+3, this.y+5, 2, 4); ctx.fillRect(this.x+11, this.y+5, 2, 4); // Occhi tristi
+            ctx.fillStyle = "#fff"; ctx.fillRect(this.x+3, this.y+5, 2, 4); ctx.fillRect(this.x+11, this.y+5, 2, 4); 
         }
     }
 
@@ -240,43 +328,38 @@
     let map = [];
     let bgMountains = [];
 
-    // --- 4. MAP GENERATION (FIXED & PLAYABLE) ---
+    // --- 4. MAP GENERATION ---
     function initGame() {
         player.x = 50; player.y = 100; player.vx = 0; player.vy = 0; player.coins = 0;
         cameraX = 0; enemies = []; map = []; particles = [];
         
-        // Genera Montagne Sfondo
         bgMountains = [];
         for(let i=0; i<20; i++) bgMountains.push({x: i*120, h: 40+Math.random()*80, c: `rgba(40,50,70,${Math.random()*0.5+0.2})`});
 
-        // Genera Livello
         for(let x=0; x<220; x++) {
             let col = new Array(15).fill(0);
-            col[13] = 1; col[14] = 1; // Pavimento base
+            col[13] = 1; col[14] = 1; 
 
-            // IL GRANDE BURRONE (Fixed)
             if(x >= 70 && x <= 76) {
                 col[13] = 0; col[14] = 0; 
-                if(x===71 || x===73 || x===75) col[9] = 3; // Blocchi galleggianti
+                if(x===71 || x===73 || x===75) col[9] = 3; 
             }
 
             if(x > 10 && x < 210) {
                 if(Math.random() > 0.92 && col[13]===1) col[9] = (Math.random()>0.5 ? 2 : 3);
                 
-                // Tubi Solidi
                 if(x % 40 === 0 && x > 20) {
                     col[12]=4; col[11]=4; col[10]=5;
                 }
 
-                // Nemici
                 if(x > 30 && x % 20 === 0 && Math.random()>0.3 && col[13]===1) {
                     enemies.push(new Enemy(x*TILE, 10*TILE));
                 }
             }
-            // Muro finale
             if(x >= 215) { col[12]=3; col[11]=3; col[10]=3; }
             map.push(col);
         }
+        document.getElementById('coin-count').innerText = "0"; // Reset counter display
     }
 
     // --- 5. GAME LOOP ---
@@ -285,11 +368,9 @@
     function update() {
         if(gameState !== 'PLAYING') return;
 
-        // Player Move
         if(keys.left) { player.vx -= 0.5; player.facing = -1; player.anim+=0.2; }
         if(keys.right) { player.vx += 0.5; player.facing = 1; player.anim+=0.2; }
         
-        // Particles (Dust)
         if(player.grounded && Math.abs(player.vx)>1 && Math.random()>0.8) spawnDust(player.x+6, player.y+14);
 
         player.vx *= 0.85;
@@ -310,17 +391,16 @@
         cameraX += (targetCam - cameraX) * 0.1;
         document.getElementById('dist').innerText = Math.floor(player.x/10);
 
-        // Enemies Interaction
         enemies.forEach(e => {
             e.update(map);
             if(!e.dead) {
                 if (player.x < e.x + e.w && player.x + player.w > e.x &&
                     player.y < e.y + e.h && player.y + player.h > e.y) {
                     if(player.vy > 0 && player.y < e.y + e.h/2) {
-                        e.dead = true; player.vy = -3; // Kill
+                        e.dead = true; player.vy = -3; 
                         spawnSparkle(e.x+8, e.y+8);
                     } else {
-                        gameOver(); // Die
+                        gameOver(); 
                     }
                 }
             }
@@ -355,19 +435,18 @@
     }
 
     function gameOver() {
-        alert("Il viaggio finisce qui... Ma puoi riprovarci.");
+        // Usa la traduzione corrente per il messaggio di Game Over
+        alert(translations[currentLang].game_over);
         initGame();
     }
 
     function draw() {
-        // Cielo Tramonto (Emotional)
         let grad = ctx.createLinearGradient(0,0,0,240);
         grad.addColorStop(0, "#2c3e50"); grad.addColorStop(1, "#fd746c");
         ctx.fillStyle = grad; ctx.fillRect(0,0,800,600);
 
         ctx.save();
         
-        // Parallax Mountains
         ctx.translate(-cameraX*0.2, 0);
         bgMountains.forEach(m => {
             ctx.fillStyle = m.c; ctx.beginPath();
@@ -377,7 +456,6 @@
         ctx.restore(); ctx.save();
         ctx.translate(-Math.floor(cameraX), 0);
 
-        // Map
         let sc = Math.floor(cameraX/TILE);
         for(let x=sc; x<sc+22; x++) {
             if(x<0||x>=map.length) continue;
@@ -391,30 +469,25 @@
             }
         }
 
-        // Enemies
         enemies.forEach(e => e.draw(ctx));
 
-        // Player (Vector Style with Bobbing)
         let mx = player.x+player.w/2, my = player.y+player.h/2;
         let bob = (player.grounded && Math.abs(player.vx)>0.1) ? Math.sin(player.anim)*1.5 : 0;
         
         ctx.translate(mx, my+bob);
         ctx.scale(player.facing, 1);
         
-        // Leo (Il ragazzo)
-        ctx.fillStyle = "#304ffe"; ctx.fillRect(-4, 2, 8, 5); // Pantaloni Jeans
-        ctx.fillStyle = "#ff5252"; ctx.fillRect(-5, -3, 10, 5); // Felpa Rossa (Cuore)
-        ctx.fillStyle = "#ffccbc"; ctx.fillRect(-4, -9, 8, 6); // Viso pallido
-        ctx.fillStyle = "#4e342e"; ctx.fillRect(-5, -11, 10, 4); // Capelli scuri
+        ctx.fillStyle = "#304ffe"; ctx.fillRect(-4, 2, 8, 5);
+        ctx.fillStyle = "#ff5252"; ctx.fillRect(-5, -3, 10, 5);
+        ctx.fillStyle = "#ffccbc"; ctx.fillRect(-4, -9, 8, 6);
+        ctx.fillStyle = "#4e342e"; ctx.fillRect(-5, -11, 10, 4);
         
         ctx.restore();
         
-        // Particles
         ctx.save(); ctx.translate(-Math.floor(cameraX),0);
         particles.forEach(p => p.draw(ctx));
         ctx.restore();
 
-        // Vignette (Atmosfera)
         let v = ctx.createRadialGradient(400,300,200,400,300,450);
         v.addColorStop(0, "transparent"); v.addColorStop(1, "rgba(0,0,20,0.5)");
         ctx.fillStyle = v; ctx.fillRect(0,0,800,600);
@@ -424,7 +497,14 @@
     function loop() { update(); draw(); }
 
     // --- CONTROLS ---
-    function startGame() { if(gameState==='START') { gameState='PLAYING'; startScreen.classList.add('hidden'); initGame(); loop(); } }
+    function startGame() { 
+        if(gameState==='START') { 
+            gameState='PLAYING'; 
+            startScreen.classList.add('hidden'); 
+            initGame(); 
+            loop(); 
+        } 
+    }
     
     window.addEventListener('keydown', e => {
         if(gameState==='START' && e.code==='Space') startGame();
@@ -435,7 +515,13 @@
         if(e.code==='ArrowLeft') keys.left=false; if(e.code==='ArrowRight') keys.right=false;
         if(e.code==='Space' || e.code==='KeyZ') keys.up=false;
     });
-    startScreen.addEventListener('touchstart', startGame);
+    // Rimuoviamo il listener generico su startScreen per evitare conflitti con i bottoni lingua
+    // Invece, facciamo partire il gioco solo se si clicca fuori dai bottoni o sul testo start
+    
+    document.querySelector('.blink').addEventListener('click', startGame);
+    document.querySelector('.blink').addEventListener('touchstart', startGame);
+
+
     const addTouch = (id,k) => {
         let el=document.getElementById(id);
         el.addEventListener('touchstart',e=>{e.preventDefault();keys[k]=true});
