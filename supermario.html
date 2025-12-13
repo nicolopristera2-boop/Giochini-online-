@@ -19,12 +19,12 @@
 
         /* --- STILE PC --- */
         canvas { 
-            background-color: #5c94fc; /* Il classico Blu Mario */
+            background-color: #5c94fc; /* BLU MARIO */
             width: 800px; height: 600px;
             max-width: 100%; max-height: 100%;
-            image-rendering: pixelated; /* FONDAMENTALE: rende i pixel nitidi */
+            image-rendering: pixelated; /* PIXEL NITIDI */
             box-shadow: 0 0 40px rgba(0,0,0,0.6);
-            border: 4px solid #000;
+            border: 4px solid #fff;
         }
 
         #hud {
@@ -35,12 +35,11 @@
             z-index: 10;
         }
 
-        /* --- STILE MOBILE --- */
+        /* --- STILE MOBILE (Game Boy) --- */
         .mobile-controls { display: none; }
 
         @media (max-width: 768px) {
             #hud { width: 90%; font-size: 10px; top: 10px; }
-            
             body { background-color: #ddd; justify-content: flex-start; }
             
             .game-boy-case {
@@ -108,41 +107,74 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- ASSETS GRAFICI (Base64 Pixel Art 16x16) ---
-    // Questi codici generano le immagini stile NES
-    const assets = {
-        // Mario (Rosso/Marrone)
-        mario: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAWklEQVQ4T2BkQAO/GTABRhL1YANGNvwHwf9oYsyA8THFRMvBqAEjIyOMj4yPLoguB5vCgM0AbApB5mAzAJtCkDlYDcAmT7Q5GAM2w/8z/E80wOhuJMkckgAAa242Eb864U4AAAAASUVORK5CYII=",
-        // Terreno (Marrone con pattern)
-        ground: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAARElEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WJsBmMzFJsB2AzFZhA2A7HhPxr+JAYAAH1SDxF4f5WwAAAAAElFTkSuQmCC",
-        // Mattone (Marrone scuro)
-        brick: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAL0lEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcGMx424DMCmE6sQ2WIsADuSDxF1cQ3BAAAAAElFTkSuQmCC",
-        // Box ? (Oro)
-        box: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVQ4T2NkwA7+M2wkBmD9j4ZHEmBkZCTWIGwAxqOQkcFvRiQ+VsXYDMZmKDYDsBmKzSBsBmLDf3QxQjEkBqB7kFj12DAxGDSQGADZsw8R99sMeAAAAABJRU5ErkJggg==",
-        // Tubo (Verde)
-        pipe: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAK0lEQVQ4T2NkQAP/Gf6jYyQBxqOQkcFvRgY0sBg1gGE0gGE0gGE0gIE0AAAj0Q8Rztus4wAAAABJRU5ErkJggg==",
-        // Goomba (Nemico)
-        enemy: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATUlEQVQ4T2NkwA7+M2wkBmD9j4ZHEnjNwMDwH4oJMQAbG6sB2IyFqUe2GZsB2AzFZhA2A7HhPxr+JAYg+5A0w/CbkYGBgZGROANIBwAAo1QWEdul7TkAAAAASUVORK5CYII=",
-        // Nuvola (Bianca per sfondo)
-        cloud: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMklEQVQ4T2MQFhb+z0ACjI2N/zMh8VExdMDIyAgzBJsB2BRjMwCbQpA5WA3AJk+0ORgDAM8yJBFOpZ2OAAAAAElFTkSuQmCC",
-        // Cespuglio (Verde per sfondo)
-        bush: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAM0lEQVQ4T2NkwA7+M2wkBmDjY/qPhkcSYGRkJNYgbADGo5CRwW9GJD5WxdgMxmaroZEYAABO0Q0R/g+HwwAAAABJRU5ErkJggg=="
-    };
-
+    // --- GENERATORE DI GRAFICA PIXEL ART ---
+    // Invece di caricare file, creiamo le immagini via codice!
     const sprites = {};
-    let loadedCount = 0;
-    const totalAssets = Object.keys(assets).length;
+    const TILE = 16;
 
-    // Caricatore Immagini
-    for(let k in assets){
-        let img = new Image();
-        img.src = assets[k];
-        img.onload = () => loadedCount++;
-        sprites[k] = img;
+    function createSprite(color, type) {
+        const c = document.createElement('canvas');
+        c.width = TILE; c.height = TILE;
+        const x = c.getContext('2d');
+        
+        if (type === 'ground') {
+            x.fillStyle = "#C84C0C"; // Ruggine
+            x.fillRect(0, 0, 16, 16);
+            x.fillStyle = "#000"; // Dettagli neri
+            x.fillRect(0, 0, 16, 2); // Linea sopra
+            x.fillRect(8, 2, 2, 6); // Dettaglio mattone
+            x.fillRect(0, 8, 2, 6);
+        } else if (type === 'brick') {
+            x.fillStyle = "#B83800"; // Rosso mattone
+            x.fillRect(0, 0, 16, 16);
+            x.fillStyle = "#000"; 
+            x.fillRect(0, 0, 16, 1); x.fillRect(0, 8, 16, 1); // Linee orizzontali
+            x.fillRect(8, 0, 1, 8); x.fillRect(0, 8, 1, 8); // Linee verticali
+        } else if (type === 'box') {
+            x.fillStyle = "#F89800"; // Oro
+            x.fillRect(0, 0, 16, 16);
+            x.fillStyle = "#000";
+            x.fillRect(0,0,16,1); x.fillRect(0,0,1,16); x.fillRect(15,0,1,16); x.fillRect(0,15,16,1);
+            x.fillRect(2,2,1,1); x.fillRect(13,2,1,1); x.fillRect(2,13,1,1); x.fillRect(13,13,1,1); // Bulloni
+            x.fillStyle = "#884000";
+            x.font = "bold 12px monospace";
+            x.fillText("?", 4, 12);
+        } else if (type === 'pipe_tl') { x.fillStyle = "#00A800"; x.fillRect(0,0,16,16); x.lineWidth=2; x.strokeRect(0,0,16,16); }
+        else if (type === 'pipe_tr') { x.fillStyle = "#00A800"; x.fillRect(0,0,16,16); x.lineWidth=2; x.strokeRect(0,0,16,16); }
+        else if (type === 'pipe_bl') { x.fillStyle = "#00A800"; x.fillRect(2,0,14,16); x.lineWidth=2; x.strokeRect(2,0,14,16); }
+        else if (type === 'pipe_br') { x.fillStyle = "#00A800"; x.fillRect(0,0,14,16); x.lineWidth=2; x.strokeRect(0,0,14,16); }
+        else if (type === 'mario') {
+            x.fillStyle = "#F00"; // Vestito Rosso
+            x.fillRect(4, 8, 8, 8); 
+            x.fillStyle = "#884000"; // Faccia/Scarpe
+            x.fillRect(4, 2, 9, 6); x.fillRect(2, 12, 4, 4); x.fillRect(11, 12, 4, 4);
+        } else if (type === 'goomba') {
+            x.fillStyle = "#884000"; // Marrone fungo
+            x.beginPath(); x.arc(8, 8, 7, 0, Math.PI*2); x.fill();
+            x.fillStyle = "black"; x.fillRect(4,12,3,4); x.fillRect(10,12,3,4); // Piedi
+        } else if (type === 'cloud') {
+            x.fillStyle = "#FFF"; x.beginPath(); x.arc(8,8,8,0,Math.PI*2); x.fill();
+        } else if (type === 'bush') {
+            x.fillStyle = "#00E000"; x.beginPath(); x.arc(8,8,8,0,Math.PI*2); x.fill();
+        }
+        
+        return c;
     }
 
+    // Creiamo gli asset in memoria
+    sprites.ground = createSprite(null, 'ground');
+    sprites.brick = createSprite(null, 'brick');
+    sprites.box = createSprite(null, 'box');
+    sprites.pipe_tl = createSprite(null, 'pipe_tl');
+    sprites.pipe_tr = createSprite(null, 'pipe_tr');
+    sprites.pipe_bl = createSprite(null, 'pipe_bl');
+    sprites.pipe_br = createSprite(null, 'pipe_br');
+    sprites.mario = createSprite(null, 'mario');
+    sprites.enemy = createSprite(null, 'goomba');
+    sprites.cloud = createSprite(null, 'cloud');
+    sprites.bush = createSprite(null, 'bush');
+
     // --- GAME ENGINE ---
-    const TILE = 16;
     let player = { x: 50, y: 100, w: 14, h: 14, vx: 0, vy: 0, grounded: false, facing: 1, coins: 0 };
     let cameraX = 0;
     let keys = { left: false, right: false, up: false, run: false };
@@ -160,24 +192,22 @@
             col[13] = 1; col[14] = 1; 
 
             // Buchi nel pavimento
-            if(x > 50 && x < 53) { col[13] = 0; col[14] = 0; }
-            if(x > 80 && x < 85) { col[13] = 0; col[14] = 0; }
+            if(x > 69 && x < 72) { col[13] = 0; col[14] = 0; }
 
             // Blocchi e Tubi
             if(x > 10 && x < 200) {
                 let r = Math.random();
-                if(r > 0.95) col[9] = 2; // Box ?
-                else if(r > 0.90) col[9] = 3; // Mattone
+                if(r > 0.92 && col[13] === 1) col[9] = (Math.random()>0.5 ? 2 : 3); // Box o Mattone
                 
                 // Tubi (Altezza variabile)
-                if(x % 30 === 0 && x > 20) {
-                    col[12] = 4; col[11] = 4; // Tubo alto 2
-                    if(Math.random() > 0.5) col[10] = 4; // Tubo alto 3
+                if(x % 40 === 0 && x > 20) {
+                    col[12] = 4; col[11] = 4; // Tubo base
+                    col[10] = 5; // Tubo cima
                 }
 
                 // Nemici
-                if(x > 20 && r > 0.97 && col[13] === 1) {
-                    col[12] = 5; // Goomba a terra
+                if(x > 20 && r > 0.98 && col[13] === 1) {
+                    col[12] = 8; // Goomba a terra
                 }
             }
             map.push(col);
@@ -187,7 +217,7 @@
             if(Math.random() > 0.92) decor.push({x: x*TILE, y: 12*TILE, type: 'bush'});
         }
         // Muri inizio/fine
-        map[0][12] = 4; map[199][12] = 4; 
+        map[0][12] = 3; map[199][12] = 3; 
     }
     initMap();
 
@@ -243,7 +273,8 @@
                 if(x < 0 || x >= 200 || y < 0 || y >= 15) continue;
                 
                 let tile = map[x][y];
-                if(tile === 1 || tile === 2 || tile === 3 || tile === 4) { // Solidi
+                // 1=Terra, 2=Box, 3=Mattone, 4=TuboBase, 5=TuboAlto
+                if(tile >= 1 && tile <= 7) { 
                     if(isX) {
                         if(player.vx > 0) player.x = x * TILE - player.w - 0.1;
                         else if(player.vx < 0) player.x = (x + 1) * TILE + 0.1;
@@ -256,7 +287,7 @@
                         } else if(player.vy < 0) {
                             player.y = (y + 1) * TILE + 0.1;
                             player.vy = 0;
-                            // Colpisci blocco ?
+                            // Colpisci box
                             if(tile === 2) {
                                 map[x][y] = 3; // Diventa mattone
                                 player.coins++;
@@ -280,8 +311,16 @@
         // 2. Disegna Sfondo (Nuvole/Cespugli)
         decor.forEach(d => {
             if(d.x > cameraX - 50 && d.x < cameraX + 350) {
-                if(d.type === 'cloud') ctx.drawImage(sprites.cloud, d.x, d.y, 32, 16); // Nuvole più larghe
-                if(d.type === 'bush') ctx.drawImage(sprites.bush, d.x, d.y, 32, 16);
+                if(d.type === 'cloud') {
+                    ctx.drawImage(sprites.cloud, d.x, d.y);
+                    ctx.drawImage(sprites.cloud, d.x+10, d.y);
+                    ctx.drawImage(sprites.cloud, d.x+20, d.y);
+                }
+                if(d.type === 'bush') {
+                    ctx.drawImage(sprites.bush, d.x, d.y);
+                    ctx.drawImage(sprites.bush, d.x+10, d.y);
+                    ctx.drawImage(sprites.bush, d.x+20, d.y);
+                }
             }
         });
 
@@ -295,28 +334,26 @@
                 let t = map[x][y];
                 if(t === 0) continue;
                 
-                let img = null;
-                if(t === 1) img = sprites.ground;
-                else if(t === 2) img = sprites.box;
-                else if(t === 3) img = sprites.brick;
-                else if(t === 4) img = sprites.pipe;
-                else if(t === 5) img = sprites.enemy;
-
-                if(img && img.complete) {
-                    ctx.drawImage(img, x*TILE, y*TILE, TILE, TILE);
-                } else {
-                    // Fallback se immagine non carica (non dovrebbe succedere)
-                    ctx.fillStyle = "#000"; ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+                if(t === 1) ctx.drawImage(sprites.ground, x*TILE, y*TILE);
+                else if(t === 2) ctx.drawImage(sprites.box, x*TILE, y*TILE);
+                else if(t === 3) ctx.drawImage(sprites.brick, x*TILE, y*TILE);
+                else if(t === 4) { // Tubo Base
+                    ctx.drawImage(sprites.pipe_bl, x*TILE, y*TILE); 
+                    ctx.drawImage(sprites.pipe_br, (x+1)*TILE, y*TILE); 
                 }
+                else if(t === 5) { // Tubo Cima
+                    ctx.drawImage(sprites.pipe_tl, x*TILE, y*TILE); 
+                    ctx.drawImage(sprites.pipe_tr, (x+1)*TILE, y*TILE); 
+                }
+                else if(t === 8) ctx.drawImage(sprites.enemy, x*TILE, y*TILE);
             }
         }
 
         // 4. Disegna Mario
         ctx.save();
         ctx.translate(Math.floor(player.x) + 7, Math.floor(player.y) + 7);
-        ctx.scale(player.facing, 1); // Flip orizzontale
-        if(sprites.mario.complete) ctx.drawImage(sprites.mario, -8, -8, 16, 16);
-        else { ctx.fillStyle = "red"; ctx.fillRect(-7,-7,14,14); }
+        ctx.scale(player.facing, 1); 
+        ctx.drawImage(sprites.mario, -8, -8);
         ctx.restore();
 
         ctx.restore();
@@ -329,7 +366,6 @@
     }
 
     // --- CONTROLLI ---
-    // Tastiera
     window.addEventListener('keydown', e => {
         if(e.code === 'ArrowLeft') keys.left = true;
         if(e.code === 'ArrowRight') keys.right = true;
@@ -343,7 +379,6 @@
         if(e.code === 'ShiftLeft') keys.run = false;
     });
 
-    // Touch (Mobile)
     const addTouch = (id, k) => {
         let el = document.getElementById(id);
         el.addEventListener('touchstart', e => { e.preventDefault(); keys[k] = true; });
@@ -352,7 +387,6 @@
     addTouch('left', 'left'); addTouch('right', 'right');
     addTouch('btnA', 'up'); addTouch('btnB', 'run'); addTouch('up', 'up');
 
-    // Avvio
     loop();
 
 </script>
