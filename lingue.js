@@ -7,10 +7,12 @@ const texts = {
         sectionSingle: "Giochi Single Player",
         
         // Card Testi
+        gameMarioTitle: "Super Platform", gameMarioDesc: "Corri, salta e raccogli monete!",
         game1Title: "T-Rex Run", game1Desc: "Salta gli ostacoli!",
         game2Title: "Space Shooter", game2Desc: "Difendi la galassia.",
         game3Title: "Memory", game3Desc: "Trova le coppie.",
         game4Title: "Avventura Grafica", game4Desc: "Risolvi il mistero della casa.",
+        gameTetrisTitle: "Tetris", gameTetrisDesc: "Incastra i blocchi e completa le linee.",
         
         // Bottoni Sito
         playBtn: "🎮 Gioca Ora",
@@ -62,6 +64,7 @@ const texts = {
         gameOver: "GAME OVER",
         youWin: "HAI VINTO!",
         startMsg: "Premi SPAZIO o Clicca per Iniziare",
+        startMsgDesktop: "Premi SPAZIO o ⬆ per saltare",
         restartMsg: "Clicca per Rigiocare",
         level: "Livello: "
     },
@@ -69,10 +72,14 @@ const texts = {
         // --- MAIN SITE ---
         mainTitle: "🕹️ Online Arcade", subTitle: "Browser games collection",
         sectionSingle: "Single Player", 
+        
+        gameMarioTitle: "Super Platform", gameMarioDesc: "Run, jump and collect coins!",
         game1Title: "T-Rex Run", game1Desc: "Jump!",
         game2Title: "Space Shooter", game2Desc: "Shoot aliens.",
         game3Title: "Memory", game3Desc: "Find pairs.",
         game4Title: "Graphic Adventure", game4Desc: "Solve the mystery.",
+        gameTetrisTitle: "Tetris", gameTetrisDesc: "Stack the blocks and clear lines.",
+        
         playBtn: "🎮 Play Now", comingSoon: "🚧 Soon", backHome: "🏠 Home",
         footerText: "&copy; 2025 Online Arcade.",
 
@@ -94,16 +101,22 @@ const texts = {
         // --- IN-GAME ---
         score: "Score: ", lives: "Lives: ", moves: "Moves: ", time: "Time: ",
         gameOver: "GAME OVER", youWin: "YOU WIN!",
-        startMsg: "Press SPACE or Click to Start", restartMsg: "Click to Play Again", level: "Level: "
+        startMsg: "Press SPACE or Click to Start", 
+        startMsgDesktop: "Press SPACE or ⬆ to jump",
+        restartMsg: "Click to Play Again", level: "Level: "
     },
     sk: {
         // --- HLAVNÁ STRÁNKA ---
         mainTitle: "🕹️ Online Arkáda", subTitle: "Zbierka hier",
         sectionSingle: "Hry pre jedného", 
+        
+        gameMarioTitle: "Super Platform", gameMarioDesc: "Bež, skáč a zbieraj mince!",
         game1Title: "T-Rex Run", game1Desc: "Skáč!",
         game2Title: "Space Shooter", game2Desc: "Strieľaj.",
         game3Title: "Pexeso", game3Desc: "Nájdi páry.",
         game4Title: "Grafická Adventúra", game4Desc: "Vyrieš záhadu.",
+        gameTetrisTitle: "Tetris", gameTetrisDesc: "Ukladaj bloky a nič riadky.",
+
         playBtn: "🎮 Hrať", comingSoon: "🚧 Čoskoro", backHome: "🏠 Domov",
         footerText: "&copy; 2025 Online Arkáda.",
 
@@ -125,7 +138,9 @@ const texts = {
         // --- IN-GAME ---
         score: "Skóre: ", lives: "Životy: ", moves: "Ťahy: ", time: "Čas: ",
         gameOver: "KONIEC HRY", youWin: "VYHRAL SI!",
-        startMsg: "Stlač MEDZERNÍK alebo Klikni pre Štart", restartMsg: "Klikni pre novú hru", level: "Úroveň: "
+        startMsg: "Stlač MEDZERNÍK alebo Klikni pre Štart", 
+        startMsgDesktop: "Stlač MEDZERNÍK alebo ⬆ pre skok",
+        restartMsg: "Klikni pre novú hru", level: "Úroveň: "
     }
 };
 
