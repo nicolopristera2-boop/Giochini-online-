@@ -75,7 +75,7 @@
         
         .container { 
             width: 100%;
-            max-width: 1000px; /* Aumentato leggermente per far stare 3 card */
+            max-width: 1000px; 
             margin: 0 auto; 
             padding: 30px 20px; 
             flex: 1; 
@@ -83,7 +83,7 @@
 
         /* SEPARATORE DI SEZIONE */
         section {
-            margin-bottom: 50px; /* Spazio tra le due file di riquadri */
+            margin-bottom: 50px; 
         }
         
         h2 { 
@@ -113,12 +113,12 @@
                 grid-template-columns: 1fr 1fr; 
             }
             
-            /* NUOVA CLASSE: Griglia a 3 colonne per la prima fila */
+            /* Griglia a 3 colonne */
             .games-grid.three-cols {
                 grid-template-columns: repeat(3, 1fr);
             }
 
-            /* Hover effects solo su PC per evitare problemi touch */
+            /* Hover effects solo su PC */
             header h1:hover { transform: scale(1.1) rotate(-3deg); }
             .lang-btn:hover { background: #ffeaa7; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px #000; }
             .project-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 12px 12px 0px rgba(0,0,0,0.3); }
@@ -190,7 +190,7 @@
             font-size: 0.9rem;
         }
 
-        /* --- OTTIMIZZAZIONI SPECIFICHE MOBILE --- */
+        /* --- OTTIMIZZAZIONI MOBILE --- */
         @media (max-width: 600px) {
             header {
                 padding: 1.5rem 1rem;
@@ -275,7 +275,7 @@
 
     <section>
         <h2 data-i18n="sectionLogic">Rompicapo & Avventura</h2>
-        <div class="games-grid">
+        <div class="games-grid three-cols">
             
             <div class="project-card">
                 <div class="card-image">🧠</div>
@@ -292,6 +292,15 @@
                     <h3 data-i18n="game4Title">Avventura</h3>
                     <p data-i18n="game4Desc">Un mistero testuale da risolvere.</p>
                     <a href="avventura.html" class="btn-play" data-i18n="playBtn">Gioca</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">🧱</div>
+                <div class="card-content">
+                    <h3 data-i18n="gameTetrisTitle">Tetris</h3>
+                    <p data-i18n="gameTetrisDesc">Incastra i blocchi e completa le linee.</p>
+                    <a href="tetris.html" class="btn-play" data-i18n="playBtn">Gioca</a>
                 </div>
             </div>
 
