@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Capy-Gotchi 🦫</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦫</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- STILE CAPY-GOTCHI --- */
+        :root {
+            --bg-color: #e6f0e6; /* Verde chiarissimo */
+            --device-color: #a1887f; /* Marrone scuro */
+            --screen-color: #fffbe6; /* Giallino schermo */
+            --accent: #ffb74d; /* Arancione */
+            --text: #4e342e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Fredoka', sans-serif; 
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(#c8e6c9 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        /* Il "dispositivo" Tamagotchi */
+        .device-container {
+            background-color: var(--device-color);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 60px 60px 80px 80px;
+            padding: 30px 20px 40px 20px;
+            box-shadow: 0 10px 0 #6d4c41, inset 0 -5px 10px rgba(0,0,0,0.2);
+            border: 4px solid #4e342e;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Lo schermo interno */
+        .screen-container {
+            background-color: var(--screen-color);
+            border: 3px solid #4e342e;
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.1);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        h1 { color: var(--text); margin-bottom: 15px; font-size: 1.8rem; }
+        h2 { font-size: 1.4rem; margin-bottom: 10px; color: var(--text); }
+
+        /* --- SCHERMATA INTRODUTTIVA --- */
+        #introScreen { display: flex; flex-direction: column; gap: 20px; justify-content: center; height: 100%; }
+        .name-input {
+            padding: 15px; font-size: 1.2rem; border: 2px solid var(--device-color);
+            border-radius: 15px; text-align: center; font-family: 'Fredoka', sans-serif; outline: none;
+        }
+        .start-btn {
+            padding: 15px; font-size: 1.2rem; background: var(--accent); color: var(--text);
+            border: none; border-radius: 15px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 5px 0 #e65100; transition: 0.1s;
+        }
+        .start-btn:active { transform: translateY(5px); box-shadow: none; }
+
+        /* --- SCHERMATA DI GIOCO --- */
+        #gameScreen { display: none; height: 100%; flex-direction: column; }
+
+        /* Area del Pet */
+        .pet-area {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            font-size: 7rem; position: relative;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+        }
+        /* Animazioni */
+        .pet-emoji.bounce { animation: bounce 0.5s ease infinite alternate; }
+        .pet-emoji.shake { animation: shake 0.5s ease-in-out; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-5deg); } 75% { transform: translateX(5px) rotate(5deg); } }
+
+        /* Feedback fluttuante (cuori, cibo) */
+        .floating-feedback {
+            position: absolute; font-size: 3rem; top: 0;
+            animation: floatUp 1s forwards ease-out; opacity: 1;
+        }
+        @keyframes floatUp { to { transform: translateY(-50px); opacity: 0; } }
+
+        /* Barre Statistiche */
+        .stats-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .stat-row { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .stat-icon { width: 30px; }
+        .progress-bar-bg {
+            flex-grow: 1; height: 15px; background: #ddd;
+            border-radius: 10px; border: 2px solid var(--text); overflow: hidden;
+        }
+        .progress-bar-fill { height: 100%; width: 100%; transition: width 0.5s, background-color 0.5s; }
+        /* Colori Barre */
+        .fill-hunger { background-color: #9ccc65; } /* Verde */
+        .fill-happiness { background-color: #ec407a; } /* Rosa */
+        .fill-energy { background-color: #42a5f5; } /* Blu */
+
+        /* Bottoni Azioni */
+        .controls-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .action-btn {
+            padding: 15px 5px; font-family: 'Fredoka', sans-serif; border: none; border-radius: 15px;
+            background: #fff; border: 2px solid var(--device-color); color: var(--text);
+            cursor: pointer; font-weight: bold; font-size: 0.9rem;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            box-shadow: 0 4px 0 var(--device-color); transition: 0.1s;
+        }
+        .action-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-icon { font-size: 1.5rem; }
+
+        /* Decorazioni Device */
+        .device-deco {
+            position: absolute; color: rgba(0,0,0,0.2); font-size: 1.5rem;
+        }
+        .deco-1 { top: 15px; left: 20px; transform: rotate(-20deg); }
+        .deco-2 { top: 15px; right: 20px; transform: rotate(20deg); }
+
+    </style>
+</head>
+<body>
+
+<div class="device-container">
+    <div class="device-deco deco-1">🍊</div>
+    <div class="device-deco deco-2">🌿</div>
+
+    <div class="screen-container">
+        
+        <div id="introScreen">
+            <h1>Capy-Gotchi</h1>
+            <div style="font-size: 4rem; margin-bottom: -20px;">🦫</div>
+            <p>Adotta un Capibara virtuale!</p>
+            <input type="text" id="capyNameInput" class="name-input" placeholder="Dagli un nome..." maxlength="12">
+            <button class="start-btn" onclick="startGame()">INIZIA!</button>
+        </div>
+
+        <div id="gameScreen">
+            <h2 id="petNameDisplay">Nome Capy</h2>
+            
+            <div class="pet-area">
+                <div id="petEmoji" class="pet-emoji bounce">🦫</div>
+                <div id="feedbackArea"></div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span class="stat-icon">🍔</span>
+                    <div class="progress-bar-bg">
+                        <div id="hungerBar" class="progress-bar-fill fill-hunger" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-icon">💖</span>
+                    <div class="progress-bar-bg">
+                        <div id="happinessBar" class="progress-bar-fill fill-happiness" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-icon">⚡</span>
+                    <div class="progress-bar-bg">
+                        <div id="energyBar" class="progress-bar-fill fill-energy" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <button class="action-btn" id="btnFeed" onclick="feedPet()">
+                    <span class="btn-icon">🍊</span> Dai Yuzu
+                </button>
+                <button class="action-btn" id="btnPet" onclick="petPet()">
+                    <span class="btn-icon">👋</span> Accarezza
+                </button>
+                <button class="action-btn" id="btnSleep" onclick="sleepPet()">
+                    <span class="btn-icon">💤</span> Dormi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- STATO DEL GIOCO ---
+    let capyName = "";
+    let stats = {
+        hunger: 100,    // 100 = Pieno, 0 = Affamato
+        happiness: 100, // 100 = Felice, 0 = Triste
+        energy: 100     // 100 = Riposato, 0 = Stanco
+    };
+    
+    let gameLoop;
+    let isSleeping = false;
+    let isAnimating = false; // Per evitare spam di tasti durante le animazioni
+
+    const petEmoji = document.getElementById('petEmoji');
+    const feedbackArea = document.getElementById('feedbackArea');
+
+    // --- INIZIO GIOCO ---
+    function startGame() {
+        const inputName = document.getElementById('capyNameInput').value.trim();
+        if (inputName === "") {
+            alert("Per favore, dai un nome al tuo Capibara!");
+            return;
+        }
+        capyName = inputName;
+        document.getElementById('petNameDisplay').innerText = capyName;
+        
+        // Cambio schermata
+        document.getElementById('introScreen').style.display = 'none';
+        document.getElementById('gameScreen').style.display = 'flex';
+
+        // Avvia il ciclo di vita (ogni 2 secondi le stats scendono)
+        gameLoop = setInterval(gameTick, 2000);
+        updateUI();
+    }
+
+    // --- CICLO DI VITA (Il tempo passa) ---
+    function gameTick() {
+        if (isSleeping) {
+            // Se dorme, recupera energia ma fame e felicità scendono piano
+            stats.energy = Math.min(100, stats.energy + 5);
+            stats.hunger = Math.max(0, stats.hunger - 1);
+            stats.happiness = Math.max(0, stats.happiness - 1);
+            
+            if (stats.energy >= 100) wakeUp(); // Si sveglia se riposato
+        } else {
+            // Se è sveglio, le statistiche scendono
+            // Scende di più se è triste o stanco
+            let decayRate = 1;
+            if (stats.happiness < 30) decayRate += 1;
+            if (stats.energy < 30) decayRate += 1;
+
+            stats.hunger = Math.max(0, stats.hunger - (decayRate * 1.5));
+            stats.happiness = Math.max(0, stats.happiness - decayRate);
+            stats.energy = Math.max(0, stats.energy - 0.5);
+        }
+        updateUI();
+    }
+
+    // --- AZIONI UTENTE ---
+    function performAction(costEnergy) {
+        if (isSleeping || isAnimating) return false;
+        if (stats.energy < costEnergy) {
+            showFeedback("💤 Stanco...");
+            return false;
+        }
+        stats.energy = Math.max(0, stats.energy - costEnergy);
+        isAnimating = true;
+        setTimeout(() => { isAnimating = false; }, 1000); // Blocco tasti per 1s
+        return true;
+    }
+
+    function feedPet() {
+        if (!performAction(10)) return;
+        
+        // Logica cibo
+        stats.hunger = Math.min(100, stats.hunger + 30);
+        stats.happiness = Math.min(100, stats.happiness + 5);
+        
+        // Animazione
+        triggerAnimation("🍊", "shake", "🦦"); // Capy che mangia
+        updateUI();
+    }
+
+    function petPet() {
+        if (!performAction(5)) return;
+
+        // Logica coccole
+        stats.happiness = Math.min(100, stats.happiness + 25);
+        
+        // Animazione
+        triggerAnimation("💖", "bounce", "😊"); // Capy felice
+        updateUI();
+    }
+
+    function sleepPet() {
+        if (isSleeping || isAnimating) return;
+        if (stats.energy > 80) {
+             showFeedback("Non ho sonno!");
+             return;
+        }
+
+        isSleeping = true;
+        petEmoji.innerText = "😴";
+        petEmoji.classList.remove('bounce'); // Smette di saltellare quando dorme
+        
+        // Disabilita bottoni
+        document.getElementById('btnFeed').disabled = true;
+        document.getElementById('btnPet').disabled = true;
+        document.getElementById('btnSleep').disabled = true;
+    }
+
+    function wakeUp() {
+        isSleeping = false;
+        petEmoji.classList.add('bounce');
+        showFeedback("⚡ Riposato!");
+        // Riabilita bottoni
+        document.getElementById('btnFeed').disabled = false;
+        document.getElementById('btnPet').disabled = false;
+        document.getElementById('btnSleep').disabled = false;
+        updateUI();
+    }
+
+    // --- AGGIORNAMENTO INTERFACCIA ---
+    function updateUI() {
+        // Aggiorna larghezza barre
+        document.getElementById('hungerBar').style.width = stats.hunger + "%";
+        document.getElementById('happinessBar').style.width = stats.happiness + "%";
+        document.getElementById('energyBar').style.width = stats.energy + "%";
+
+        // Cambia colore barre se basse
+        updateBarColor('hungerBar', stats.hunger);
+        updateBarColor('happinessBar', stats.happiness);
+        updateBarColor('energyBar', stats.energy);
+
+        // Cambia emoji stato base (se non sta dormendo o facendo animazioni)
+        if (!isSleeping && !isAnimating) {
+            let baseEmoji = "🦫";
+            if (stats.hunger < 20 || stats.happiness < 20) baseEmoji = "🥺"; // Triste
+            if (stats.energy < 10) baseEmoji = "😫"; // Stanco morto
+            petEmoji.innerText = baseEmoji;
+        }
+    }
+
+    function updateBarColor(barId, value) {
+        const bar = document.getElementById(barId);
+        bar.classList.remove('fill-hunger', 'fill-happiness', 'fill-energy');
+        
+        if (value > 50) bar.style.backgroundColor = (barId.includes('hun') ? '#9ccc65' : barId.includes('hap') ? '#ec407a' : '#42a5f5');
+        else if (value > 20) bar.style.backgroundColor = '#ffb74d'; // Arancione (Attenzione)
+        else bar.style.backgroundColor = '#ef5350'; // Rosso (Critico)
+    }
+
+    // --- SISTEMA DI ANIMAZIONI ---
+    function triggerAnimation(feedbackIcon, animClass, tempEmoji) {
+        showFeedback(feedbackIcon);
+        
+        // Cambia emoji temporaneamente
+        const originalEmoji = petEmoji.innerText;
+        petEmoji.innerText = tempEmoji;
+        
+        // Applica animazione CSS
+        petEmoji.classList.remove('bounce'); // Ferma il bounce base
+        void petEmoji.offsetWidth; // Trigger reflow per riavviare animazione
+        petEmoji.classList.add(animClass);
+
+        // Ripristina dopo 1 secondo
+        setTimeout(() => {
+            petEmoji.classList.remove(animClass);
+            if (!isSleeping) {
+                 petEmoji.classList.add('bounce');
+                 updateUI(); // Ripristina l'emoji corretta in base alle stats
+            }
+        }, 1000);
+    }
+
+    function showFeedback(text) {
+        const fb = document.createElement('div');
+        fb.classList.add('floating-feedback');
+        fb.innerText = text;
+        feedbackArea.appendChild(fb);
+        // Rimuovi elemento dopo l'animazione per non intasare il DOM
+        setTimeout(() => { fb.remove(); }, 1000);
+    }
+
+</script>
+
+</body>
+</html>
