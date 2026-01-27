@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Capybara Clicker 🍊</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍊</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #81c784;       /* Verde Prato */
+            --panel-bg: #ffffff;
+            --primary: #795548;        /* Marrone Capy */
+            --accent: #ffb74d;         /* Arancione Yuzu */
+            --text: #3e2723;
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#aed581 3px, transparent 3px);
+            background-size: 30px 30px;
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Evita lo scroll della pagina intera */
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: linear-gradient(135deg, #8d6e63, #5d4037);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .home-btn {
+            color: white; text-decoration: none; font-size: 1.2rem;
+            background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 10px;
+        }
+
+        /* --- LAYOUT DI GIOCO --- */
+        .game-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            flex-direction: row;
+        }
+
+        /* ZONA CLICK (SINISTRA) */
+        .click-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #score { font-size: 3rem; font-weight: 700; color: var(--primary); display: block; }
+        .score-label { font-size: 1rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .per-sec { font-size: 1rem; color: #2e7d32; font-weight: bold; background: rgba(255,255,255,0.6); padding: 5px 15px; border-radius: 20px; margin-top: 5px; display: inline-block; }
+
+        /* IL CAPIBARA GIGANTE */
+        .main-capy {
+            font-size: 8rem;
+            cursor: pointer;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            position: relative;
+            z-index: 2;
+        }
+        .main-capy:active { transform: scale(0.9); }
+        .main-capy:hover { transform: scale(1.05); }
+
+        /* Particelle fluttuanti (+1) */
+        .click-feedback {
+            position: absolute;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--accent);
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 1px 1px 0 #fff;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        /* ZONA SHOP (DESTRA) */
+        .shop-zone {
+            flex: 1;
+            background: var(--panel-bg);
+            border-left: 4px solid var(--primary);
+            overflow-y: auto;
+            padding: 20px;
+            max-width: 400px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+        }
+
+        .shop-header {
+            font-size: 1.5rem; margin-bottom: 15px;
+            border-bottom: 2px solid #eee; padding-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .upgrade-item {
+            background: #fbe9e7;
+            border: 2px solid #d7ccc8;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+        
+        .upgrade-item:hover { transform: translateX(-5px); border-color: var(--accent); background: #fff3e0; }
+        .upgrade-item:active { transform: scale(0.98); }
+        
+        /* Disabilita visivamente se non hai abbastanza soldi */
+        .upgrade-item.disabled {
+            opacity: 0.6; filter: grayscale(1); cursor: not-allowed;
+        }
+
+        .upgrade-icon { font-size: 2.5rem; margin-right: 15px; }
+        .upgrade-info { flex: 1; }
+        .upgrade-name { font-weight: 700; font-size: 1.1rem; display: block; }
+        .upgrade-cost { color: #d84315; font-weight: 600; font-size: 0.9rem; }
+        .upgrade-rate { color: #2e7d32; font-size: 0.8rem; }
+        
+        .upgrade-count {
+            background: var(--primary); color: white;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: bold;
+            position: absolute; top: -10px; right: -10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* RESPONSIVE MOBILE */
+        @media (max-width: 768px) {
+            .game-container { flex-direction: column; }
+            .click-zone { flex: 0.8; padding: 20px; }
+            .shop-zone { flex: 1; max-width: 100%; border-left: none; border-top: 4px solid var(--primary); }
+            .main-capy { font-size: 6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="home-btn"><i class="fa-solid fa-house"></i> Home</a>
+        <span>Capybara Clicker</span>
+        <div style="width: 40px;"></div> </header>
+
+    <div class="game-container">
+        
+        <div class="click-zone">
+            <div class="score-display">
+                <span id="score">0</span>
+                <div class="score-label">Punti Chill</div>
+                <div class="per-sec">
+                    <i class="fa-solid fa-bolt"></i> <span id="sps">0</span> / sec
+                </div>
+            </div>
+
+            <div class="main-capy" id="clickButton" onclick="clickCapy(event)">🦫</div>
+        </div>
+
+        <div class="shop-zone">
+            <div class="shop-header">Upgrade Zen</div>
+            <div id="shopContainer">
+                </div>
+            
+            <button onclick="resetGame()" style="margin-top: 30px; padding: 10px; width: 100%; background: #ef5350; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                🗑️ Resetta Progressi
+            </button>
+        </div>
+
+    </div>
+
+<script>
+    // --- CONFIGURAZIONE GIOCO ---
+    let gameData = {
+        score: 0,
+        totalClicks: 0,
+        clickPower: 1,
+        upgrades: {
+            cursor: { name: "Carezza Extra", cost: 15, rate: 0.5, count: 0, icon: "👆" },
+            duck:   { name: "Paperella",     cost: 100, rate: 2,   count: 0, icon: "🦆" },
+            yuzu:   { name: "Yuzu Fresco",   cost: 500, rate: 8,   count: 0, icon: "🍊" },
+            friend: { name: "Amico Pellicano", cost: 2000, rate: 25, count: 0, icon: "🦜" },
+            spa:    { name: "Terme Private", cost: 10000, rate: 100, count: 0, icon: "♨️" }
+        }
+    };
+
+    // --- CARICAMENTO SALVATAGGIO ---
+    function loadGame() {
+        const saved = localStorage.getItem('capyClickerSave');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // Fusione sicura per evitare errori se aggiungi nuovi upgrade in futuro
+            gameData.score = parsed.score || 0;
+            gameData.totalClicks = parsed.totalClicks || 0;
+            // Carica i count e aggiorna i costi
+            for (let key in parsed.upgrades) {
+                if (gameData.upgrades[key]) {
+                    gameData.upgrades[key].count = parsed.upgrades[key].count;
+                    // Ricalcola il costo: Base * (1.15 ^ count)
+                    gameData.upgrades[key].cost = Math.ceil(gameData.upgrades[key].cost * Math.pow(1.15, parsed.upgrades[key].count));
+                }
+            }
+        }
+    }
+
+    // --- SALVATAGGIO ---
+    function saveGame() {
+        localStorage.setItem('capyClickerSave', JSON.stringify(gameData));
+    }
+
+    // --- LOGICA CLICK ---
+    function clickCapy(event) {
+        // Aggiungi punti
+        addScore(gameData.clickPower);
+        gameData.totalClicks++;
+
+        // Effetto particella (numero che vola)
+        createFloatingText(event.clientX, event.clientY, `+${gameData.clickPower} 🍊`);
+        
+        // Animazione pulsazione extra via JS (opzionale, CSS fa già molto)
+        const capy = document.getElementById('clickButton');
+        capy.style.transform = "scale(0.95)";
+        setTimeout(() => capy.style.transform = "scale(1)", 50);
+        
+        updateUI();
+    }
+
+    function addScore(amount) {
+        gameData.score += amount;
+        updateUI();
+    }
+
+    // --- EFFETTI VISIVI ---
+    function createFloatingText(x, y, text) {
+        const el = document.createElement('div');
+        el.classList.add('click-feedback');
+        el.innerText = text;
+        
+        // Aggiunge un po' di casualità alla posizione
+        const randomX = (Math.random() - 0.5) * 40;
+        
+        el.style.left = `${x + randomX}px`;
+        el.style.top = `${y - 20}px`;
+        
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000); // Rimuovi dopo l'animazione
+    }
+
+    // --- LOGICA UPGRADE ---
+    function buyUpgrade(key) {
+        const upgrade = gameData.upgrades[key];
+        
+        if (gameData.score >= upgrade.cost) {
+            gameData.score -= upgrade.cost;
+            upgrade.count++;
+            upgrade.cost = Math.ceil(upgrade.cost * 1.15); // Aumenta costo del 15%
+            
+            updateUI();
+            saveGame();
+        }
+    }
+
+    // --- CALCOLO RENDITA AUTOMATICA ---
+    function getScorePerSecond() {
+        let sps = 0;
+        for (let key in gameData.upgrades) {
+            sps += gameData.upgrades[key].rate * gameData.upgrades[key].count;
+        }
+        return sps;
+    }
+
+    // --- CICLO DI GIOCO (Game Loop) ---
+    // Esegue 10 volte al secondo per fluidità
+    setInterval(() => {
+        const sps = getScorePerSecond();
+        if (sps > 0) {
+            addScore(sps / 10);
+        }
+    }, 100);
+
+    // Salvataggio automatico ogni 10 secondi
+    setInterval(saveGame, 10000);
+
+    // --- INTERFACCIA UTENTE ---
+    function updateUI() {
+        // Aggiorna Punti
+        document.getElementById('score').innerText = Math.floor(gameData.score).toLocaleString();
+        document.getElementById('sps').innerText = getScorePerSecond().toFixed(1);
+
+        // Aggiorna Shop
+        const shopContainer = document.getElementById('shopContainer');
+        shopContainer.innerHTML = ""; // Pulisci e ridisegna (non ottimizzato ma ok per giochi piccoli)
+
+        for (let key in gameData.upgrades) {
+            const u = gameData.upgrades[key];
+            const canAfford = gameData.score >= u.cost;
+            
+            const item = document.createElement('div');
+            item.className = `upgrade-item ${canAfford ? '' : 'disabled'}`;
+            item.onclick = () => { if(canAfford) buyUpgrade(key); };
+            
+            item.innerHTML = `
+                <div class="upgrade-icon">${u.icon}</div>
+                <div class="upgrade-info">
+                    <span class="upgrade-name">${u.name}</span>
+                    <span class="upgrade-rate">+${u.rate} / sec</span>
+                    <span class="upgrade-cost">Prezzo: ${u.cost.toLocaleString()}</span>
+                </div>
+                <div class="upgrade-count">${u.count}</div>
+            `;
+            
+            shopContainer.appendChild(item);
+        }
+    }
+
+    function resetGame() {
+        if(confirm("Sei sicuro di voler cancellare tutto il tuo impero di Capibara?")) {
+            localStorage.removeItem('capyClickerSave');
+            location.reload();
+        }
+    }
+
+    // Avvio
+    loadGame();
+    updateUI();
+
+</script>
+</body>
+</html>
